@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>إشعار خدمة - AL SHAIB SALON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #e8c96a;
+      --gold-dark: #a07c30;
+      --black: #1A1A1A;
+      --dark-gray: #333333;
+      --mid-gray: #666666;
+      --light-gray: #f5f5f5;
+      --white: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: #e8e0d0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .receipt-wrapper {
+      width: 420px;
+      background: var(--white);
+      border-radius: 4px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 15px rgba(201,168,76,0.15);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top decorative bar */
+    .top-bar {
+      height: 6px;
+      background: linear-gradient(90deg, var(--black), var(--gold), var(--black));
+    }
+
+    /* Header */
+    .receipt-header {
+      background: var(--black);
+      padding: 28px 30px 22px;
+      text-align: center;
+      position: relative;
+    }
+
+    .receipt-header::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 12px solid var(--black);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      position: relative;
+    }
+
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .logo-text-group {
+      text-align: right;
+    }
+
+    .salon-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: 2px;
+      line-height: 1.1;
+    }
+
+    .salon-name span {
+      color: var(--gold);
+    }
+
+    .salon-sub {
+      font-size: 10px;
+      color: var(--gold);
+      letter-spacing: 3px;
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    /* Notification type badge */
+    .notification-badge {
+      margin-top: 32px;
+      padding: 0 30px 24px;
+      text-align: center;
+    }
+
+    .badge-label {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--black);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 7px 28px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 30px;
+      margin-bottom: 20px;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .divider-diamond {
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* Fields */
+    .fields-section {
+      padding: 0 30px;
+    }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0ece4;
+    }
+
+    .field-row:last-child {
+      border-bottom: none;
+    }
+
+    .field-label {
+      font-size: 12px;
+      color: var(--mid-gray);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-label .dot {
+      width: 5px;
+      height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .field-value {
+      font-size: 14px;
+      color: var(--black);
+      font-weight: 700;
+      text-align: left;
+      direction: ltr;
+    }
+
+    .field-value.arabic {
+      direction: rtl;
+      text-align: right;
+    }
+
+    /* Total section */
+    .total-section {
+      margin: 20px 30px;
+      background: var(--black);
+      border-radius: 3px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-label {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .total-amount {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--white);
+      direction: ltr;
+    }
+
+    .total-amount span {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    /* Payment method */
+    .payment-row {
+      padding: 0 30px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .payment-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--light-gray);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .payment-text {
+      font-size: 12px;
+      color: var(--mid-gray);
+    }
+
+    .payment-text strong {
+      color: var(--black);
+      font-weight: 700;
+    }
+
+    /* Footer divider */
+    .footer-divider {
+      border: none;
+      border-top: 1px dashed #d0c8b8;
+      margin: 0 30px 20px;
+    }
+
+    /* Thank you section */
+    .thankyou-section {
+      text-align: center;
+      padding: 0 30px 10px;
+    }
+
+    .thankyou-arabic {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .thankyou-english {
+      font-size: 10px;
+      color: var(--mid-gray);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Contact info */
+    .contact-section {
+      background: var(--light-gray);
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--mid-gray);
+    }
+
+    .contact-item .icon {
+      color: var(--gold);
+      font-size: 13px;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold), var(--gold-dark));
+    }
+
+    /* Scissors decoration */
+    .scissors-row {
+      text-align: center;
+      padding: 8px 0 4px;
+      color: var(--gold);
+      font-size: 18px;
+      letter-spacing: 4px;
+      opacity: 0.6;
+    }
+
+    /* Receipt number */
+    .receipt-number {
+      text-align: center;
+      font-size: 10px;
+      color: #aaa;
+      padding: 6px 0 14px;
+      letter-spacing: 1px;
+      direction: ltr;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .receipt-wrapper { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="receipt-wrapper">
+  <!-- Top decorative bar -->
+  <div class="top-bar"></div>
+
+  <!-- Header -->
+  <div class="receipt-header">
+    <div class="logo-area">
+      <!-- AS Logo SVG (matching the actual logo style) -->
+      <svg class="logo-icon" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- A shape -->
+        <path d="M8 48 L22 12 L30 30 L38 12 L52 48" stroke="#C9A84C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Crossbar of A -->
+        <line x1="14" y1="36" x2="46" y2="36" stroke="#C9A84C" stroke-width="3" stroke-linecap="round"/>
+        <!-- S shape overlay -->
+        <path d="M34 20 Q44 18 44 26 Q44 34 30 34 Q16 34 16 42 Q16 50 28 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div class="logo-text-group">
+        <div class="salon-name">AL <span>SHAIB</span> SALON</div>
+        <div class="salon-sub">GENTLEMEN'S GROOMING</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Badge -->
+  <div class="notification-badge">
+    <div class="badge-label">✂ إشعار خدمة</div>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Fields -->
+  <div class="fields-section">
+    <div class="field-row">
+      <div class="field-label"><span class="dot"></span> اسم الموظف</div>
+      <div class="field-value arabic">أحمد الشايب</div>
+    </div>
+    <div class="field-row">
+      <div class="field-label"><span class="dot"></span> الخدمة</div>
+      <div class="field-value arabic">حلاقة + تشذيب لحية</div>
+    </div>
+    <div class="field-row">
+      <div class="field-label"><span class="dot"></span> التاريخ والوقت</div>
+      <div class="field-value">19/02/2026 - 10:30 ص</div>
+    </div>
+    <div class="field-row">
+      <div class="field-label"><span class="dot"></span> رقم الإيصال</div>
+      <div class="field-value">#TXN-00142</div>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div class="total-section">
+    <div class="total-label">إجمالي المبلغ</div>
+    <div class="total-amount">6.000 <span>د.ك</span></div>
+  </div>
+
+  <!-- Payment method -->
+  <div class="payment-row">
+    <div class="payment-icon">💵</div>
+    <div class="payment-text">طريقة الدفع: <strong>نقداً</strong></div>
+  </div>
+
+  <hr class="footer-divider"/>
+
+  <!-- Scissors decoration -->
+  <div class="scissors-row">✂ ─ ─ ─ ─ ─ ─ ✂</div>
+
+  <!-- Thank you -->
+  <div class="thankyou-section">
+    <div class="thankyou-arabic">شكراً لزيارتكم 🤍</div>
+    <div class="thankyou-english">Thank you for your visit</div>
+  </div>
+
+  <!-- Receipt number -->
+  <div class="receipt-number">AL SHAIB SALON © 2026</div>
+
+  <!-- Contact -->
+  <div class="contact-section">
+    <div class="contact-item">
+      <span class="icon">📞</span>
+      <span>+965 XXXX XXXX</span>
+    </div>
+    <div class="contact-item">
+      <span class="icon">📍</span>
+      <span>الكويت</span>
+    </div>
+    <div class="contact-item">
+      <span class="icon">🕐</span>
+      <span>9ص - 10م</span>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar"></div>
+</div>
+
+</body>
+</html>

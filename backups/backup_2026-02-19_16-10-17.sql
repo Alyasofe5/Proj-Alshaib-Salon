@@ -1,0 +1,164 @@
+-- AL SHAIB SALON DATABASE BACKUP
+-- Date: 2026-02-19 16:10:17
+-- Tables: employees, users, services, transactions, transaction_details, expenses, inventory
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ---- `employees` ----
+DROP TABLE IF EXISTS `employees`;
+CREATE TABLE `employees` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `salary_type` enum('fixed','commission') NOT NULL DEFAULT 'commission',
+  `base_salary` decimal(10,3) DEFAULT 0.000,
+  `commission_rate` decimal(5,2) DEFAULT 0.00,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `employees` VALUES ('1','أحمد الشايب','96512345678','commission','0.000','30.00','1','2026-02-19 01:09:52');
+INSERT INTO `employees` VALUES ('2','محمد علي','96598765432','commission','0.000','25.00','1','2026-02-19 01:09:52');
+INSERT INTO `employees` VALUES ('3','خالد عبدالله','96555544433','fixed','150.000','0.00','1','2026-02-19 01:09:52');
+
+-- ---- `users` ----
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','employee') NOT NULL DEFAULT 'employee',
+  `employee_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  KEY `employee_id` (`employee_id`),
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `users` VALUES ('1','صاحب المحل','admin','$2y$10$LwtSnR0h/b/1gVdLtUU.He2RuJ5EuS7xh2sINY3TuPV62/C4gQEru','admin',NULL,'1','2026-02-19 01:09:52');
+INSERT INTO `users` VALUES ('2','أحمد الشايب','ahmed','$2y$10$SLyCd5Q7TrzMLpecFRUUauFTUInB1U6JteaEhXpGJ0Ov57CvdExM.','employee','1','1','2026-02-19 01:09:52');
+INSERT INTO `users` VALUES ('3','محمد علي','mohammed','$2y$10$Jb21SACG2MDDjOXAUqLZyeO/OyyeCSFdZSJ4J/6DSpYs.iWdZSzRa','employee','2','1','2026-02-19 01:09:52');
+
+-- ---- `services` ----
+DROP TABLE IF EXISTS `services`;
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `price` decimal(10,3) NOT NULL DEFAULT 0.000,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `services` VALUES ('1','حلاقة شعر','3.000','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('2','تشذيب لحية','1.500','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('3','حلاقة + لحية','4.000','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('4','حلاقة أطفال','2.500','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('5','صبغة شعر','8.000','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('6','تنظيف بشرة','5.000','1','2026-02-19 01:09:52');
+INSERT INTO `services` VALUES ('7','قص شعر فاشن','5.000','1','2026-02-19 01:09:52');
+
+-- ---- `transactions` ----
+DROP TABLE IF EXISTS `transactions`;
+CREATE TABLE `transactions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `employee_id` int(11) NOT NULL,
+  `total_amount` decimal(10,3) NOT NULL DEFAULT 0.000,
+  `payment_method` enum('cash','knet','transfer') NOT NULL DEFAULT 'cash',
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `employee_id` (`employee_id`),
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `transactions` VALUES ('1','1','4.000','cash','','2026-02-19 01:40:56');
+INSERT INTO `transactions` VALUES ('2','1','3.000','cash','raed','2026-02-19 01:41:24');
+INSERT INTO `transactions` VALUES ('3','1','8.000','cash','','2026-02-19 01:43:38');
+INSERT INTO `transactions` VALUES ('4','1','5.000','cash','','2026-02-19 01:45:46');
+INSERT INTO `transactions` VALUES ('5','1','9.500','transfer','','2026-02-19 02:00:32');
+INSERT INTO `transactions` VALUES ('6','2','17.000','knet','','2026-02-19 15:31:29');
+INSERT INTO `transactions` VALUES ('7','2','2.500','cash','','2026-02-19 15:31:47');
+INSERT INTO `transactions` VALUES ('8','2','6.500','cash','','2026-02-19 15:31:56');
+INSERT INTO `transactions` VALUES ('9','2','5.000','cash','','2026-02-19 15:32:02');
+INSERT INTO `transactions` VALUES ('10','2','5.000','cash','','2026-02-19 15:32:08');
+INSERT INTO `transactions` VALUES ('11','2','8.000','transfer','','2026-02-19 15:32:12');
+INSERT INTO `transactions` VALUES ('12','2','17.000','knet','','2026-02-19 15:32:40');
+
+-- ---- `transaction_details` ----
+DROP TABLE IF EXISTS `transaction_details`;
+CREATE TABLE `transaction_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transaction_id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `price` decimal(10,3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `transaction_id` (`transaction_id`),
+  KEY `service_id` (`service_id`),
+  CONSTRAINT `transaction_details_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `transaction_details_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `transaction_details` VALUES ('1','1','3','4.000');
+INSERT INTO `transaction_details` VALUES ('2','2','1','3.000');
+INSERT INTO `transaction_details` VALUES ('3','3','5','8.000');
+INSERT INTO `transaction_details` VALUES ('4','4','7','5.000');
+INSERT INTO `transaction_details` VALUES ('5','5','1','3.000');
+INSERT INTO `transaction_details` VALUES ('6','5','2','1.500');
+INSERT INTO `transaction_details` VALUES ('7','5','6','5.000');
+INSERT INTO `transaction_details` VALUES ('8','6','3','4.000');
+INSERT INTO `transaction_details` VALUES ('9','6','5','8.000');
+INSERT INTO `transaction_details` VALUES ('10','6','6','5.000');
+INSERT INTO `transaction_details` VALUES ('11','7','4','2.500');
+INSERT INTO `transaction_details` VALUES ('12','8','2','1.500');
+INSERT INTO `transaction_details` VALUES ('13','8','7','5.000');
+INSERT INTO `transaction_details` VALUES ('14','9','6','5.000');
+INSERT INTO `transaction_details` VALUES ('15','10','7','5.000');
+INSERT INTO `transaction_details` VALUES ('16','11','5','8.000');
+INSERT INTO `transaction_details` VALUES ('17','12','3','4.000');
+INSERT INTO `transaction_details` VALUES ('18','12','5','8.000');
+INSERT INTO `transaction_details` VALUES ('19','12','7','5.000');
+
+-- ---- `expenses` ----
+DROP TABLE IF EXISTS `expenses`;
+CREATE TABLE `expenses` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) NOT NULL,
+  `amount` decimal(10,3) NOT NULL,
+  `type` enum('rent','salary','supplies','utilities','other') NOT NULL DEFAULT 'other',
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `expenses` VALUES ('1','إيجار المحل - فبراير 2026','200.000','rent',NULL,'2026-02-19 01:09:52');
+INSERT INTO `expenses` VALUES ('2','مستلزمات حلاقة','45.500','supplies',NULL,'2026-02-19 01:09:52');
+INSERT INTO `expenses` VALUES ('3','فاتورة كهرباء','25.000','utilities',NULL,'2026-02-19 01:09:52');
+
+-- ---- `inventory` ----
+DROP TABLE IF EXISTS `inventory`;
+CREATE TABLE `inventory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) NOT NULL,
+  `quantity` decimal(10,2) DEFAULT 0.00,
+  `unit` varchar(30) DEFAULT 'قطعة',
+  `cost_price` decimal(10,3) DEFAULT 0.000,
+  `selling_price` decimal(10,3) DEFAULT 0.000,
+  `min_quantity` decimal(10,2) DEFAULT 5.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `inventory` VALUES ('1','شامبو','10.00','زجاجة','1.500','3.000','3.00','2026-02-19 01:09:52');
+INSERT INTO `inventory` VALUES ('2','كريم حلاقة','15.00','علبة','0.800','2.000','5.00','2026-02-19 01:09:52');
+INSERT INTO `inventory` VALUES ('3','شفرات حلاقة','50.00','قطعة','0.200','0.500','10.00','2026-02-19 01:09:52');
+INSERT INTO `inventory` VALUES ('4','زيت لحية','8.00','زجاجة','2.000','4.500','3.00','2026-02-19 01:09:52');
+INSERT INTO `inventory` VALUES ('5','مناشف','20.00','قطعة','0.500','0.000','5.00','2026-02-19 01:09:52');
+INSERT INTO `inventory` VALUES ('6','جل شعر','12.00','علبة','1.000','2.500','4.00','2026-02-19 01:09:52');
+
+SET FOREIGN_KEY_CHECKS = 1;

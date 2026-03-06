@@ -1,0 +1,11 @@
+# ملفات الإعداد التي تحتوي على بيانات حساسة
+config/db.php
+
+# ملفات مؤقتة وتشخيصية
+debug_hostinger.php
+test.php
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+*.log

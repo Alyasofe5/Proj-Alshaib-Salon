@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlash('error', 'لا يمكنك حذف حسابك الخاص');
         }
     }
-    header('Location: users.php');
+    header('Location: users');
     exit;
 }
 

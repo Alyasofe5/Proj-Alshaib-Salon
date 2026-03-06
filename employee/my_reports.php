@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 requireEmployee();
 
 if (isAdmin()) {
-    header('Location: ' . BASE_URL . '/admin/dashboard.php');
+    header('Location: ' . BASE_URL . '/admin/dashboard');
     exit;
 }
 

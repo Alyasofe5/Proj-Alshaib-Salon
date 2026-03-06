@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("DELETE FROM expenses WHERE id=?")->execute([(int) $_POST['id']]);
         setFlash('success', 'تم حذف المصروف');
     }
-    header('Location: expenses.php?month=' . ($_POST['month'] ?? date('Y-m')));
+    header('Location: expenses?month=' . ($_POST['month'] ?? date('Y-m')));
     exit;
 }
 

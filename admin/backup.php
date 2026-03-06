@@ -23,7 +23,7 @@ if (!file_exists($autoBackupFile)) {
 if (isset($_POST['action']) && $_POST['action'] === 'download_secure') {
     if ($_POST['password'] !== BACKUP_PASSWORD) {
         setFlash('error', '❌ كلمة المرور غير صحيحة');
-        header('Location: backup.php');
+        header('Location: backup');
         exit;
     }
     $file = basename($_POST['file'] ?? '');
@@ -52,7 +52,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'backup') {
         exit;
     }
     setFlash('success', '✅ تم إنشاء النسخة: ' . $filename);
-    header('Location: backup.php');
+    header('Location: backup');
     exit;
 }
 
@@ -64,7 +64,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'delete') {
         unlink($path);
         setFlash('success', 'تم الحذف');
     }
-    header('Location: backup.php');
+    header('Location: backup');
     exit;
 }
 

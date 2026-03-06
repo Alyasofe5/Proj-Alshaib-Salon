@@ -8,6 +8,10 @@
         <?= $pageTitle ?? 'AL SHAYEB' ?>
     </title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= BASE_URL ?>/favicon.svg">
+
     <!-- PWA Settings -->
     <link rel="manifest" href="<?= BASE_URL ?>/manifest.json">
     <meta name="theme-color" content="#C9A84C">

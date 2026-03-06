@@ -6,7 +6,7 @@ requireEmployee();
 
 // If admin, redirect to admin dashboard
 if (isAdmin()) {
-    header('Location: ' . BASE_URL . '/admin/dashboard.php');
+    header('Location: ' . BASE_URL . '/admin/dashboard');
     exit;
 }
 

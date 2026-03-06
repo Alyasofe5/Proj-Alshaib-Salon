@@ -27,40 +27,40 @@ $initials = mb_substr($userName, 0, 1, 'UTF-8');
 
     <nav class="sidebar-nav">
         <div class="nav-section-title">الرئيسية</div>
-        <a href="<?= BASE_URL ?>/admin/dashboard.php"
+        <a href="<?= BASE_URL ?>/admin/dashboard"
             class="nav-link-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-chart-pie"></i></span> لوحة التحكم
         </a>
 
         <div class="nav-section-title">الإدارة</div>
-        <a href="<?= BASE_URL ?>/admin/employees.php"
+        <a href="<?= BASE_URL ?>/admin/employees"
             class="nav-link-item <?= $currentPage === 'employees' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-users"></i></span> الموظفون
         </a>
-        <a href="<?= BASE_URL ?>/admin/services.php"
+        <a href="<?= BASE_URL ?>/admin/services"
             class="nav-link-item <?= $currentPage === 'services' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-scissors"></i></span> الخدمات
         </a>
-        <a href="<?= BASE_URL ?>/admin/expenses.php"
+        <a href="<?= BASE_URL ?>/admin/expenses"
             class="nav-link-item <?= $currentPage === 'expenses' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span> المصاريف
         </a>
 
         <div class="nav-section-title">التقارير</div>
-        <a href="<?= BASE_URL ?>/admin/reports.php"
+        <a href="<?= BASE_URL ?>/admin/reports"
             class="nav-link-item <?= $currentPage === 'reports' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-chart-bar"></i></span> التقارير الشاملة
         </a>
-        <a href="<?= BASE_URL ?>/admin/print_report.php"
+        <a href="<?= BASE_URL ?>/admin/print_report"
             class="nav-link-item <?= $currentPage === 'print_report' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-print"></i></span> طباعة التقارير
         </a>
 
         <div class="nav-section-title">الإعدادات</div>
-        <a href="<?= BASE_URL ?>/admin/users.php" class="nav-link-item <?= $currentPage === 'users' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/admin/users" class="nav-link-item <?= $currentPage === 'users' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-user-cog"></i></span> المستخدمون
         </a>
-        <a href="<?= BASE_URL ?>/admin/backup.php"
+        <a href="<?= BASE_URL ?>/admin/backup"
             class="nav-link-item <?= $currentPage === 'backup' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-database"></i></span> النسخ الاحتياطي
         </a>
@@ -74,7 +74,7 @@ $initials = mb_substr($userName, 0, 1, 'UTF-8');
                 <div class="user-role"><i class="fas fa-crown me-1"></i>مدير النظام</div>
             </div>
         </div>
-        <a href="<?= BASE_URL ?>/auth/logout.php" class="btn-logout">
+        <a href="<?= BASE_URL ?>/auth/logout" class="btn-logout">
             <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
         </a>
     </div>

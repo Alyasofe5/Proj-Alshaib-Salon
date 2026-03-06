@@ -5,9 +5,9 @@ require_once __DIR__ . '/../config/session.php';
 // إذا كان مسجل دخول، وجهه للوحة المناسبة
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
-        header('Location: ' . BASE_URL . '/admin/dashboard.php');
+        header('Location: ' . BASE_URL . '/admin/dashboard');
     } else {
-        header('Location: ' . BASE_URL . '/employee/dashboard.php');
+        header('Location: ' . BASE_URL . '/employee/dashboard');
     }
     exit;
 }
@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['employee_id'] = $user['employee_id'];
 
             if ($user['role'] === 'admin') {
-                header('Location: ' . BASE_URL . '/admin/dashboard.php');
+                header('Location: ' . BASE_URL . '/admin/dashboard');
             } else {
-                header('Location: ' . BASE_URL . '/employee/dashboard.php');
+                header('Location: ' . BASE_URL . '/employee/dashboard');
             }
             exit;
         } else {
@@ -51,6 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>تسجيل الدخول - AL SHAYEB</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg">
 
     <!-- PWA Settings -->
     <link rel="manifest" href="<?= BASE_URL ?>/manifest.json">

@@ -12,8 +12,8 @@
 // إعدادات Hostinger
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'u778871816_alshaib');
-define('DB_USER', 'u778871816_alshaib');
-define('DB_PASS', 'YOUR_PASSWORD_HERE'); // ← ضع كلمة مرور DB هنا
+define('DB_USER', 'u778871816_admin');
+define('DB_PASS', 'Salon2026!pass'); // ← ضع كلمة مرور DB هنا
 define('DB_CHARSET', 'utf8mb4');
 
 // تحديد المسار الأساسي للمشروع تلقائياً
@@ -33,6 +33,9 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+
+    // إصلاح تعارض الترميز (Collation) بين الاتصال والجداول
+    $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci");
 
     // مزامنة timezone بين PHP وMySQL (اختياري -- بعض الاستضافات لا تدعمها)
     try {

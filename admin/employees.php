@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-    header('Location: employees.php');
+    header('Location: employees');
     exit;
 }
 

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 requireEmployee();
 
 if (isAdmin()) {
-    header('Location: ' . BASE_URL . '/admin/dashboard.php');
+    header('Location: ' . BASE_URL . '/admin/dashboard');
     exit;
 }
 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 setFlash('success', "✅ تم تسجيل الزبون بنجاح! المبلغ: " . formatAmount($total));
-                header('Location: ' . BASE_URL . '/employee/dashboard.php');
+                header('Location: ' . BASE_URL . '/employee/dashboard');
                 exit;
             }
         } catch (PDOException $e) {

@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-    header('Location: services.php');
+    header('Location: services');
     exit;
 }
 

@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 function requireLogin()
 {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: ' . BASE_URL . '/auth/login.php');
+        header('Location: ' . BASE_URL . '/auth/login');
         exit;
     }
 }
@@ -21,7 +21,7 @@ function requireAdmin()
 {
     requireLogin();
     if ($_SESSION['role'] !== 'admin') {
-        header('Location: ' . BASE_URL . '/employee/dashboard.php');
+        header('Location: ' . BASE_URL . '/employee/dashboard');
         exit;
     }
 }

@@ -27,29 +27,29 @@ $initials = mb_substr($userName, 0, 1, 'UTF-8');
 
     <nav class="sidebar-nav">
         <div class="nav-section-title">الرئيسية</div>
-        <a href="<?= BASE_URL ?>/employee/dashboard.php"
+        <a href="<?= BASE_URL ?>/employee/dashboard"
             class="nav-link-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-home"></i></span> لوحتي
         </a>
-        <a href="<?= BASE_URL ?>/employee/new_customer.php"
+        <a href="<?= BASE_URL ?>/employee/new_customer"
             class="nav-link-item <?= $currentPage === 'new_customer' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-plus-circle"></i></span> تسجيل زبون
         </a>
 
         <div class="nav-section-title">تقاريري</div>
-        <a href="<?= BASE_URL ?>/employee/my_reports.php?period=daily"
+        <a href="<?= BASE_URL ?>/employee/my_reports?period=daily"
             class="nav-link-item <?= ($currentPage === 'my_reports' && ($_GET['period'] ?? '') === 'daily') ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-calendar-day"></i></span> تقرير اليوم
         </a>
-        <a href="<?= BASE_URL ?>/employee/my_reports.php?period=monthly"
+        <a href="<?= BASE_URL ?>/employee/my_reports?period=monthly"
             class="nav-link-item <?= ($currentPage === 'my_reports' && ($_GET['period'] ?? '') === 'monthly') ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span> تقرير الشهر
         </a>
-        <a href="<?= BASE_URL ?>/employee/my_reports.php?period=yearly"
+        <a href="<?= BASE_URL ?>/employee/my_reports?period=yearly"
             class="nav-link-item <?= ($currentPage === 'my_reports' && ($_GET['period'] ?? '') === 'yearly') ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-calendar"></i></span> تقرير السنة
         </a>
-        <a href="<?= BASE_URL ?>/employee/print_my_report.php"
+        <a href="<?= BASE_URL ?>/employee/print_my_report"
             class="nav-link-item <?= $currentPage === 'print_my_report' ? 'active' : '' ?>">
             <span class="nav-icon"><i class="fas fa-print"></i></span> طباعة تقريري
         </a>
@@ -63,7 +63,7 @@ $initials = mb_substr($userName, 0, 1, 'UTF-8');
                 <div class="user-role"><i class="fas fa-cut me-1"></i>حلاق</div>
             </div>
         </div>
-        <a href="<?= BASE_URL ?>/auth/logout.php" class="btn-logout">
+        <a href="<?= BASE_URL ?>/auth/logout" class="btn-logout">
             <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
         </a>
     </div>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave } from "react-icons/fa";
+import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -28,10 +28,15 @@ interface SalonSettings {
     owner_phone: string;
     booking_message: string;
     hero_image: string | null;
+    work_start: string;
+    work_end: string;
+    work_interval: number;
+    off_days: number[];
+    booking_days: number;
 }
 
 export default function BookingSettingsPage() {
-    const { user } = useAuthStore();
+    const { user, salon, setSalon } = useAuthStore();
     const router = useRouter();
     const [services, setServices] = useState<ServiceItem[]>([]);
     const [settings, setSettings] = useState<SalonSettings | null>(null);
@@ -40,6 +45,11 @@ export default function BookingSettingsPage() {
     const [saved, setSaved] = useState(false);
     const [heroUploading, setHeroUploading] = useState(false);
     const heroInputRef = useRef<HTMLInputElement>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [logoUploading, setLogoUploading] = useState(false);
+    const [logoSaved, setLogoSaved] = useState(false);
+    const [currentLogo, setCurrentLogo] = useState<string | null>(null);
+    const [copiedLink, setCopiedLink] = useState(false);
 
     // Service editing
     const [editingService, setEditingService] = useState<number | null>(null);
@@ -61,6 +71,11 @@ export default function BookingSettingsPage() {
         loadData();
     }, []);
 
+    // Set current logo from store on mount
+    useEffect(() => {
+        if (salon?.logo) setCurrentLogo(salon.logo);
+    }, [salon]);
+
     const loadData = async () => {
         try {
             const [servRes, settRes] = await Promise.all([
@@ -70,8 +85,39 @@ export default function BookingSettingsPage() {
                 }),
             ]);
             setServices(servRes.data.data || []);
-            setSettings(settRes.data.data || null);
+            const settData = settRes.data.data || null;
+            setSettings(settData);
+            if (settData?.logo) setCurrentLogo(settData.logo);
         } catch (e) { console.error(e); }
+    };
+
+    const handleLogoUpload = async (file: File) => {
+        setLogoUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("logo", file);
+            const res = await axios.post(`${API_BASE}/salon/logo.php`, formData, {
+                headers: {
+                    Authorization: `Bearer ${Cookies.get("token")}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            if (res.data.success && res.data.data?.logo) {
+                const newLogoPath = res.data.data.logo;
+                const protocol = window.location.protocol;
+                const host = window.location.host;
+                // For production, the API returns a relative path
+                const fullLogoUrl = newLogoPath.startsWith("http") ? newLogoPath : `${protocol}//${host}/${newLogoPath}`;
+                setCurrentLogo(fullLogoUrl);
+                // Update the zustand store so that the sidebar updates immediately
+                if (salon) {
+                    setSalon({ ...salon, logo: fullLogoUrl });
+                }
+                setLogoSaved(true);
+                setTimeout(() => setLogoSaved(false), 2500);
+            }
+        } catch (e) { console.error(e); }
+        finally { setLogoUploading(false); }
     };
 
     const handleImageUpload = async (serviceId: number, file: File) => {
@@ -211,8 +257,108 @@ export default function BookingSettingsPage() {
 
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8 md:space-y-10">
 
-                {/* ══════ Section: Salon Info ══════ */}
+                {/* ══════ Section: Booking Link ══════ */}
+                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                            <FaExternalLinkAlt size={13} />
+                        </div>
+                        <h2 className="text-xl font-bold">رابط الحجز للزبائن</h2>
+                    </div>
+                    <div className="rounded-2xl p-5 md:p-6" style={{ background: "linear-gradient(135deg, rgba(200,169,110,.08) 0%, rgba(200,169,110,.02) 100%)", border: "1px solid rgba(200,169,110,.2)" }}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(200,169,110,.15)" }}>
+                                    <FaExternalLinkAlt size={14} color={gold} />
+                                </div>
+                                <div>
+                                    <p className="text-white font-bold text-sm">رابط الحجز</p>
+                                    <p className="text-gray-500 text-xs mt-0.5 font-mono" dir="ltr">{baseUrl}/book/?s={settings.slug}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => {
+                                    navigator.clipboard.writeText(`${baseUrl}/book/?s=${settings.slug}`);
+                                    setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
+                                }}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-[#c8a96e]/15 text-[#c8a96e] hover:bg-[#c8a96e]/25"}`}
+                                >
+                                    {copiedLink ? "✅ تم النسخ" : "📋 نسخ الرابط"}
+                                </button>
+                                <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`احجز موعدك الآن في ${settings.name}! 💇‍♂️\n\n${baseUrl}/book/?s=${settings.slug}`)}`, "_blank")}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
+                                >
+                                    مشاركة 💬
+                                </button>
+                                <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                >
+                                    <FaExternalLinkAlt size={10} />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* ══════ Section: Salon Logo ══════ */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                            <FaImage size={14} />
+                        </div>
+                        <h2 className="text-xl font-bold">لوجو الصالون</h2>
+                    </div>
+                    <div className="rounded-2xl p-6" style={{ background: "#111", border: "1px solid rgba(255,255,255,.06)" }}>
+                        <div className="flex items-center gap-6">
+                            {/* Logo Preview */}
+                            <div className="relative group cursor-pointer flex-shrink-0" onClick={() => logoInputRef.current?.click()}>
+                                <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden flex items-center justify-center transition-all"
+                                    style={{ background: "#0a0a0a", border: `2px solid ${currentLogo ? `${gold}40` : "rgba(255,255,255,.08)"}` }}>
+                                    {currentLogo ? (
+                                        <img src={currentLogo.startsWith("http") ? currentLogo : `/${currentLogo}`} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                                    ) : (
+                                        <div className="text-center">
+                                            <span className="text-3xl font-black" style={{ color: gold }}>{settings.name?.charAt(0) || "?"}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Overlay */}
+                                <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
+                                    {logoUploading ? (
+                                        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                                    ) : (
+                                        <FaCamera className="text-white" size={18} />
+                                    )}
+                                </div>
+                                {/* Success badge */}
+                                <AnimatePresence>
+                                    {logoSaved && (
+                                        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
+                                            className="absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500 text-white shadow-lg">
+                                            <FaCheck size={10} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                                <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
+                                    onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
+                            </div>
+                            {/* Logo Info */}
+                            <div className="flex-1">
+                                <p className="text-sm font-bold text-white mb-1">شعار الصالون</p>
+                                <p className="text-xs text-white/30 mb-3 leading-relaxed">يظهر في صفحة الحجز والسايدبار. يُفضل صورة مربعة بدقة عالية (512×512 أو أكبر)</p>
+                                <button onClick={() => logoInputRef.current?.click()} disabled={logoUploading}
+                                    className="flex items-center gap-2 h-9 px-5 rounded-xl text-xs font-bold transition-all hover:scale-105 disabled:opacity-50"
+                                    style={{ background: `${gold}15`, color: gold, border: `1px solid ${gold}30` }}>
+                                    <FaCamera size={10} />
+                                    {logoUploading ? "جاري الرفع..." : logoSaved ? "✓ تم الرفع" : "تغيير اللوجو"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* ══════ Section: Salon Info ══════ */}
+                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -238,8 +384,80 @@ export default function BookingSettingsPage() {
                     </div>
                 </motion.section>
 
-                {/* ══════ Section: Hero Image ══════ */}
+                {/* ══════ Section: Work Hours & Off Days ══════ */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        </div>
+                        <h2 className="text-xl font-bold">ساعات العمل والإجازات</h2>
+                    </div>
+                    <div className="rounded-2xl p-6 space-y-6" style={{ background: "#111", border: "1px solid rgba(255,255,255,.06)" }}>
+                        {/* Work Hours */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <TimePicker12 label="بداية الدوام" value={settings.work_start} onChange={(v: string) => setSettings({ ...settings, work_start: v })} gold={gold} />
+                            <TimePicker12 label="نهاية الدوام" value={settings.work_end} onChange={(v: string) => setSettings({ ...settings, work_end: v })} gold={gold} />
+                            <div>
+                                <label className="text-xs font-bold text-white/30 mb-2 block uppercase tracking-wider">الفاصل الزمني (دقيقة)</label>
+                                <select value={settings.work_interval} onChange={e => setSettings({ ...settings, work_interval: Number(e.target.value) })}
+                                    className="w-full py-3 px-4 rounded-xl bg-[#0a0a0a] text-white outline-none text-sm transition-all cursor-pointer appearance-none"
+                                    style={{ border: "1.5px solid rgba(255,255,255,.06)" }}>
+                                    <option value={15}>15 دقيقة</option>
+                                    <option value={20}>20 دقيقة</option>
+                                    <option value={30}>30 دقيقة</option>
+                                    <option value={45}>45 دقيقة</option>
+                                    <option value={60}>60 دقيقة</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Booking Days */}
+                        <div>
+                            <label className="text-xs font-bold text-white/30 mb-2 block uppercase tracking-wider">عدد أيام الحجز المتاحة</label>
+                            <div className="flex items-center gap-4">
+                                <select value={settings.booking_days} onChange={e => setSettings({ ...settings, booking_days: Number(e.target.value) })}
+                                    className="w-40 py-3 px-4 rounded-xl bg-[#0a0a0a] text-white outline-none text-sm transition-all cursor-pointer appearance-none"
+                                    style={{ border: "1.5px solid rgba(255,255,255,.06)" }}>
+                                    {[3, 4, 5, 6, 7, 10, 14, 21, 30].map(n => (
+                                        <option key={n} value={n}>{n} أيام</option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-white/20">عدد الأيام اللي تظهر بصفحة الحجز (بدون أيام الإجازة)</p>
+                            </div>
+                        </div>
+
+                        {/* Off Days */}
+                        <div>
+                            <label className="text-xs font-bold text-white/30 mb-3 block uppercase tracking-wider">أيام الإجازة</label>
+                            <div className="flex flex-wrap gap-2">
+                                {["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"].map((dayName, dayIndex) => {
+                                    const isOff = settings.off_days.includes(dayIndex);
+                                    return (
+                                        <button key={dayIndex}
+                                            onClick={() => {
+                                                const newDays = isOff
+                                                    ? settings.off_days.filter(d => d !== dayIndex)
+                                                    : [...settings.off_days, dayIndex];
+                                                setSettings({ ...settings, off_days: newDays });
+                                            }}
+                                            className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105"
+                                            style={{
+                                                background: isOff ? "rgba(231,76,60,.15)" : "#0a0a0a",
+                                                color: isOff ? "#e74c3c" : "#888",
+                                                border: `1.5px solid ${isOff ? "rgba(231,76,60,.3)" : "rgba(255,255,255,.06)"}`,
+                                            }}>
+                                            {isOff ? "🚫 " : ""}{dayName}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-xs text-white/20 mt-2">اضغط على اليوم لإضافته/إزالته من أيام الإجازة</p>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* ══════ Section: Hero Image ══════ */}
+                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
@@ -269,7 +487,7 @@ export default function BookingSettingsPage() {
                 </motion.section>
 
                 {/* ══════ Section: Services Management ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
@@ -475,6 +693,54 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                         </button>
                     </>
                 )}
+            </div>
+        </div>
+    );
+}
+
+/* ═══════ 12-Hour Time Picker Component ═══════ */
+function TimePicker12({ label, value, onChange, gold }: {
+    label: string; value: string; onChange: (v: string) => void; gold: string;
+}) {
+    // Parse 24h value (HH:MM) → 12h parts
+    const [h24, m] = (value || "09:00").split(":").map(Number);
+    const period = h24 >= 12 ? "م" : "ص";
+    const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+
+    const update = (newH12: number, newM: number, newPeriod: string) => {
+        let h = newH12;
+        if (newPeriod === "م" && h !== 12) h += 12;
+        if (newPeriod === "ص" && h === 12) h = 0;
+        onChange(`${String(h).padStart(2, "0")}:${String(newM).padStart(2, "0")}`);
+    };
+
+    const selectStyle = { background: "#0a0a0a", border: "1.5px solid rgba(255,255,255,.06)" };
+
+    return (
+        <div>
+            <label className="text-xs font-bold text-white/30 mb-2 block uppercase tracking-wider">{label}</label>
+            <div className="flex gap-2" dir="ltr">
+                <select value={h12} onChange={e => update(Number(e.target.value), m, period)}
+                    className="flex-1 py-3 px-2 rounded-xl text-white outline-none text-sm text-center transition-all cursor-pointer appearance-none"
+                    style={selectStyle}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                        <option key={h} value={h}>{h}</option>
+                    ))}
+                </select>
+                <span className="flex items-center text-white/20 text-lg font-bold">:</span>
+                <select value={m} onChange={e => update(h12, Number(e.target.value), period)}
+                    className="flex-1 py-3 px-2 rounded-xl text-white outline-none text-sm text-center transition-all cursor-pointer appearance-none"
+                    style={selectStyle}>
+                    {[0, 15, 30, 45].map(min => (
+                        <option key={min} value={min}>{String(min).padStart(2, "0")}</option>
+                    ))}
+                </select>
+                <select value={period} onChange={e => update(h12, m, e.target.value)}
+                    className="w-16 py-3 px-1 rounded-xl text-white outline-none text-sm text-center transition-all cursor-pointer appearance-none font-bold"
+                    style={{ ...selectStyle, color: gold }}>
+                    <option value="ص">ص</option>
+                    <option value="م">م</option>
+                </select>
             </div>
         </div>
     );

@@ -358,7 +358,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: "مجاني", price: "0", period: "للأبد", pop: false, features: ["حتى 2 موظف", "50 حجز/شهر", "تقارير أساسية", "رابط حجز مخصص"] },
+              { name: "مجاني", price: "0", period: "/شهر", pop: false, features: ["حتى 2 موظف", "50 حجز/شهر", "تقارير أساسية", "رابط حجز مخصص"] },
               { name: "احترافي", price: "15", period: "شهرياً", pop: true, features: ["موظفين غير محدود", "حجوزات غير محدودة", "تقارير متقدمة", "إشعارات واتساب", "دعم فني أولوية", "تخصيص كامل"] },
               { name: "مؤسسات", price: "35", period: "شهرياً", pop: false, features: ["فروع متعددة", "كل مميزات الاحترافي", "API مخصص", "مدير حساب خاص", "تدريب الفريق"] },
             ].map((p, i) => (
@@ -388,7 +388,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/login" className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.03] ${p.pop ? "text-[#0a0a0a]" : "text-white border border-white/10 hover:border-[#c8a96e]/30"}`} style={p.pop ? { background: "linear-gradient(135deg, #c8a96e, #e8c96a)" } : {}}>
+                <Link href="/contact" className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.03] ${p.pop ? "text-[#0a0a0a]" : "text-white border border-white/10 hover:border-[#c8a96e]/30"}`} style={p.pop ? { background: "linear-gradient(135deg, #c8a96e, #e8c96a)" } : {}}>
                   {p.price === "0" ? "ابدأ مجاناً" : "اشترك الآن"}
                 </Link>
               </motion.div>
@@ -469,7 +469,6 @@ export default function LandingPage() {
                 <a href="https://wr-technologies.net/" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 opacity-40 hover:opacity-70 transition-opacity"
                   style={{ color: "#c8a96e" }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
                   WR Technologies
                 </a>
               </div>

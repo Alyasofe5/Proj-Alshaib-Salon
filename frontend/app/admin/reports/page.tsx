@@ -115,9 +115,9 @@ export default function ReportsPage() {
                                 <table>
                                     <thead><tr><th>#</th><th>الموظف</th><th>المبلغ</th><th>الدفع</th><th>الوقت</th></tr></thead>
                                     <tbody>
-                                        {((data as { transactions: Array<{ id: number; emp_name: string; total_amount: number; payment_method: string; created_at: string }> }).transactions || []).map(tx => (
+                                        {((data as { transactions: Array<{ id: number; emp_name: string; total_amount: number; payment_method: string; created_at: string }> }).transactions || []).map((tx, i) => (
                                             <tr key={tx.id}>
-                                                <td className="text-gray-600">#{tx.id}</td>
+                                                <td className="text-gray-600">#{i + 1}</td>
                                                 <td>{tx.emp_name}</td>
                                                 <td className="text-gold font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
                                                 <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
@@ -180,6 +180,28 @@ export default function ReportsPage() {
                                 </table>
                             </div>
                         </div>
+                        {/* Monthly Transactions Table */}
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="custom-table mt-4">
+                            <div className="p-4 border-b border-white/5 flex items-center gap-2">
+                                <Receipt size={14} color="var(--gold)" />
+                                <span className="text-gray-300 font-bold">تفاصيل العمليات</span>
+                            </div>
+                            <table>
+                                <thead><tr><th>#</th><th>الموظف</th><th>المبلغ</th><th>الدفع</th><th>التاريخ</th></tr></thead>
+                                <tbody>
+                                    {((data as { transactions: Array<{ id: number; emp_name: string; total_amount: number; payment_method: string; created_at: string }> }).transactions || []).map((tx, i) => (
+                                        <tr key={tx.id}>
+                                            <td className="text-gray-600">#{i + 1}</td>
+                                            <td>{tx.emp_name}</td>
+                                            <td className="text-gold font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
+                                            <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
+                                            <td className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })} {new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
+                                        </tr>
+                                    ))}
+                                    {((data as { transactions: unknown[] }).transactions || []).length === 0 && <tr><td colSpan={5} className="text-center text-gray-600 py-6">لا توجد عمليات</td></tr>}
+                                </tbody>
+                            </table>
+                        </motion.div>
                     </>
                 )}
 

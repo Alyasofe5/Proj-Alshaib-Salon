@@ -20,9 +20,9 @@ if (getMethod() !== 'GET') sendError('Method not allowed', 405);
 $date = $_GET['date'] ?? date('Y-m-d');
 
 $stmt = $pdo->prepare("
-    SELECT t.*, e.name as emp_name, e.commission_rate, e.salary_type
-    FROM transactions t JOIN employees e ON t.employee_id = e.id
-    WHERE t.salon_id = ? AND DATE(t.created_at) = ? ORDER BY t.created_at DESC
+    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name, COALESCE(e.commission_rate, 0) as commission_rate, COALESCE(e.salary_type, 'fixed') as salary_type
+    FROM transactions t LEFT JOIN employees e ON t.employee_id = e.id
+    WHERE t.salon_id = ? AND DATE(t.created_at) = ? ORDER BY t.created_at ASC
 ");
 $stmt->execute([$salonId, $date]);
 $transactions = $stmt->fetchAll();

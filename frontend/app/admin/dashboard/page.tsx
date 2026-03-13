@@ -13,10 +13,6 @@ import {
     Receipt,
     Trophy,
     CalendarDays,
-    Link2,
-    Copy,
-    Check,
-    Share2,
     ChevronLeft,
     Palette,
     BarChart3,
@@ -37,7 +33,6 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-import { FaWhatsapp } from "react-icons/fa";
 
 interface DashboardData {
     today: { customers: number; income: number };
@@ -64,17 +59,8 @@ interface DashboardData {
 export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [copied, setCopied] = useState(false);
     const [warnDismissed, setWarnDismissed] = useState(false);
     const { salon } = useAuthStore();
-
-    const bookingLink = salon?.slug ? `${window.location.origin}/book/?s=${salon.slug}` : "";
-
-    const copyLink = () => {
-        navigator.clipboard.writeText(bookingLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     useEffect(() => {
         dashboardAPI
@@ -167,43 +153,8 @@ export default function DashboardPage() {
                         })}
                     </div>
                 </div>
-
-                {/* Logo Upload */}
-                <div className="flex items-center gap-3">
-                    <label className="cursor-pointer group flex items-center gap-2" title="تغيير اللوجو">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center border border-gray-700 group-hover:border-[#c8a96e] transition-all">
-                            {salon?.logo ? (
-                                <img src={salon.logo.startsWith("http") ? salon.logo : `${window.location.origin}/${salon.logo}`} alt="logo" className="w-full h-full object-cover"
-                                    onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.innerHTML = `<span class="text-sm font-bold" style="color:#c8a96e">${salon?.name?.charAt(0) || "?"}</span>`; }} />
-                            ) : (
-                                <span className="text-sm font-bold text-[#c8a96e]">{salon?.name?.charAt(0) || "?"}</span>
-                            )}
-                        </div>
-                        <span className="text-xs text-gray-500 group-hover:text-[#c8a96e] transition-colors hidden md:block">تغيير اللوجو</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const formData = new FormData();
-                            formData.append("logo", file);
-                            try {
-                                const token = document.cookie.split("token=")[1]?.split(";")[0];
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/salon/logo.php`, {
-                                    method: "POST",
-                                    headers: { Authorization: `Bearer ${token}` },
-                                    body: formData,
-                                });
-                                const json = await res.json();
-                                if (json.success) {
-                                    alert("✅ تم رفع اللوجو بنجاح!");
-                                    window.location.reload();
-                                } else {
-                                    alert(json.message || "خطأ");
-                                }
-                            } catch { alert("حدث خطأ في الرفع"); }
-                        }} />
-                    </label>
-                </div>
             </div>
+
 
             <div className="content-area">
                 {/* ===== Stat Cards ===== */}
@@ -236,46 +187,7 @@ export default function DashboardPage() {
                     />
                 </div>
 
-                {/* ===== Booking Link Card ===== */}
-                {bookingLink && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="chart-card mb-6"
-                        style={{ background: "linear-gradient(135deg, rgba(200,169,110,.08) 0%, rgba(200,169,110,.02) 100%)", border: "1px solid rgba(200,169,110,.2)" }}
-                    >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(200,169,110,.15)" }}>
-                                    <Link2 size={18} color="#c8a96e" />
-                                </div>
-                                <div>
-                                    <p className="text-white font-bold text-sm">رابط الحجز للزبائن</p>
-                                    <p className="text-gray-500 text-xs mt-0.5 font-mono" dir="ltr">{bookingLink}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button onClick={copyLink}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copied ? "bg-emerald-500/20 text-emerald-400" : "bg-[#c8a96e]/15 text-[#c8a96e] hover:bg-[#c8a96e]/25"}`}
-                                >
-                                    {copied ? <Check size={12} /> : <Copy size={12} />}
-                                    {copied ? "تم النسخ" : "نسخ الرابط"}
-                                </button>
-                                <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`احجز موعدك الآن في ${salon?.name}! 💇‍♂️\n\n${bookingLink}`)}`, "_blank")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
-                                >
-                                    <FaWhatsapp size={14} /> مشاركة
-                                </button>
-                                <button onClick={() => { if (navigator.share) navigator.share({ title: `حجز موعد - ${salon?.name}`, url: bookingLink }); else copyLink(); }}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-                                >
-                                    <Share2 size={12} />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
+
 
                 {/* ===== Booking Settings Card ===== */}
                 <motion.div
@@ -469,9 +381,9 @@ export default function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.last_transactions.map((tx) => (
+                                {data.last_transactions.map((tx, i) => (
                                     <tr key={tx.id}>
-                                        <td className="text-gray-600">#{tx.id}</td>
+                                        <td className="text-gray-600">#{i + 1}</td>
                                         <td>{tx.emp_name}</td>
                                         <td className="text-gold font-bold">
                                             {Number(tx.total_amount).toFixed(3)} د.أ

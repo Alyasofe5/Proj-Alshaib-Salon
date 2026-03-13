@@ -44,9 +44,9 @@ $netProfit = (float) ($monthStats['total'] ?? 0) - $monthExpenses;
 
 // ===== أفضل موظف اليوم =====
 $stmt = $pdo->prepare("
-    SELECT e.name, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
+    SELECT COALESCE(e.name, 'محذوف') as name, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
     FROM transactions t
-    JOIN employees e ON t.employee_id = e.id
+    LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ? AND DATE(t.created_at) = CURDATE()
     GROUP BY t.employee_id
     ORDER BY total DESC LIMIT 1
@@ -80,9 +80,9 @@ for ($i = 6; $i >= 0; $i--) {
 
 // ===== آخر 5 عمليات =====
 $stmt = $pdo->prepare("
-    SELECT t.*, e.name as emp_name
+    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
     FROM transactions t
-    JOIN employees e ON t.employee_id = e.id
+    LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ?
     ORDER BY t.created_at DESC LIMIT 5
 ");

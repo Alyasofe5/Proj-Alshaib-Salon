@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -99,9 +99,9 @@ function ReportsContent() {
                         <table>
                             <thead><tr><th>#</th><th>الخدمات</th><th>الملاحظات</th><th>المبلغ</th><th>الدفع</th><th>الوقت</th></tr></thead>
                             <tbody>
-                                {data.transactions.map((tx: any) => (
+                                {data.transactions.map((tx: any, i: number) => (
                                     <tr key={tx.id}>
-                                        <td className="text-gray-600">#{tx.id}</td>
+                                        <td className="text-gray-600">#{i + 1}</td>
                                         <td className="text-gray-300">{tx.services || "—"}</td>
                                         <td className="text-gray-500 text-sm">{tx.notes || "—"}</td>
                                         <td className="text-gold font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>

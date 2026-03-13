@@ -55,7 +55,7 @@ if ($period === 'daily') {
         LEFT JOIN transaction_details td ON t.id = td.transaction_id
         LEFT JOIN services s ON td.service_id = s.id
         WHERE t.employee_id=? AND t.salon_id=? AND DATE(t.created_at)=?
-        GROUP BY t.id ORDER BY t.created_at DESC
+        GROUP BY t.id ORDER BY t.created_at ASC
     ");
     $stmt->execute([$empId, $salonId, $date]);
     $transactions = $stmt->fetchAll();
@@ -91,6 +91,18 @@ if ($period === 'monthly') {
         ];
     }
 
+    // عمليات الشهر
+    $stmt = $pdo->prepare("
+        SELECT t.*, GROUP_CONCAT(s.name SEPARATOR ', ') as services
+        FROM transactions t
+        LEFT JOIN transaction_details td ON t.id = td.transaction_id
+        LEFT JOIN services s ON td.service_id = s.id
+        WHERE t.employee_id=? AND t.salon_id=? AND DATE_FORMAT(t.created_at,'%Y-%m')=?
+        GROUP BY t.id ORDER BY t.created_at ASC
+    ");
+    $stmt->execute([$empId, $salonId, $month]);
+    $transactions = $stmt->fetchAll();
+
     sendSuccess([
         'employee' => $employee,
         'month' => $month,
@@ -100,6 +112,7 @@ if ($period === 'monthly') {
             'commission' => calcCommission($stats['total'], $employee['commission_rate']),
         ],
         'daily_breakdown' => $dailyBreakdown,
+        'transactions' => $transactions,
     ]);
 }
 

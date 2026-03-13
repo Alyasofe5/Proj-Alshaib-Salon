@@ -23,5 +23,6 @@ Header always set X-XSS-Protection "1; mode=block"
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/uploads/
     RewriteRule ^(.*)$ /index.html [L]
 </IfModule>

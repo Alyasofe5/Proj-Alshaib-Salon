@@ -121,4 +121,5 @@ sendSuccess([
     'employees' => $employees->fetchAll(),
     'work_hours' => $workHours,
     'off_days' => $settingsData['off_days'] ?? [],
+    'booking_days' => (int)($settingsData['booking_days'] ?? 7),
 ]);

@@ -63,6 +63,7 @@ if (getMethod() === 'GET') {
         'work_end' => $settings['work_end'] ?? '22:00',
         'work_interval' => $settings['work_interval'] ?? 30,
         'off_days' => $settings['off_days'] ?? [],
+        'booking_days' => $settings['booking_days'] ?? 7,
         'booking_message' => $settings['booking_message'] ?? '',
         'hero_image' => $heroImageUrl,
     ]);
@@ -92,6 +93,7 @@ if (getMethod() === 'PUT') {
             'work_end' => $data['work_end'] ?? '22:00',
             'work_interval' => (int)($data['work_interval'] ?? 30),
             'off_days' => $data['off_days'] ?? [],
+            'booking_days' => (int)($data['booking_days'] ?? 7),
             'booking_message' => trim($data['booking_message'] ?? ''),
             'hero_image' => $existingSettings['hero_image'] ?? '',
         ], JSON_UNESCAPED_UNICODE);

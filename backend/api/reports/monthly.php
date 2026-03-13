@@ -51,13 +51,26 @@ for ($d = 1; $d <= $daysInMonth; $d++) {
     $chartData[] = (float) ($stmt->fetchColumn() ?: 0);
 }
 
+// ===== عمليات الشهر =====
+$stmt = $pdo->prepare("
+    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
+    FROM transactions t
+    LEFT JOIN employees e ON t.employee_id = e.id
+    WHERE t.salon_id = ? AND DATE_FORMAT(t.created_at,'%Y-%m') = ?
+    ORDER BY t.created_at ASC
+");
+$stmt->execute([$salonId, $month]);
+$transactions = $stmt->fetchAll();
+
 sendSuccess([
     'month' => $month,
     'total_sales' => $totalSales,
+    'total_income' => $totalSales,
     'total_customers' => $totalCustomers,
     'total_expenses' => $totalExpenses,
     'net_profit' => $totalSales - $totalExpenses,
     'employee_stats' => $empStats,
+    'transactions' => $transactions,
     'chart' => [
         'labels' => $chartLabels,
         'data' => $chartData,

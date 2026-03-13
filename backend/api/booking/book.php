@@ -52,7 +52,9 @@ if ($method === 'POST') {
     // Validation
     if (empty($slug)) sendError('رابط الصالون مطلوب');
     if (empty($customerName)) sendError('الاسم مطلوب');
+    if (mb_strlen(trim($customerName)) < 3) sendError('الاسم يجب أن يكون 3 أحرف على الأقل');
     if (empty($customerPhone)) sendError('رقم الهاتف مطلوب');
+    if (!preg_match('/^07\d{8}$/', $customerPhone)) sendError('رقم الهاتف يجب أن يكون أردني بصيغة 07XXXXXXXX (10 أرقام)');
     if (empty($bookingDate)) sendError('التاريخ مطلوب');
     if (empty($bookingTime)) sendError('الوقت مطلوب');
 
@@ -74,11 +76,37 @@ if ($method === 'POST') {
         if ($check->fetch()) {
             sendError('هذا الموعد محجوز مسبقاً لهذا الموظف، يرجى اختيار وقت آخر');
         }
+    } else {
+        // إذا ما اختار حلاق — نتحقق إنه في على الأقل حلاق واحد متاح
+        $allEmployees = $pdo->prepare("SELECT id FROM employees WHERE salon_id = ? AND is_active = 1");
+        $allEmployees->execute([$salonId]);
+        $empIds = $allEmployees->fetchAll(PDO::FETCH_COLUMN);
+        
+        if (count($empIds) > 0) {
+            $placeholders = implode(',', array_fill(0, count($empIds), '?'));
+            $checkAll = $pdo->prepare("
+                SELECT employee_id FROM bookings 
+                WHERE salon_id = ? AND booking_date = ? AND booking_time = ? 
+                AND status IN ('pending','confirmed')
+                AND employee_id IN ($placeholders)
+            ");
+            $checkAll->execute(array_merge([$salonId, $bookingDate, $bookingTime], $empIds));
+            $bookedEmpIds = $checkAll->fetchAll(PDO::FETCH_COLUMN);
+            
+            if (count($bookedEmpIds) >= count($empIds)) {
+                sendError('جميع الحلاقين محجوزين في هذا الوقت، يرجى اختيار وقت آخر');
+            }
+        }
     }
 
     // التاريخ يجب أن يكون اليوم أو بعده
     if ($bookingDate < date('Y-m-d')) {
         sendError('لا يمكن الحجز في تاريخ سابق');
+    }
+
+    // لا يمكن حجز وقت فات اليوم
+    if ($bookingDate === date('Y-m-d') && $bookingTime < date('H:i')) {
+        sendError('هذا الوقت فات، يرجى اختيار وقت لاحق');
     }
 
     // إنشاء الحجز

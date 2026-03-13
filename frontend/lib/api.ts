@@ -122,3 +122,24 @@ export const usersAPI = {
         api.put(`/users/manage.php?id=${id}`, { action: "toggle" }),
     delete: (id: number) => api.delete(`/users/manage.php?id=${id}`),
 };
+
+// ===== Salon API =====
+export const salonAPI = {
+    getSettings: () => api.get("/salon/settings.php"),
+    updateSettings: (data: Record<string, unknown>) =>
+        api.put("/salon/settings.php", data),
+    uploadLogo: (file: File) => {
+        const formData = new FormData();
+        formData.append("logo", file);
+        return api.post("/salon/logo.php", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
+    uploadHeroImage: (file: File) => {
+        const formData = new FormData();
+        formData.append("hero_image", file);
+        return api.post("/salon/hero.php", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
+};

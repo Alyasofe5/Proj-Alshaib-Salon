@@ -12,8 +12,8 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed = [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://blanchedalmond-stingray-366103.hostingersite.com',
-    'https://red-cheetah-384990.hostingersite.com',
+    'https://maqas.site',
+    'https://www.maqas.site',
 ];
 
 if (in_array($origin, $allowed, true)) {

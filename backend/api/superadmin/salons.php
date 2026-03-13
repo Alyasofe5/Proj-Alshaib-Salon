@@ -145,8 +145,22 @@ if ($method === 'PATCH' && $id) {
     // تجديد الاشتراك عند التفعيل
     if ($newStatus === 'active' && !empty($data['duration_days'])) {
         $days = (int) $data['duration_days'];
-        $pdo->prepare("UPDATE salons SET subscription_starts_at=CURDATE(), subscription_expires_at=DATE_ADD(CURDATE(), INTERVAL ? DAY) WHERE id=?")
-            ->execute([$days, $id]);
+        
+        // إذا الاشتراك لسا ما انتهى، نمدد من تاريخ الانتهاء الحالي
+        $stmt = $pdo->prepare("SELECT subscription_expires_at FROM salons WHERE id = ?");
+        $stmt->execute([$id]);
+        $current = $stmt->fetch();
+        $currentExpiry = $current['subscription_expires_at'] ?? null;
+        
+        if ($currentExpiry && strtotime($currentExpiry) > time()) {
+            // مدد من تاريخ الانتهاء الحالي
+            $pdo->prepare("UPDATE salons SET subscription_expires_at = DATE_ADD(subscription_expires_at, INTERVAL ? DAY) WHERE id = ?")
+                ->execute([$days, $id]);
+        } else {
+            // ابدأ من اليوم
+            $pdo->prepare("UPDATE salons SET subscription_starts_at = CURDATE(), subscription_expires_at = DATE_ADD(CURDATE(), INTERVAL ? DAY) WHERE id = ?")
+                ->execute([$days, $id]);
+        }
     }
 
     // سجل

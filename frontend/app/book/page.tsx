@@ -38,6 +38,7 @@ function BookingContent() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [workHours, setWorkHours] = useState({ start: "09:00", end: "22:00", interval: 30 });
     const [offDays, setOffDays] = useState<number[]>([]);
+    const [bookingDays, setBookingDays] = useState(7);
     const [step, setStep] = useState(0);
     const [sel, setSel] = useState({ service_id: 0, employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
@@ -54,7 +55,7 @@ function BookingContent() {
                 const d = res.data.data;
                 setSalon(d.salon); setServices(d.services || []); setEmployees(d.employees || []);
                 setWorkHours(d.work_hours || { start: "09:00", end: "22:00", interval: 30 });
-                setOffDays(d.off_days || []); setStep(1);
+                setOffDays(d.off_days || []); setBookingDays(d.booking_days || 7); setStep(1);
             } catch { setNotFound(true); }
         })();
     }, [slug]);
@@ -78,15 +79,28 @@ function BookingContent() {
     const timeSlots: string[] = [];
     const [sH, sM] = workHours.start.split(":").map(Number);
     const [eH, eM] = workHours.end.split(":").map(Number);
-    for (let m = sH * 60 + (sM || 0); m < eH * 60 + (eM || 0); m += workHours.interval)
+    const startMin = sH * 60 + (sM || 0);
+    let endMin = eH * 60 + (eM || 0);
+    if (endMin <= startMin) endMin = 24 * 60; // منتصف الليل أو أقل من البداية = 24:00
+    for (let m = startMin; m < endMin; m += workHours.interval)
         timeSlots.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
 
-    const isBooked = (t: string) => bookedSlots.some(s => s.booking_time.startsWith(t) && (!sel.employee_id || s.employee_id === sel.employee_id));
+    const isBooked = (t: string) => {
+        const slotsAtTime = bookedSlots.filter(s => s.booking_time.startsWith(t));
+        if (slotsAtTime.length === 0) return false;
+        if (sel.employee_id) {
+            // حلاق محدد — محجوز إذا نفس الحلاق عنده حجز بهالوقت
+            return slotsAtTime.some(s => Number(s.employee_id) === sel.employee_id);
+        } else {
+            // أي حلاق — محجوز فقط إذا كل الحلاقين محجوزين بهالوقت
+            return employees.length > 0 && employees.every(emp => slotsAtTime.some(s => Number(s.employee_id) === emp.id));
+        }
+    };
     const selService = services.find(s => s.id === sel.service_id);
     const selEmployee = employees.find(e => e.id === sel.employee_id);
 
     const dates: string[] = [];
-    for (let i = 0; i < 21 && dates.length < 14; i++) {
+    for (let i = 0; i < 60 && dates.length < bookingDays; i++) {
         const d = new Date(); d.setDate(d.getDate() + i);
         if (!offDays.includes(d.getDay())) dates.push(d.toISOString().split("T")[0]);
     }
@@ -432,15 +446,15 @@ function BookingContent() {
                         <div className="max-w-6xl mx-auto px-6 md:px-10 pb-20 md:pb-32">
                             {(() => {
                                 const fallbackImages: Record<string, string> = {
-                                    'حلاقة': '/services/haircut.png',
-                                    'قص شعر فاشن': '/services/haircut.png',
-                                    'حلاقة أطفال': '/services/haircut.png',
-                                    'تشذيب لحية': '/services/beard.png',
-                                    'حلاقة + لحية': '/services/beard.png',
-                                    'تنظيف بشرة': '/services/facial.png',
-                                    'صبغة شعر': '/services/coloring.png',
+                                    'حلاقة': '/services/haircut.webp',
+                                    'قص شعر فاشن': '/services/haircut.webp',
+                                    'حلاقة أطفال': '/services/haircut.webp',
+                                    'تشذيب لحية': '/services/beard.webp',
+                                    'حلاقة + لحية': '/services/beard.webp',
+                                    'تنظيف بشرة': '/services/facial.webp',
+                                    'صبغة شعر': '/services/coloring.webp',
                                 };
-                                const defaultImg = '/services/haircut.png';
+                                const defaultImg = '/services/haircut.webp';
                                 return (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {services.map((s, i) => (
@@ -653,7 +667,7 @@ function BookingContent() {
                                     </div>
 
                                     <div className="max-w-2xl mx-auto">
-                                        <div className="flex gap-2.5 overflow-x-auto pb-6" style={{ scrollbarWidth: "none" }}>
+                                        <div className="flex gap-2.5 flex-wrap justify-center pb-6 px-1">
                                             {dates.map(d => (
                                                 <button key={d} onClick={() => { setSel({ ...sel, booking_date: d, booking_time: "" }); loadBooked(d); }}
                                                     className="flex-shrink-0 w-[76px] py-4 rounded-2xl text-center transition-all duration-300"
@@ -676,13 +690,17 @@ function BookingContent() {
                                                 <p className="text-xs text-white/30 mb-4 tracking-wider uppercase">الأوقات المتاحة</p>
                                                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                                                     {timeSlots.map(t => {
-                                                        const bk = isBooked(t); const s = sel.booking_time === t;
-                                                        return (<button key={t} onClick={() => !bk && setSel({ ...sel, booking_time: t })} disabled={bk}
+                                                        const bk = isBooked(t);
+                                                        const isPast = sel.booking_date === new Date().toISOString().split("T")[0] && t < new Date().toTimeString().slice(0, 5);
+                                                        const disabled = bk || isPast;
+                                                        const s = sel.booking_time === t;
+                                                        return (<button key={t} onClick={() => !disabled && setSel({ ...sel, booking_time: t })} disabled={disabled}
                                                             className="py-3 rounded-xl text-xs font-bold transition-all duration-300"
                                                             style={{
-                                                                background: s ? gold : "#0a0a0a", color: s ? "#000" : bk ? "#222" : "#888",
-                                                                border: `1px solid ${s ? gold : "rgba(255,255,255,.04)"}`, opacity: bk ? 0.25 : 1,
-                                                                cursor: bk ? "not-allowed" : "pointer", boxShadow: s ? `0 6px 20px ${gold}25` : "none"
+                                                                background: s ? gold : "#0a0a0a", color: s ? "#000" : disabled ? "#222" : "#888",
+                                                                border: `1px solid ${s ? gold : "rgba(255,255,255,.04)"}`, opacity: disabled ? 0.25 : 1,
+                                                                cursor: disabled ? "not-allowed" : "pointer", boxShadow: s ? `0 6px 20px ${gold}25` : "none",
+                                                                textDecoration: isPast ? "line-through" : "none",
                                                             }}>{fmt12(t)}</button>);
                                                     })}
                                                 </div>
@@ -725,18 +743,41 @@ function BookingContent() {
                                         {error && <div className="p-4 rounded-xl mb-5 text-sm text-red-400" style={{ background: "rgba(239,68,68,.05)", border: "1px solid rgba(239,68,68,.1)" }}>⚠️ {error}</div>}
 
                                         <div className="space-y-5">
-                                            {[{ l: "الاسم الكامل", k: "customer_name", p: "أدخل اسمك الكامل", d: "rtl" },
-                                            { l: "رقم الهاتف", k: "customer_phone", p: "07XXXXXXXX", d: "ltr" }].map(f => (
-                                                <div key={f.k}>
-                                                    <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">{f.l}</label>
-                                                    <input value={sel[f.k as keyof typeof sel]} onChange={e => setSel({ ...sel, [f.k]: e.target.value })}
-                                                        className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
-                                                        style={{ background: "#0a0a0a", border: "1.5px solid rgba(255,255,255,.06)", fontFamily: "'Tajawal',sans-serif" }}
-                                                        onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
-                                                        onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
-                                                        placeholder={f.p} dir={f.d} />
-                                                </div>
-                                            ))}
+                                            {/* الاسم الكامل */}
+                                            <div>
+                                                <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">الاسم الكامل <span style={{ color: "#e74c3c" }}>*</span></label>
+                                                <input value={sel.customer_name} onChange={e => setSel({ ...sel, customer_name: e.target.value })}
+                                                    className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
+                                                    style={{ background: "#0a0a0a", border: `1.5px solid ${sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
+                                                    onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
+                                                    onBlur={e => { e.currentTarget.style.borderColor = sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
+                                                    placeholder="أدخل اسمك الكامل" dir="rtl" />
+                                                {sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 && (
+                                                    <p className="text-xs mt-1.5" style={{ color: "#e74c3c" }}>الاسم يجب أن يكون 3 أحرف على الأقل</p>
+                                                )}
+                                            </div>
+
+                                            {/* رقم الهاتف — أردني فقط */}
+                                            <div>
+                                                <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">رقم الهاتف <span style={{ color: "#e74c3c" }}>*</span></label>
+                                                <input value={sel.customer_phone}
+                                                    onChange={e => {
+                                                        const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                                                        setSel({ ...sel, customer_phone: v });
+                                                    }}
+                                                    type="tel" inputMode="numeric" maxLength={10}
+                                                    className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
+                                                    style={{ background: "#0a0a0a", border: `1.5px solid ${sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
+                                                    onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
+                                                    onBlur={e => { e.currentTarget.style.borderColor = sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
+                                                    placeholder="07XXXXXXXX" dir="ltr" />
+                                                {sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) && (
+                                                    <p className="text-xs mt-1.5" style={{ color: "#e74c3c" }}>
+                                                        {!sel.customer_phone.startsWith("07") ? "الرقم يجب أن يبدأ بـ 07" : `الرقم يجب أن يكون 10 أرقام (${sel.customer_phone.length}/10)`}
+                                                    </p>
+                                                )}
+                                            </div>
+
                                             <div>
                                                 <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">ملاحظات (اختياري)</label>
                                                 <textarea value={sel.notes} onChange={e => setSel({ ...sel, notes: e.target.value })} rows={2}
@@ -750,7 +791,7 @@ function BookingContent() {
                                         <div className="flex gap-3 mt-10">
                                             <button onClick={() => setStep(4)} className="flex-1 py-4 rounded-full text-sm font-bold text-white/40 hover:text-white transition-all"
                                                 style={{ border: "1px solid rgba(255,255,255,.08)" }}>رجوع</button>
-                                            <button onClick={handleSubmit} disabled={submitting || !sel.customer_name || !sel.customer_phone}
+                                            <button onClick={handleSubmit} disabled={submitting || sel.customer_name.trim().length < 3 || !/^07\d{8}$/.test(sel.customer_phone)}
                                                 className="flex-1 py-4 rounded-full text-sm font-bold tracking-wider transition-all duration-300 disabled:opacity-20 hover:scale-[1.02]"
                                                 style={{ background: gold, color: "#000", boxShadow: `0 15px 50px ${gold}25` }}>
                                                 {submitting ? "جاري الحجز..." : "تأكيد الحجز"}
@@ -839,7 +880,6 @@ function BookingContent() {
                                 <a href="https://wr-technologies.net/" target="_blank" rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-[10px] opacity-30 hover:opacity-60 transition-opacity"
                                     style={{ color: "#c8a96e" }}>
-                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
                                     WR Technologies
                                 </a>
                                 <span className="text-white/10 text-[10px]">|</span>

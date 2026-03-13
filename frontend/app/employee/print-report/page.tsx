@@ -216,9 +216,46 @@ export default function PrintReportPage() {
 
             <style>{`
                 @media print {
-                    .no-print { display: none !important; }
-                    body { background: #fff !important; }
-                    div[style*="margin: 24px auto"] { margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+                    /* Hide everything except the report */
+                    .no-print,
+                    .sidebar,
+                    .sidebar-overlay,
+                    .bottom-nav,
+                    .topbar,
+                    nav,
+                    header,
+                    footer { display: none !important; }
+
+                    /* Reset the main content area */
+                    .main-content {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 100% !important;
+                    }
+
+                    /* Full page white background */
+                    html, body {
+                        background: #fff !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Report card takes full width */
+                    div[style*="margin: 24px auto"],
+                    div[style*="margin:24px auto"] {
+                        margin: 0 !important;
+                        max-width: 100% !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                    }
+
+                    /* Remove page margins */
+                    @page {
+                        margin: 8mm;
+                        size: A4 portrait;
+                    }
                 }
             `}</style>
         </div>

@@ -445,10 +445,35 @@ export default function AdminPrintReportPage() {
             {/* ===== Print Styles ===== */}
             <style>{`
                 @media print {
-                    .no-print { display: none !important; }
-                    .main-content { margin-right: 0 !important; padding: 0 !important; }
+                    /* Hide everything except the report */
+                    .no-print,
+                    .sidebar,
+                    .sidebar-overlay,
+                    .bottom-nav,
+                    .topbar,
+                    nav,
+                    header,
+                    footer { display: none !important; }
+
+                    /* Reset the main content area */
+                    .main-content {
+                        margin: 0 !important;
+                        margin-right: 0 !important;
+                        padding: 0 !important;
+                        width: 100% !important;
+                    }
+
                     .print-area { padding: 20px !important; }
-                    body { background: #fff !important; color: #111 !important; }
+
+                    /* Full page white background */
+                    html, body {
+                        background: #fff !important;
+                        color: #111 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                     
                     /* Override dark theme for print */
                     .stat-card {
@@ -473,6 +498,12 @@ export default function AdminPrintReportPage() {
                     .stat-value { color: #111 !important; }
                     .stat-label { color: #555 !important; }
                     .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+                    /* Remove page margins */
+                    @page {
+                        margin: 8mm;
+                        size: A4 portrait;
+                    }
                 }
             `}</style>
         </div>

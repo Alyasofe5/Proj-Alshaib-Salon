@@ -130,12 +130,20 @@ function SalonDetailsPopup({ salon, onClose, onStatusChange }: {
                         ) : (
                             <button onClick={() => onStatusChange(salon.id, "active", 30)}
                                 className="flex-1 py-2.5 sm:py-2 rounded-xl text-sm font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all">
-                                تفعيل (30 يوم)
+                                تفعيل (شهر)
                             </button>
                         )}
                         <button onClick={() => onStatusChange(salon.id, "active", 30)}
-                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-sm font-bold bg-[#C9A84C]/15 text-[#C9A84C] hover:bg-[#C9A84C]/25 transition-all">
-                            تجديد 30 يوم
+                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-[#C9A84C]/15 text-[#C9A84C] hover:bg-[#C9A84C]/25 transition-all">
+                            + شهر
+                        </button>
+                        <button onClick={() => onStatusChange(salon.id, "active", 180)}
+                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-all">
+                            + 6 أشهر
+                        </button>
+                        <button onClick={() => onStatusChange(salon.id, "active", 365)}
+                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-all">
+                            + سنة
                         </button>
                         {salon.owner_phone && (
                             <a href={`https://wa.me/${salon.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
@@ -153,7 +161,7 @@ function SalonDetailsPopup({ salon, onClose, onStatusChange }: {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function SuperAdminDashboard() {
     const router = useRouter();
-    const { user, logout } = useAuthStore();
+    const { user, logout, _hydrated, hydrate } = useAuthStore();
     const [stats, setStats] = useState<Stats | null>(null);
     const [salons, setSalons] = useState<Salon[]>([]);
     const [plans, setPlans] = useState<Plan[]>([]);
@@ -177,10 +185,16 @@ export default function SuperAdminDashboard() {
     });
     const [revLoading, setRevLoading] = useState(false);
 
+    // Hydrate auth store from cookies/localStorage on mount
     useEffect(() => {
+        if (!_hydrated) hydrate();
+    }, [_hydrated, hydrate]);
+
+    useEffect(() => {
+        if (!_hydrated) return; // Wait for hydration before checking auth
         if (user?.role !== "super_admin") { router.replace("/login"); return; }
         loadData();
-    }, [user]);
+    }, [_hydrated, user]);
 
     const loadData = async () => {
         try {
@@ -224,11 +238,14 @@ export default function SuperAdminDashboard() {
     };
 
     const handleStatusChange = async (salonId: number, status: string, days?: number) => {
-        if (!confirm(status === "suspended" ? "هل تريد إيقاف هذا الصالون؟" : "هل تريد تفعيل هذا الصالون؟")) return;
+        if (status === "suspended") {
+            if (!confirm("هل تريد إيقاف هذا الصالون؟")) return;
+        }
         try {
             await api.patch(`/superadmin/salons.php?id=${salonId}`, { status, duration_days: status === "active" ? (days ?? 30) : undefined });
             setSelectedSalon(null);
-            loadData();
+            await loadData();
+            alert(status === "active" ? "✅ تم التجديد بنجاح!" : "⚠️ تم إيقاف الصالون");
         } catch (err: unknown) {
             const e = err as { response?: { data?: { message?: string } } };
             alert(e.response?.data?.message || "حدث خطأ");
@@ -284,7 +301,7 @@ export default function SuperAdminDashboard() {
         return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.color}`}>{s.icon} {s.label}</span>;
     };
 
-    if (loading) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><div className="spinner" /></div>;
+    if (!_hydrated || loading) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><div className="spinner" /></div>;
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white" dir="rtl">
@@ -415,7 +432,9 @@ export default function SuperAdminDashboard() {
                                                             style={{ background: isUrgent ? "rgba(231,76,60,.15)" : "rgba(251,191,36,.12)", color: isUrgent ? "#e74c3c" : "#fbbf24" }}>
                                                             {d === 0 ? "ينتهي اليوم!" : `${d} ${d === 1 ? "يوم" : "أيام"}`}
                                                         </span>
-                                                        <button onClick={() => handleStatusChange(s.id, "active", 30)} className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all font-bold whitespace-nowrap">تجديد 30 يوم</button>
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 30)} className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all font-bold whitespace-nowrap">+ شهر</button>
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 180)} className="text-xs px-2.5 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-all font-bold whitespace-nowrap">+ 6 أشهر</button>
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 365)} className="text-xs px-2.5 py-1.5 rounded-lg bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-all font-bold whitespace-nowrap">+ سنة</button>
                                                         {s.owner_phone && <a href={`https://wa.me/${s.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs px-2.5 py-1.5 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all font-bold whitespace-nowrap">واتساب</a>}
                                                     </div>
                                                 </div>
@@ -718,7 +737,7 @@ export default function SuperAdminDashboard() {
                                         {plans.map((p) => <option key={p.id} value={p.id}>{p.name_ar} - {p.price} د.أ</option>)}
                                     </select>
                                 </div>
-                                <div><label className="text-sm text-gray-400 mb-1 block">مدة الاشتراك (يوم)</label><input type="number" value={newSalon.duration_days} onChange={(e) => setNewSalon({ ...newSalon, duration_days: Number(e.target.value) })} className="w-full bg-[#0a0a0a] border border-[#222] rounded-xl px-3 py-2.5 text-sm focus:border-[#C9A84C] outline-none" /></div>
+                                <div><label className="text-sm text-gray-400 mb-1 block">مدة الاشتراك</label><select value={newSalon.duration_days} onChange={(e) => setNewSalon({ ...newSalon, duration_days: Number(e.target.value) })} className="w-full bg-[#0a0a0a] border border-[#222] rounded-xl px-3 py-2.5 text-sm focus:border-[#C9A84C] outline-none"><option value={30}>شهر (30 يوم)</option><option value={180}>6 أشهر (180 يوم)</option><option value={365}>سنة (365 يوم)</option></select></div>
                             </div>
                             <div className="border-t border-[#222] pt-4">
                                 <p className="text-sm text-[#C9A84C] mb-3 flex items-center gap-2"><FaCogs /> حساب مدير الصالون</p>

@@ -20,9 +20,9 @@ if (!$id) sendError('معرف العملية مطلوب');
 // ===== GET: تفاصيل عملية =====
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
-        SELECT t.*, e.name as emp_name
+        SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
         FROM transactions t
-        JOIN employees e ON t.employee_id = e.id
+        LEFT JOIN employees e ON t.employee_id = e.id
         WHERE t.id = ? AND t.salon_id = ?
     ");
     $stmt->execute([$id, $salonId]);
@@ -31,9 +31,9 @@ if ($method === 'GET') {
     if (!$transaction) sendError('العملية غير موجودة', 404);
 
     $stmt = $pdo->prepare("
-        SELECT td.*, s.name as service_name
+        SELECT td.*, COALESCE(s.name, 'محذوفة') as service_name
         FROM transaction_details td
-        JOIN services s ON td.service_id = s.id
+        LEFT JOIN services s ON td.service_id = s.id
         WHERE td.transaction_id = ?
     ");
     $stmt->execute([$id]);

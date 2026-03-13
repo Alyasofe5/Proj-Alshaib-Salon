@@ -46,9 +46,9 @@ if ($method === 'GET') {
     $whereClause = 'WHERE ' . implode(' AND ', $where);
 
     $stmt = $pdo->prepare("
-        SELECT t.*, e.name as emp_name
+        SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
         FROM transactions t
-        JOIN employees e ON t.employee_id = e.id
+        LEFT JOIN employees e ON t.employee_id = e.id
         $whereClause
         ORDER BY t.created_at DESC
         LIMIT $limit

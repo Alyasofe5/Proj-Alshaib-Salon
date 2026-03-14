@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -468,7 +468,7 @@ export default function AdminPrintReportPage() {
                     /* Full page white background */
                     html, body {
                         background: #fff !important;
-                        color: #111 !important;
+                        color: #2D2D2D !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         -webkit-print-color-adjust: exact !important;
@@ -486,7 +486,7 @@ export default function AdminPrintReportPage() {
                         border: 1px solid #ddd !important;
                     }
                     .custom-table th {
-                        background: #C9A84C !important;
+                        background: #E6B31E !important;
                         color: #000 !important;
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
@@ -495,7 +495,7 @@ export default function AdminPrintReportPage() {
                         color: #333 !important;
                         border-bottom: 1px solid #eee !important;
                     }
-                    .stat-value { color: #111 !important; }
+                    .stat-value { color: #2D2D2D !important; }
                     .stat-label { color: #555 !important; }
                     .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 

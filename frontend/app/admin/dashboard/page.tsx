@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -194,21 +194,20 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="chart-card mb-6 cursor-pointer hover:border-[#c8a96e]/30 transition-all"
+                    className="chart-card mb-6 cursor-pointer hover:border-[var(--gold-light)] transition-all"
                     onClick={() => window.location.href = "/admin/booking-settings"}
-                    style={{ border: "1px solid rgba(255,255,255,.06)" }}
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(200,169,110,.15)" }}>
-                                <Palette size={18} color="#c8a96e" />
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(230,179,30,.15)" }}>
+                                <Palette size={18} color="#E6B31E" />
                             </div>
                             <div>
-                                <p className="text-white font-bold text-sm">تخصيص صفحة الحجز</p>
-                                <p className="text-gray-500 text-xs mt-0.5">تعديل معلومات الصالون، صور الخدمات، وصورة الخلفية</p>
+                                <p className="font-bold text-sm" style={{ color: "var(--text-main)" }}>تخصيص صفحة الحجز</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>تعديل معلومات الصالون، صور الخدمات، وصورة الخلفية</p>
                             </div>
                         </div>
-                        <ChevronLeft size={16} color="#c8a96e" />
+                        <ChevronLeft size={16} color="#E6B31E" />
                     </div>
                 </motion.div>
 
@@ -221,20 +220,21 @@ export default function DashboardPage() {
                         className="md:col-span-2 chart-card"
                     >
                         <div className="chart-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <BarChart3 size={16} color="#C9A84C" />
+                            <BarChart3 size={16} color="#E6B31E" />
                             مبيعات <span>آخر 7 أيام</span>
                         </div>
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                                 <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 12 }} />
                                 <YAxis tick={{ fill: "#888", fontSize: 12 }} />
                                 <Tooltip
                                     contentStyle={{
-                                        background: "#1a1a1a",
-                                        border: "1px solid #333",
+                                        background: "var(--white)",
+                                        border: "1px solid var(--border)",
                                         borderRadius: 8,
                                         direction: "rtl",
+                                        color: "var(--text-main)",
                                     }}
                                     formatter={(value) => [
                                         `${Number(value).toFixed(3)} د.أ`,
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                                 />
                                 <Bar
                                     dataKey="income"
-                                    fill="#C9A84C"
+                                    fill="#E6B31E"
                                     radius={[6, 6, 0, 0]}
                                     name="المبيعات"
                                 />
@@ -259,7 +259,7 @@ export default function DashboardPage() {
                         className="chart-card flex flex-col justify-center items-center text-center"
                     >
                         <div className="chart-card-title w-full" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Trophy size={16} color="#C9A84C" />
+                            <Trophy size={16} color="#E6B31E" />
                             أفضل <span>موظف اليوم</span>
                         </div>
 
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                                     style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))" }}>
                                     <Trophy size={28} color="#000" />
                                 </div>
-                                <div className="text-lg font-bold text-white">
+                                <div className="text-lg font-bold" style={{ color: "var(--text-main)" }}>
                                     {data.best_employee.name}
                                 </div>
                                 <div className="text-gold font-bold text-xl mt-1">
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                         )}
 
                         {/* معادلة الربح */}
-                        <div className="mt-4 p-3 rounded-lg w-full" style={{ background: "rgba(255,255,255,0.03)" }}>
+                        <div className="mt-4 p-3 rounded-lg w-full" style={{ background: "var(--off-white)", border: "1px solid var(--border)" }}>
                             <div className="text-gray-500 text-xs mb-2 flex items-center justify-center gap-1">
                                 <Wallet size={11} />
                                 معادلة الربح (الشهر)
@@ -297,7 +297,7 @@ export default function DashboardPage() {
                                 <span className="flex items-center gap-1"><Minus size={12} /> مصاريف</span>
                                 <span>{data.month.expenses.toFixed(3)} د.أ</span>
                             </div>
-                            <div className="border-t border-gray-700 my-1.5" />
+                            <div style={{ borderTop: "1px solid var(--border)", margin: "6px 0" }} />
                             <div className={`text-sm font-bold flex items-center justify-between ${isProfit ? "text-green-400" : "text-red-400"}`}>
                                 <span className="flex items-center gap-1">
                                     {isProfit ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -318,9 +318,9 @@ export default function DashboardPage() {
                         transition={{ delay: 0.2 }}
                         className="custom-table"
                     >
-                        <div className="p-4 border-b border-white/5" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <UserCheck size={15} color="#C9A84C" />
-                            <span className="text-gray-300 font-bold text-sm">أداء الموظفين اليوم</span>
+                        <div className="p-4" style={{ borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <UserCheck size={15} color="#E6B31E" />
+                            <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>أداء الموظفين اليوم</span>
                         </div>
                         <table>
                             <thead>
@@ -367,9 +367,9 @@ export default function DashboardPage() {
                         transition={{ delay: 0.3 }}
                         className="custom-table"
                     >
-                        <div className="p-4 border-b border-white/5" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Receipt size={15} color="#C9A84C" />
-                            <span className="text-gray-300 font-bold text-sm">آخر العمليات</span>
+                        <div className="p-4" style={{ borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Receipt size={15} color="#E6B31E" />
+                            <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>آخر العمليات</span>
                         </div>
                         <table>
                             <thead>

@@ -9,18 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        gold: {
-          DEFAULT: "#C9A84C",
-          light: "#e8c96a",
-          dark: "#a88a3a",
-        },
-        dark: {
-          1: "#0a0a0a",
-          2: "#121212",
-          3: "#1a1a1a",
-          4: "#252525",
-          5: "#2a2a2a",
-        },
+        // Core Brand Palette — Charcoal + Amber Gold
+        "bg-dark":        "#343434",   // Main background
+        "card-dark":      "#2D2D2D",   // Cards / elevated surfaces
+        "surface-hover":  "#3A3A3A",   // Hover / tertiary surface
+        "accent-gold":    "#E6B31E",   // Primary accent — amber gold
+        "accent-hover":   "#FFD700",   // Gold hover (lighter)
+        "accent-active":  "#C59C00",   // Gold active / pressed (darker)
+        "text-cream":     "#FCFAF1",   // Primary text — warm cream
+        "text-secondary": "#CACACA",   // Secondary text / inactive icons
+        "text-muted":     "#8A8A8A",   // Muted / placeholder
+        "cta-dark":       "#343434",   // CTA button text (dark on gold)
+        "disabled-gray":  "#616161",   // Disabled elements
+
+        // Semantic / Feedback
+        success:  "#4CAF50",
+        warning:  "#FFC107",
+        error:    "#F44336",
+        info:     "#2196F3",
       },
       fontFamily: {
         tajawal: ["Tajawal", "sans-serif"],

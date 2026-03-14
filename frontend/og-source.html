@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: #343434;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    position: relative;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(230,179,30,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230,179,30,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(230,179,30,0.13) 0%, transparent 65%);
+    border-radius: 50%;
+  }
+  .top-line {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, #E6B31E, #FFD700, #E6B31E, transparent);
+  }
+  .bottom-line {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(230,179,30,0.4), transparent);
+  }
+  .content {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; gap: 28px;
+    text-align: center;
+  }
+  .logo-row {
+    display: flex; align-items: center; gap: 28px;
+    flex-direction: row-reverse;
+  }
+  .icon-box {
+    width: 88px; height: 88px; border-radius: 20px;
+    background: linear-gradient(135deg, #E6B31E, #FFD700);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 40px rgba(230,179,30,0.35);
+  }
+  .brand-name {
+    font-size: 80px; font-weight: 900;
+    color: #E6B31E; line-height: 1; letter-spacing: -1px;
+  }
+  .brand-en {
+    font-size: 18px; font-weight: 400;
+    color: rgba(252,250,241,0.35);
+    letter-spacing: 6px; text-transform: uppercase;
+    margin-top: 4px; direction: ltr;
+  }
+  .divider {
+    width: 600px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(230,179,30,0.5), transparent);
+  }
+  .tagline { font-size: 36px; font-weight: 700; color: #FCFAF1; }
+  .sub { font-size: 20px; font-weight: 400; color: rgba(252,250,241,0.45); }
+  .badge {
+    padding: 10px 28px; border-radius: 999px;
+    background: rgba(230,179,30,0.10);
+    border: 1px solid rgba(230,179,30,0.28);
+    font-size: 18px; font-weight: 700; color: #E6B31E;
+  }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow"></div>
+  <div class="top-line"></div>
+  <div class="bottom-line"></div>
+  <div class="content">
+    <div class="logo-row">
+      <div class="icon-box">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#343434" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/>
+          <circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">مقص</div>
+        <div class="brand-en">MAQASS</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="tagline">منصة إدارة الصالونات في الأردن</div>
+    <div class="sub">حجوزات ذكية · إدارة موظفين · تقارير مالية · رابط حجز مخصص</div>
+    <div class="badge">جرّب مجاناً — maqas.site</div>
+  </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -118,7 +118,7 @@ export default function UsersPage() {
                                     <td><span className={`badge ${u.is_active ? "badge-green" : "badge-red"}`}>{u.is_active ? "نشط" : "موقوف"}</span></td>
                                     <td>
                                         <div className="flex gap-1">
-                                            <button onClick={() => { setResetUser(u); setNewPassword(""); setShowResetModal(true); }} className="p-2 rounded-lg" style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#C9A84C" }}>
+                                            <button onClick={() => { setResetUser(u); setNewPassword(""); setShowResetModal(true); }} className="p-2 rounded-lg" style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}>
                                                 <FaKey size={11} />
                                             </button>
                                             {u.id !== currentUser?.id && (

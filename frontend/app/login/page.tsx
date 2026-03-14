@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
@@ -6,6 +6,7 @@ import { authAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { FaSignInAlt, FaUser, FaLock, FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 import { AlertTriangle, Clock, Phone, RefreshCw } from "lucide-react";
+import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
 // Expired / Suspended Screen
 function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
@@ -16,20 +17,20 @@ function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
     const isSuspended = message.includes("إيقاف") || message.includes("suspend");
     return (
         <div className="min-h-screen flex items-center justify-center px-4"
-            style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)" }} dir="rtl">
+            style={{ background: "var(--off-white)" }} dir="rtl">
             <div className="w-full max-w-md text-center">
                 <div className="w-28 h-28 mx-auto mb-8 rounded-3xl flex items-center justify-center"
-                    style={{ background: isSuspended ? "rgba(251,191,36,.1)" : "rgba(231,76,60,.1)", border: `2px solid ${isSuspended ? "rgba(251,191,36,.3)" : "rgba(231,76,60,.3)"}` }}>
+                    style={{ background: isSuspended ? "rgba(251,191,36,.08)" : "rgba(231,76,60,.08)", border: `2px solid ${isSuspended ? "rgba(251,191,36,.3)" : "rgba(231,76,60,.3)"}` }}>
                     {isSuspended ? <AlertTriangle size={52} color="#fbbf24" /> : <Clock size={52} color="#e74c3c" />}
                 </div>
-                <h1 className="text-3xl font-black text-white mb-3">{isSuspended ? "تم إيقاف اشتراكك" : "انتهى اشتراكك"}</h1>
+                <h1 className="text-3xl font-black mb-3" style={{ color: "var(--text-main)" }}>{isSuspended ? "تم إيقاف اشتراكك" : "انتهى اشتراكك"}</h1>
                 {salonName && (
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold mb-5"
-                        style={{ background: "rgba(201,168,76,.1)", border: "1px solid rgba(201,168,76,.2)", color: "#C9A84C" }}>
+                        style={{ background: "rgba(230,179,30,.1)", border: "1px solid rgba(230,179,30,.2)", color: "#E6B31E" }}>
                         {salonName}
                     </div>
                 )}
-                <p className="text-gray-400 text-base leading-relaxed mb-8 max-w-sm mx-auto">
+                <p className="text-base leading-relaxed mb-8 max-w-sm mx-auto" style={{ color: "var(--text-muted)" }}>
                     {isSuspended ? "تم إيقاف هذا الحساب مؤقتاً. تواصل مع الدعم لتفعيل حسابك." : "انتهت مدة اشتراكك. جدد اشتراكك للاستمرار."}
                 </p>
                 <div className="space-y-3">
@@ -118,7 +119,7 @@ export default function LoginPage() {
     return (
         <div
             className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8"
-            style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)" }}
+            style={{ background: "var(--off-white)" }}
         >
             <motion.div
                 initial={{ opacity: 0, y: 24 }}
@@ -128,17 +129,11 @@ export default function LoginPage() {
             >
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden"
-                        style={{ background: "linear-gradient(135deg, #C9A84C 0%, #a08339 100%)", border: "1.5px solid rgba(201,168,76,.3)", boxShadow: "0 8px 20px rgba(201,168,76,.2)" }}>
-                        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style={{ width: 44, height: 44 }}>
-                            <circle cx="20" cy="48" r="8" fill="none" stroke="#1c1c1c" strokeWidth="3" />
-                            <circle cx="44" cy="48" r="8" fill="none" stroke="#1c1c1c" strokeWidth="3" />
-                            <line x1="20" y1="40" x2="44" y2="12" stroke="#1c1c1c" strokeWidth="3" strokeLinecap="round" />
-                            <line x1="44" y1="40" x2="20" y2="12" stroke="#1c1c1c" strokeWidth="3" strokeLinecap="round" />
-                        </svg>
+                    <div className="flex justify-center mb-3 transition-transform hover:scale-105">
+                        <MaqassLogoIcon size={80} />
                     </div>
-                    <h1 className="text-2xl font-extrabold"><span className="text-[#C9A84C]">Maqass</span></h1>
-                    <p className="text-sm text-gray-500 mt-1 tracking-widest">SALON MANAGEMENT PLATFORM</p>
+                    <h1 className="text-2xl font-extrabold" style={{ color: "var(--text-main)" }}><span style={{ color: "var(--gold)" }}>Maqass</span></h1>
+                    <p className="text-sm mt-1 tracking-widest" style={{ color: "var(--text-muted)" }}>SALON MANAGEMENT PLATFORM</p>
                 </div>
 
                 {/* Login Card */}
@@ -226,8 +221,8 @@ export default function LoginPage() {
                     </form>
                 </div>
 
-                <p className="text-center text-gray-600 text-xs mt-6">
-                    © {new Date().getFullYear()} <span className="text-[#C9A84C]">Maqass</span> Platform. All rights reserved.
+                <p className="text-center text-xs mt-6" style={{ color: "var(--text-muted)" }}>
+                    © {new Date().getFullYear()} <span style={{ color: "var(--gold)" }}>Maqass</span> Platform. All rights reserved.
                 </p>
             </motion.div>
         </div>

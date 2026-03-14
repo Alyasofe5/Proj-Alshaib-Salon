@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Scissors, ArrowRight } from "lucide-react";
@@ -10,8 +10,8 @@ export default function PrivacyPage() {
             <nav className="border-b border-white/[.04] px-6 py-4">
                 <div className="max-w-3xl mx-auto flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #c8a96e, #e8c96a)" }}>
-                            <Scissors size={16} className="text-[#0a0a0a]" />
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E6B31E, #e8c96a)" }}>
+                            <Scissors size={16} className="text-[#343434]" />
                         </div>
                         <span className="text-[18px] font-black text-white">MAQASS</span>
                     </Link>
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
             <div className="max-w-3xl mx-auto px-6 py-16">
                 <div className="mb-10">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4"
-                        style={{ background: "rgba(200,169,110,.08)", border: "1px solid rgba(200,169,110,.15)", color: "#c8a96e" }}>
+                        style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.15)", color: "#E6B31E" }}>
                         آخر تحديث: مارس 2026
                     </div>
                     <h1 className="text-4xl font-black mb-3">سياسة الخصوصية</h1>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                         },
                     ].map((section, i) => (
                         <div key={i} className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)" }}>
-                            <h2 className="text-lg font-bold text-white mb-3" style={{ color: "#c8a96e" }}>{section.title}</h2>
+                            <h2 className="text-lg font-bold text-white mb-3" style={{ color: "#E6B31E" }}>{section.title}</h2>
                             <p className="text-gray-400 leading-relaxed">{section.content}</p>
                         </div>
                     ))}

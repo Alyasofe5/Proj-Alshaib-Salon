@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -85,7 +85,7 @@ export default function NewCustomerPage() {
                                         onClick={() => toggleService(svc)}
                                         className="cursor-pointer text-center p-4 rounded-xl border-2 transition-colors"
                                         style={{
-                                            background: isSelected ? "rgba(201,168,76,0.1)" : "var(--dark4)",
+                                            background: isSelected ? "rgba(230,179,30,0.1)" : "var(--dark4)",
                                             borderColor: isSelected ? "var(--gold)" : "#333",
                                         }}
                                     >
@@ -138,7 +138,7 @@ export default function NewCustomerPage() {
                                                 className="flex-1 text-center py-3 rounded-lg border-2 cursor-pointer transition-all text-sm"
                                                 style={{
                                                     borderColor: paymentMethod === m ? "var(--gold)" : "#333",
-                                                    background: paymentMethod === m ? "rgba(201,168,76,0.1)" : "transparent",
+                                                    background: paymentMethod === m ? "rgba(230,179,30,0.1)" : "transparent",
                                                     color: paymentMethod === m ? "var(--gold)" : "#888",
                                                 }}
                                             >

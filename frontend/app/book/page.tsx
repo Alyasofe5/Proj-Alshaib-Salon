@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -106,7 +106,7 @@ function BookingContent() {
     }
 
     /* ---- STYLES ---- */
-    const gold = "#c8a96e";
+    const gold = "#E6B31E";
 
     if (notFound) return (
         <div className="min-h-screen flex items-center justify-center" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif" }}>
@@ -281,7 +281,7 @@ function BookingContent() {
                                     initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }} transition={{ duration: 0.7 }}
                                     className="relative rounded-3xl overflow-hidden"
-                                    style={{ background: "linear-gradient(145deg, #111, #0a0a0a)", border: "1px solid rgba(255,255,255,.06)" }}
+                                    style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}
                                 >
                                     {/* Decorative gold glow top-right */}
                                     <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
@@ -296,11 +296,11 @@ function BookingContent() {
                                                     src={salon.logo.startsWith("http") ? salon.logo : `/${salon.logo}`}
                                                     alt={salon.name}
                                                     className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
-                                                    style={{ border: "1.5px solid rgba(200,169,110,.3)" }}
+                                                    style={{ border: "1.5px solid rgba(230,179,30,.3)" }}
                                                 />
                                             ) : (
                                                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl font-black"
-                                                    style={{ background: "linear-gradient(135deg, #c8a96e, #e8c96a)", color: "#0a0a0a", boxShadow: "0 6px 24px rgba(200,169,110,.35)" }}>
+                                                    style={{ background: "linear-gradient(135deg, #E6B31E, #e8c96a)", color: "#343434", boxShadow: "0 6px 24px rgba(230,179,30,.35)" }}>
                                                     {salon?.name?.charAt(0) || "S"}
                                                 </div>
                                             )}
@@ -318,7 +318,7 @@ function BookingContent() {
                                         )}
 
                                         {/* Divider */}
-                                        <div className="h-px mb-8" style={{ background: "linear-gradient(90deg, transparent, rgba(200,169,110,.2), transparent)" }} />
+                                        <div className="h-px mb-8" style={{ background: "linear-gradient(90deg, transparent, rgba(230,179,30,.2), transparent)" }} />
 
                                         {/* Info Grid */}
                                         <div className="grid grid-cols-2 gap-5">
@@ -357,7 +357,7 @@ function BookingContent() {
                                 >
                                     {/* Stat — Services */}
                                     <div className="relative rounded-3xl p-6 overflow-hidden flex-1"
-                                        style={{ background: "linear-gradient(145deg, #111, #0a0a0a)", border: "1px solid rgba(255,255,255,.06)" }}>
+                                        style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}>
                                         <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full pointer-events-none"
                                             style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
                                         <div className="flex items-center justify-between">
@@ -377,7 +377,7 @@ function BookingContent() {
 
                                     {/* Stat — Barbers */}
                                     <div className="relative rounded-3xl p-6 overflow-hidden flex-1"
-                                        style={{ background: "linear-gradient(145deg, #111, #0a0a0a)", border: "1px solid rgba(255,255,255,.06)" }}>
+                                        style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}>
                                         <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full pointer-events-none"
                                             style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
                                         <div className="flex items-center justify-between">
@@ -464,7 +464,7 @@ function BookingContent() {
                                                 viewport={{ once: true, margin: "-50px" }}
                                                 transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
                                                 className="group relative rounded-3xl overflow-hidden cursor-default"
-                                                style={{ background: "#0a0a0a" }}>
+                                                style={{ background: "#343434" }}>
                                                 {/* Image */}
                                                 <div className="relative h-52 md:h-60 overflow-hidden">
                                                     <img
@@ -472,7 +472,7 @@ function BookingContent() {
                                                         alt={s.name}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                     />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#343434] via-transparent to-transparent" />
                                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                                                         style={{ background: `linear-gradient(135deg, ${gold}15, transparent)` }} />
                                                     {/* Price badge */}
@@ -488,7 +488,7 @@ function BookingContent() {
                                                             style={{ background: `${gold}10`, color: gold }}>
                                                             <IconScissors />
                                                         </div>
-                                                        <h3 className="text-lg font-bold text-white group-hover:text-[#c8a96e] transition-colors duration-300">
+                                                        <h3 className="text-lg font-bold text-white group-hover:text-[#E6B31E] transition-colors duration-300">
                                                             {s.name}
                                                         </h3>
                                                     </div>
@@ -548,7 +548,7 @@ function BookingContent() {
                                                     </div>
                                                     <span className={`text-xs font-semibold hidden sm:block ${step >= stepNum ? "text-white" : "text-gray-700"}`}>{l}</span>
                                                 </div>
-                                                {i < 3 && <div className="flex-1 h-px mx-3" style={{ background: step > stepNum ? gold : "#1a1a1a" }} />}
+                                                {i < 3 && <div className="flex-1 h-px mx-3" style={{ background: step > stepNum ? gold : "#3A3A3A" }} />}
                                             </div>
                                         );
                                     })}
@@ -578,7 +578,7 @@ function BookingContent() {
                                             <motion.button key={s.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                                                 onClick={() => { setSel({ ...sel, service_id: s.id }); setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                                 className="group relative text-right rounded-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                                                style={{ background: "linear-gradient(135deg, #0d0d0d 0%, #0a0a0a 100%)", border: "1px solid rgba(255,255,255,.06)" }}
+                                                style={{ background: "linear-gradient(135deg, #343434 0%, #343434 100%)", border: "1px solid rgba(255,255,255,.06)" }}
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = `${gold}30`; e.currentTarget.style.boxShadow = `0 25px 60px ${gold}08, inset 0 1px 0 ${gold}10`; }}
                                                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}>
                                                 <div className="h-[2px] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
@@ -591,7 +591,7 @@ function BookingContent() {
                                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                                                         </div>
                                                     </div>
-                                                    <h3 className="text-lg font-bold text-white group-hover:text-[#c8a96e] transition-colors mb-1">{s.name}</h3>
+                                                    <h3 className="text-lg font-bold text-white group-hover:text-[#E6B31E] transition-colors mb-1">{s.name}</h3>
                                                     {s.duration_minutes && <p className="text-xs text-white/20 mb-5">{s.duration_minutes} دقيقة</p>}
                                                     {!s.duration_minutes && <div className="mb-5" />}
                                                     <div className="flex items-end justify-between pt-4" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
@@ -641,13 +641,13 @@ function BookingContent() {
                                             <motion.button key={emp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.08 }}
                                                 onClick={() => { setSel({ ...sel, employee_id: emp.id }); setStep(4); }}
                                                 className="group relative p-7 rounded-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                                                style={{ background: "linear-gradient(135deg, #0d0d0d, #0a0a0a)", border: "1px solid rgba(255,255,255,.06)" }}
+                                                style={{ background: "linear-gradient(135deg, #343434, #343434)", border: "1px solid rgba(255,255,255,.06)" }}
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = `${gold}30`; e.currentTarget.style.boxShadow = `0 20px 50px ${gold}08`; }}
                                                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}>
                                                 <div className="h-[2px] w-full absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
                                                 <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-black"
                                                     style={{ background: `${gold}08`, color: gold, border: `1px solid ${gold}15` }}>{emp.name.charAt(0).toUpperCase()}</div>
-                                                <span className="font-bold text-base text-white group-hover:text-[#c8a96e] transition-colors">{emp.name}</span>
+                                                <span className="font-bold text-base text-white group-hover:text-[#E6B31E] transition-colors">{emp.name}</span>
                                             </motion.button>
                                         ))}
                                     </div>
@@ -672,7 +672,7 @@ function BookingContent() {
                                                 <button key={d} onClick={() => { setSel({ ...sel, booking_date: d, booking_time: "" }); loadBooked(d); }}
                                                     className="flex-shrink-0 w-[76px] py-4 rounded-2xl text-center transition-all duration-300"
                                                     style={{
-                                                        background: sel.booking_date === d ? gold : "#0a0a0a",
+                                                        background: sel.booking_date === d ? gold : "#343434",
                                                         color: sel.booking_date === d ? "#000" : "#666",
                                                         border: `1px solid ${sel.booking_date === d ? gold : "rgba(255,255,255,.05)"}`,
                                                         boxShadow: sel.booking_date === d ? `0 10px 40px ${gold}30` : "none",
@@ -697,7 +697,7 @@ function BookingContent() {
                                                         return (<button key={t} onClick={() => !disabled && setSel({ ...sel, booking_time: t })} disabled={disabled}
                                                             className="py-3 rounded-xl text-xs font-bold transition-all duration-300"
                                                             style={{
-                                                                background: s ? gold : "#0a0a0a", color: s ? "#000" : disabled ? "#222" : "#888",
+                                                                background: s ? gold : "#343434", color: s ? "#000" : disabled ? "#222" : "#888",
                                                                 border: `1px solid ${s ? gold : "rgba(255,255,255,.04)"}`, opacity: disabled ? 0.25 : 1,
                                                                 cursor: disabled ? "not-allowed" : "pointer", boxShadow: s ? `0 6px 20px ${gold}25` : "none",
                                                                 textDecoration: isPast ? "line-through" : "none",
@@ -748,7 +748,7 @@ function BookingContent() {
                                                 <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">الاسم الكامل <span style={{ color: "#e74c3c" }}>*</span></label>
                                                 <input value={sel.customer_name} onChange={e => setSel({ ...sel, customer_name: e.target.value })}
                                                     className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
-                                                    style={{ background: "#0a0a0a", border: `1.5px solid ${sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
+                                                    style={{ background: "#343434", border: `1.5px solid ${sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
                                                     onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
                                                     onBlur={e => { e.currentTarget.style.borderColor = sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
                                                     placeholder="أدخل اسمك الكامل" dir="rtl" />
@@ -767,7 +767,7 @@ function BookingContent() {
                                                     }}
                                                     type="tel" inputMode="numeric" maxLength={10}
                                                     className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
-                                                    style={{ background: "#0a0a0a", border: `1.5px solid ${sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
+                                                    style={{ background: "#343434", border: `1.5px solid ${sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
                                                     onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
                                                     onBlur={e => { e.currentTarget.style.borderColor = sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
                                                     placeholder="07XXXXXXXX" dir="ltr" />
@@ -782,7 +782,7 @@ function BookingContent() {
                                                 <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">ملاحظات (اختياري)</label>
                                                 <textarea value={sel.notes} onChange={e => setSel({ ...sel, notes: e.target.value })} rows={2}
                                                     className="w-full py-4 px-5 rounded-xl text-white outline-none resize-none transition-all text-sm"
-                                                    style={{ background: "#0a0a0a", border: "1.5px solid rgba(255,255,255,.06)", fontFamily: "'Tajawal',sans-serif" }}
+                                                    style={{ background: "#343434", border: "1.5px solid rgba(255,255,255,.06)", fontFamily: "'Tajawal',sans-serif" }}
                                                     onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
                                                     onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }} />
                                             </div>
@@ -816,7 +816,7 @@ function BookingContent() {
                                         <div className="p-6 rounded-2xl mb-8 text-sm text-white/40" style={{ background: `${gold}04`, border: `1px solid ${gold}08` }}>{salon.booking_message}</div>
                                     )}
 
-                                    <div className="p-6 rounded-2xl mb-10" style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.05)" }}>
+                                    <div className="p-6 rounded-2xl mb-10" style={{ background: "#343434", border: "1px solid rgba(255,255,255,.05)" }}>
                                         <div className="space-y-3 text-sm text-right">
                                             <div className="flex justify-between"><span className="text-white/30">الخدمة</span><span className="font-bold">{selService?.name}</span></div>
                                             {selEmployee && <div className="flex justify-between"><span className="text-white/30">الحلاق</span><span className="font-bold">{selEmployee.name}</span></div>}
@@ -879,7 +879,7 @@ function BookingContent() {
                             <div className="flex items-center gap-3">
                                 <a href="https://wr-technologies.net/" target="_blank" rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-[10px] opacity-30 hover:opacity-60 transition-opacity"
-                                    style={{ color: "#c8a96e" }}>
+                                    style={{ color: "#E6B31E" }}>
                                     WR Technologies
                                 </a>
                                 <span className="text-white/10 text-[10px]">|</span>
@@ -895,7 +895,7 @@ function BookingContent() {
 
 export default function BookPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "#000" }}><div className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#c8a96e transparent #c8a96e #c8a96e" }} /></div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "#000" }}><div className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#E6B31E transparent #E6B31E #E6B31E" }} /></div>}>
             <BookingContent />
         </Suspense>
     );

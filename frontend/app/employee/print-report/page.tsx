@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -75,7 +75,7 @@ export default function PrintReportPage() {
                                     padding: "6px 14px", borderRadius: "7px", border: "none",
                                     cursor: "pointer", fontSize: "12px", fontWeight: 700,
                                     background: period === value ? "linear-gradient(135deg, var(--gold), var(--gold-light))" : "transparent",
-                                    color: period === value ? "#111" : "#888",
+                                    color: period === value ? "#2D2D2D" : "#888",
                                     transition: "all .2s",
                                 }}
                             >
@@ -97,11 +97,11 @@ export default function PrintReportPage() {
                         onClick={() => window.print()}
                         style={{
                             display: "flex", alignItems: "center", gap: "7px",
-                            background: "linear-gradient(135deg, #c9a84c, #e6c65a)",
-                            color: "#111", border: "none", padding: "8px 20px",
+                            background: "linear-gradient(135deg, #E6B31E, #e6c65a)",
+                            color: "#2D2D2D", border: "none", padding: "8px 20px",
                             borderRadius: "8px", fontWeight: 700, cursor: "pointer",
                             fontFamily: "Tajawal", fontSize: "13px",
-                            boxShadow: "0 4px 15px rgba(201,168,76,.3)",
+                            boxShadow: "0 4px 15px rgba(230,179,30,.3)",
                         }}>
                         <Printer size={14} /> طباعة
                     </button>
@@ -112,22 +112,22 @@ export default function PrintReportPage() {
             <div style={{ maxWidth: "800px", margin: "24px auto", background: "#fff", borderRadius: "12px", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.15)", fontFamily: "Tajawal, sans-serif" }}>
 
                 {/* Report Header */}
-                <div style={{ background: "linear-gradient(135deg, #111 0%, #1e1e1e 100%)", color: "#fff", padding: "32px", textAlign: "center", borderBottom: "3px solid #c9a84c" }}>
+                <div style={{ background: "linear-gradient(135deg, #2D2D2D 0%, #1e1e1e 100%)", color: "#fff", padding: "32px", textAlign: "center", borderBottom: "3px solid #E6B31E" }}>
                     <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
-                        <div style={{ width: "54px", height: "54px", borderRadius: "14px", background: "linear-gradient(135deg, #c9a84c, #e6c65a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <div style={{ width: "54px", height: "54px", borderRadius: "14px", background: "linear-gradient(135deg, #E6B31E, #e6c65a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2D2D2D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="6" cy="6" r="3" /><path d="M8.12 8.12 12 12" /><path d="M20 4 8.12 15.88" />
                                 <circle cx="6" cy="18" r="3" /><path d="M14.8 14.8 20 20" />
                             </svg>
                         </div>
                     </div>
-                    <h1 style={{ fontSize: "20px", color: "#c9a84c", letterSpacing: "3px", margin: "0 0 6px", fontWeight: 900 }}>
+                    <h1 style={{ fontSize: "20px", color: "#E6B31E", letterSpacing: "3px", margin: "0 0 6px", fontWeight: 900 }}>
                         AL SHAYEB SALON
                     </h1>
                     <h2 style={{ fontSize: "14px", color: "#aaa", fontWeight: 400, margin: "0 0 14px" }}>
                         تقرير {period === "daily" ? "يومي" : "شهري"} — {dateLabel}
                     </h2>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(201,168,76,.12)", border: "1px solid rgba(201,168,76,.35)", borderRadius: "30px", padding: "6px 18px", fontSize: "13px", color: "#c9a84c" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(230,179,30,.12)", border: "1px solid rgba(230,179,30,.35)", borderRadius: "30px", padding: "6px 18px", fontSize: "13px", color: "#E6B31E" }}>
                         <User size={13} />
                         {empName}
                     </div>
@@ -139,8 +139,8 @@ export default function PrintReportPage() {
                 {/* Summary Cards */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: "#e8dfc5" }}>
                     {[
-                        { Icon: ClipboardList, value: transactions.length, label: "عدد العمليات", color: "#c9a84c" },
-                        { Icon: TrendingUp, value: `${totalSales.toFixed(3)} د.أ`, label: "إجمالي المبيعات", color: "#c9a84c" },
+                        { Icon: ClipboardList, value: transactions.length, label: "عدد العمليات", color: "#E6B31E" },
+                        { Icon: TrendingUp, value: `${totalSales.toFixed(3)} د.أ`, label: "إجمالي المبيعات", color: "#E6B31E" },
                         { Icon: Percent, value: `${commission.toFixed(3)} د.أ`, label: `عمولتي (${commissionRate}%)`, color: "#27ae60" },
                     ].map(({ Icon, value, label, color }, i) => (
                         <div key={i} style={{ background: "#fff", padding: "20px 16px", textAlign: "center" }}>
@@ -154,7 +154,7 @@ export default function PrintReportPage() {
                 </div>
 
                 {/* Section Title */}
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f5eed8", color: "#7a5c14", fontWeight: 700, fontSize: "12px", padding: "10px 18px", borderRight: "4px solid #c9a84c" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f5eed8", color: "#7a5c14", fontWeight: 700, fontSize: "12px", padding: "10px 18px", borderRight: "4px solid #E6B31E" }}>
                     <ClipboardList size={14} />
                     تفاصيل العمليات ({transactions.length})
                 </div>
@@ -170,7 +170,7 @@ export default function PrintReportPage() {
                         <thead>
                             <tr style={{ background: "#1e1e1e" }}>
                                 {["#", "الخدمات", "المبلغ (د.أ)", "طريقة الدفع", "الملاحظات", "الوقت"].map((h, i) => (
-                                    <th key={i} style={{ color: "#c9a84c", padding: "9px 12px", textAlign: "right", fontWeight: 700, fontSize: "11px" }}>{h}</th>
+                                    <th key={i} style={{ color: "#E6B31E", padding: "9px 12px", textAlign: "right", fontWeight: 700, fontSize: "11px" }}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -179,7 +179,7 @@ export default function PrintReportPage() {
                                 <tr key={tx.id} style={{ borderBottom: "1px solid #f0e8d0", background: i % 2 === 0 ? "#fff" : "#fdf9f0" }}>
                                     <td style={{ padding: "8px 12px", color: "#bbb", fontWeight: 600 }}>{i + 1}</td>
                                     <td style={{ padding: "8px 12px", color: "#333" }}>{tx.services || "—"}</td>
-                                    <td style={{ padding: "8px 12px", color: "#c9a84c", fontWeight: 800 }}>{Number(tx.total_amount).toFixed(3)}</td>
+                                    <td style={{ padding: "8px 12px", color: "#E6B31E", fontWeight: 800 }}>{Number(tx.total_amount).toFixed(3)}</td>
                                     <td style={{ padding: "8px 12px" }}>
                                         <span style={{
                                             display: "inline-flex", alignItems: "center", gap: "4px",
@@ -200,7 +200,7 @@ export default function PrintReportPage() {
                         <tfoot>
                             <tr style={{ background: "#f9f3e3" }}>
                                 <td colSpan={2} style={{ padding: "9px 12px", fontWeight: 800, color: "#555" }}>الإجمالي</td>
-                                <td style={{ padding: "9px 12px", color: "#c9a84c", fontWeight: 900, fontSize: "14px" }}>{totalSales.toFixed(3)}</td>
+                                <td style={{ padding: "9px 12px", color: "#E6B31E", fontWeight: 900, fontSize: "14px" }}>{totalSales.toFixed(3)}</td>
                                 <td colSpan={3} style={{ padding: "9px 12px", color: "#27ae60", fontWeight: 700 }}>عمولتي: {commission.toFixed(3)} د.أ</td>
                             </tr>
                         </tfoot>
@@ -209,7 +209,7 @@ export default function PrintReportPage() {
 
                 {/* Report Footer */}
                 <div style={{ background: "#f9f3e3", padding: "14px 24px", textAlign: "center", fontSize: "11px", color: "#bbb", borderTop: "1px solid #e8dfc5" }}>
-                    <span style={{ color: "#c9a84c", fontWeight: 700 }}>AL SHAYEB SALON</span>
+                    <span style={{ color: "#E6B31E", fontWeight: 700 }}>AL SHAYEB SALON</span>
                     {" "} — تقرير {empName} — {new Date().toLocaleString("ar-JO")}
                 </div>
             </div>

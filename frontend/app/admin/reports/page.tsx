@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -156,8 +156,8 @@ export default function ReportsPage() {
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                         <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 11 }} />
                                         <YAxis tick={{ fill: "#888", fontSize: 11 }} />
-                                        <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 8 }} />
-                                        <Line type="monotone" dataKey="sales" stroke="#C9A84C" strokeWidth={2} dot={{ fill: "#C9A84C", r: 3 }} />
+                                        <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
+                                        <Line type="monotone" dataKey="sales" stroke="#E6B31E" strokeWidth={2} dot={{ fill: "#E6B31E", r: 3 }} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -239,11 +239,11 @@ export default function ReportsPage() {
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 11 }} />
                                     <YAxis tick={{ fill: "#888", fontSize: 11 }} />
-                                    <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 8, direction: "rtl" }}
+                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }}
                                         formatter={(value, name) => [`${Number(value).toFixed(3)} د.أ`, name === "sales" ? "المبيعات" : "المصاريف"]}
                                     />
                                     <Legend formatter={(v) => v === "sales" ? "المبيعات" : "المصاريف"} wrapperStyle={{ color: "#888", fontSize: 12 }} />
-                                    <Bar dataKey="sales" fill="#C9A84C" radius={[4, 4, 0, 0]} name="sales" />
+                                    <Bar dataKey="sales" fill="#E6B31E" radius={[4, 4, 0, 0]} name="sales" />
                                     <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" radius={[4, 4, 0, 0]} name="expenses" />
                                 </BarChart>
                             </ResponsiveContainer>

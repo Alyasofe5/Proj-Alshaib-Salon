@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -182,7 +182,7 @@ export default function EmployeesPage() {
                                             <button
                                                 onClick={() => openEditModal(emp)}
                                                 className="p-2 rounded-lg transition-colors"
-                                                style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#C9A84C" }}
+                                                style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}
                                             >
                                                 <FaEdit size={12} />
                                             </button>

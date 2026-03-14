@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alshaib Salon — Brand Identity System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            /* Theme Colors derived from tailwind.config.ts and globals.css */
+            --gold-light: #e8c96a;
+            --gold-default: #C9A84C;
+            --gold-dark: #a88a3a;
+            
+            --dark-1: #0a0a0a;
+            --dark-2: #121212;
+            --dark-3: #1a1a1a;
+            --dark-4: #252525;
+            --dark-5: #2a2a2a;
+            
+            --success: #2ecc71;
+            --warning: #f39c12; /* Inferred standard warning */
+            --error: #e74c3c;
+            --info: #3498db;
+            
+            --n0: #000;
+            --n50: #0a0a0a;
+            --n100: #0f0f0f;
+            --n500: #555;
+            --n600: #666;
+            --n700: #888;
+            --n800: #aaa;
+            --n900: #ddd;
+            --n1000: #fff;
+
+            --fd: 'Tajawal', sans-serif;
+            --fb: 'Tajawal', sans-serif;
+            --fm: 'JetBrains Mono', monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--dark-1);
+            color: var(--n1000);
+            font-family: var(--fb);
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-default);
+        }
+
+        /* SIDEBAR NAV */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: rgba(18, 18, 18, 0.95);
+            border-right: 1px solid rgba(201, 168, 76, 0.1);
+            overflow-y: auto;
+            z-index: 200;
+            backdrop-filter: blur(20px);
+            padding: 2.5rem 0;
+        }
+
+        .sidebar-logo {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--gold-default), var(--gold-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            font-family: var(--fd);
+            font-size: 16px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-brand span {
+            color: var(--gold-default);
+        }
+
+        .sidebar-sub {
+            font-family: var(--fm);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--n700);
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        .nav-section {
+            padding: .5rem 1.5rem .25rem;
+            font-family: var(--fm);
+            font-size: 10px;
+            letter-spacing: .2em;
+            color: var(--n500);
+            text-transform: uppercase;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: .6rem 1.5rem;
+            font-size: 14px;
+            color: var(--n700);
+            text-decoration: none;
+            transition: all .2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-link.active {
+            color: var(--gold-default);
+            border-left-color: var(--gold-default);
+            background: rgba(201, 168, 76, 0.08);
+        }
+
+        .nav-num {
+            font-family: var(--fm);
+            font-size: 10px;
+            color: var(--n500);
+            min-width: 18px;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+
+        .chapter {
+            padding: 6rem 4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter:last-child {
+            border-bottom: none;
+        }
+
+        /* COVER */
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cover-bg {
+            position: absolute;
+            inset: 0;
+            background: var(--dark-1);
+        }
+
+        .cover-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(201, 168, 76, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201, 168, 76, 0.03) 1px, transparent 1px);
+            background-size: 64px 64px;
+            animation: gdrift 25s linear infinite;
+        }
+
+        .cover-glow {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.08) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        @keyframes gdrift {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 64px 64px;
+            }
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 2;
+            padding: 4rem;
+            padding-bottom: 5rem;
+        }
+
+        .cover-eyebrow {
+            font-family: var(--fm);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .3em;
+            text-transform: uppercase;
+            color: var(--gold-default);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cover-eyebrow::before {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: var(--gold-default);
+        }
+
+        .cover-title {
+            font-family: var(--fd);
+            font-size: clamp(48px, 7vw, 96px);
+            font-weight: 900;
+            line-height: .92;
+            letter-spacing: -.02em;
+            margin-bottom: 2rem;
+        }
+
+        .cover-title .line2 {
+            display: block;
+            color: var(--gold-default);
+        }
+
+        .cover-title .line3 {
+            display: block;
+            color: rgba(255, 255, 255, .15);
+            font-size: 70%;
+        }
+
+        .cover-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, rgba(201, 168, 76, 0.4), rgba(201, 168, 76, 0.05), transparent);
+            margin: 3rem 0;
+        }
+
+        .cover-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .meta-label {
+            font-family: var(--fm);
+            font-size: 10px;
+            letter-spacing: .2em;
+            color: var(--n500);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-family: var(--fm);
+            font-size: 13px;
+            color: var(--n800);
+        }
+
+        /* CHAPTER HEADER */
+        .ch-tag {
+            font-family: var(--fm);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .3em;
+            text-transform: uppercase;
+            color: var(--gold-default);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ch-tag::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--gold-default);
+        }
+
+        .ch-title {
+            font-family: var(--fd);
+            font-size: clamp(32px, 4vw, 48px);
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .ch-desc {
+            font-size: 16px;
+            color: var(--n800);
+            max-width: 600px;
+            line-height: 1.8;
+            margin-bottom: 4rem;
+            font-weight: 400;
+        }
+
+        /* GRID HELPERS */
+        .g2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .g3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .g4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        /* CARD */
+        .card {
+            background: var(--dark-3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all .3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(201, 168, 76, 0.15);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-label {
+            font-family: var(--fm);
+            font-size: 10px;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--n500);
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 0.5rem;
+        }
+
+        /* COLORS */
+        .color-strip {
+            display: flex;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .color-chip {
+            flex: 1;
+            cursor: default;
+            transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .color-chip:hover {
+            transform: scaleY(1.15);
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .swatch-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+
+        .swatch {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, .04);
+            background: var(--dark-2);
+        }
+
+        .swatch-block {
+            height: 80px;
+        }
+
+        .swatch-info {
+            padding: 10px 12px;
+            background: var(--dark-3);
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .swatch-tok {
+            font-family: var(--fm);
+            font-size: 10px;
+            color: var(--n500);
+            margin-bottom: 4px;
+        }
+
+        .swatch-hex {
+            font-family: var(--fm);
+            font-size: 12px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* TABLE */
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .tbl th {
+            text-align: left;
+            padding: 12px 16px;
+            font-family: var(--fm);
+            font-size: 10px;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            color: var(--n500);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .tbl td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            vertical-align: middle;
+            color: var(--n800);
+        }
+
+        .tbl tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tbl tr:hover td {
+            background: rgba(255, 255, 255, .01);
+        }
+
+        .tok {
+            font-family: var(--fm);
+            font-size: 12px;
+            color: var(--gold-default);
+            background: rgba(201, 168, 76, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, .1);
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* TYPE SAMPLES */
+        .type-block {
+            padding: 2.5rem;
+            background: var(--dark-2);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 1px;
+            direction: rtl; /* For Arabic typography demo */
+        }
+
+        .type-block:first-child {
+            border-radius: 16px 16px 4px 4px;
+        }
+
+        .type-block:last-child {
+            border-radius: 4px 4px 16px 16px;
+        }
+
+        .type-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            direction: ltr;
+        }
+
+        .type-name-tag {
+            font-family: var(--fm);
+            font-size: 11px;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            color: var(--n500);
+        }
+
+        .type-specs-tag {
+            font-family: var(--fm);
+            font-size: 11px;
+            color: var(--gold-default);
+            text-align: right;
+        }
+
+        /* BUTTON DEMOS */
+        .btn-showcase {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 2rem;
+            background: var(--dark-2);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: var(--fb);
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .3s ease;
+            text-decoration: none;
+            border: none;
+            font-size: 14px;
+            padding: 10px 24px;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold-default), var(--gold-light));
+            color: #000;
+            box-shadow: 0 4px 15px rgba(201, 168, 76, 0.25);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 168, 76, 0.35);
+        }
+
+        .btn-outline-gold {
+            background: transparent;
+            color: var(--gold-default);
+            border: 1px solid var(--gold-default);
+        }
+
+        .btn-outline-gold:hover {
+            background: rgba(201, 168, 76, 0.1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--gold-default);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(201, 168, 76, 0.1);
+            border-color: rgba(201, 168, 76, 0.4);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* BADGES */
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            font-family: var(--fb);
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .badge-gold {
+            background: rgba(201, 168, 76, 0.15);
+            color: var(--gold-default);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+        }
+
+        .badge-green {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .badge-blue {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .badge-red {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        /* STAT CARD DEMO */
+        .sh-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card-demo {
+            background: var(--dark-3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s;
+            direction: rtl;
+        }
+
+        .stat-card-demo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(201, 168, 76, 0.15);
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 14px;
+            background: rgba(201, 168, 76, 0.15);
+            color: var(--gold-default);
+            font-family: var(--fm);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            font-family: var(--fb);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+            font-family: var(--fb);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">ش</div>
+            <div class="sidebar-brand-text">
+                <div class="sidebar-brand">Alshaib <span>Salon</span></div>
+                <div class="sidebar-sub">Design System 1.0</div>
+            </div>
+        </div>
+
+        <div class="nav-section">Foundation</div>
+        <a href="#brand" class="nav-link active"><span class="nav-num">01</span> Brand Identity</a>
+        <a href="#colors" class="nav-link"><span class="nav-num">02</span> Color System</a>
+        <a href="#typography" class="nav-link"><span class="nav-num">03</span> Typography</a>
+        
+        <div class="nav-section">Components</div>
+        <a href="#buttons" class="nav-link"><span class="nav-num">04</span> Buttons</a>
+        <a href="#badges" class="nav-link"><span class="nav-num">05</span> Badges & Status</a>
+        <a href="#cards" class="nav-link"><span class="nav-num">06</span> Surface & Cards</a>
+        
+        <div class="nav-section">Resources</div>
+        <a href="#motion" class="nav-link"><span class="nav-num">07</span> Motion Guidelines</a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="main">
+        
+        <!-- COVER SECTION -->
+        <section id="brand" class="cover">
+            <div class="cover-bg"></div>
+            <div class="cover-grid"></div>
+            <div class="cover-glow"></div>
+            
+            <div class="cover-content">
+                <div class="cover-eyebrow">Design System & Brand Catalog</div>
+                <h1 class="cover-title">
+                    <span class="line1">Alshaib Salon</span>
+                    <span class="line2">Maqass Platform</span>
+                    <span class="line3">Version 1.0</span>
+                </h1>
+                
+                <div class="cover-divider"></div>
+                
+                <div class="cover-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Project</div>
+                        <div class="meta-value">Proj-Alshaib-Salon</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Framework</div>
+                        <div class="meta-value">Next.js / Tailwind CSS</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Theme</div>
+                        <div class="meta-value">Dark Luxury RTL</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Last Updated</div>
+                        <div class="meta-value">March 2026</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLOR SYSTEM -->
+        <section id="colors" class="chapter">
+            <div class="ch-tag">Foundation</div>
+            <h2 class="ch-title">Color System</h2>
+            <p class="ch-desc">
+                The essence of the Alshaib Salon brand is conveyed through a premium dark theme accented with luxurious gold tones. This palette creates an environment of elegance, professionalism, and exclusivity for the Maqass platform.
+            </p>
+
+            <div class="g2">
+                <div class="card">
+                    <div class="card-label">Primary Brand: Gold Palette</div>
+                    <div class="color-strip">
+                        <div class="color-chip" style="background: var(--gold-light);"></div>
+                        <div class="color-chip starred" style="background: var(--gold-default);"></div>
+                        <div class="color-chip" style="background: var(--gold-dark);"></div>
+                    </div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--gold-light);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">gold.light</div>
+                                <div class="swatch-hex">#e8c96a</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--gold-default);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">gold.DEFAULT</div>
+                                <div class="swatch-hex">#C9A84C</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--gold-dark);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">gold.dark</div>
+                                <div class="swatch-hex">#a88a3a</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Surface: Deep Dark Palette</div>
+                    <div class="color-strip">
+                        <div class="color-chip" style="background: var(--dark-1);"></div>
+                        <div class="color-chip" style="background: var(--dark-2);"></div>
+                        <div class="color-chip starred" style="background: var(--dark-3);"></div>
+                        <div class="color-chip" style="background: var(--dark-4);"></div>
+                        <div class="color-chip" style="background: var(--dark-5);"></div>
+                    </div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--dark-1);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">dark.1</div>
+                                <div class="swatch-hex">#0a0a0a</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--dark-2);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">dark.2</div>
+                                <div class="swatch-hex">#121212</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--dark-3);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">dark.3</div>
+                                <div class="swatch-hex">#1a1a1a</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--dark-4);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">dark.4</div>
+                                <div class="swatch-hex">#252525</div>
+                            </div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-block" style="background: var(--dark-5);"></div>
+                            <div class="swatch-info">
+                                <div class="swatch-tok">dark.5</div>
+                                <div class="swatch-hex">#2a2a2a</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-label">Semantic Status Colors</div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Color</th>
+                            <th>Value</th>
+                            <th>Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="tok">--success</span></td>
+                            <td><span class="dot" style="background: var(--success);"></span></td>
+                            <td>#2ecc71</td>
+                            <td>Completed bookings, successful actions, active status</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">--warning</span></td>
+                            <td><span class="dot" style="background: var(--warning);"></span></td>
+                            <td>#f39c12</td>
+                            <td>Pending approvals, warnings, alerts</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">--error</span></td>
+                            <td><span class="dot" style="background: var(--error);"></span></td>
+                            <td>#e74c3c</td>
+                            <td>Canceled bookings, destructive actions, errors</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">--info</span></td>
+                            <td><span class="dot" style="background: var(--info);"></span></td>
+                            <td>#3498db</td>
+                            <td>Information highlights, neutral data points</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TYPOGRAPHY -->
+        <section id="typography" class="chapter">
+            <div class="ch-tag">Foundation</div>
+            <h2 class="ch-title">Typography</h2>
+            <p class="ch-desc">
+                Tajawal is the primary typeface. It is highly legible, modern, and provides a beautiful rendering for both Arabic (RTL) and Latin characters, maintaining the upscale aesthetics required for the platform.
+            </p>
+
+            <div class="card" style="padding: 0; overflow: hidden; border: none; background: transparent;">
+                <div class="type-block">
+                    <div class="type-meta">
+                        <span class="type-name-tag">Display 1 — Hero Section</span>
+                        <span class="type-specs-tag">Tajawal / 900 / var(--n1000)</span>
+                    </div>
+                    <div style="font-size: 3rem; font-weight: 900; line-height: 1.2; color: #fff;">
+                        نظام متكامل لإدارة الصالونات
+                    </div>
+                </div>
+                
+                <div class="type-block">
+                    <div class="type-meta">
+                        <span class="type-name-tag">Heading 1 — Section Titles</span>
+                        <span class="type-specs-tag">Tajawal / 800 / var(--n1000)</span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800; line-height: 1.3; color: #fff;">
+                        لوحة التحكم الرئيسية
+                    </div>
+                </div>
+
+                <div class="type-block">
+                    <div class="type-meta">
+                        <span class="type-name-tag">Body Subtitle — Highlighted text</span>
+                        <span class="type-specs-tag">Tajawal / 700 / var(--gold-default)</span>
+                    </div>
+                    <div style="font-size: 1.125rem; font-weight: 700; line-height: 1.6; color: var(--gold-default);">
+                        أدر صالونك باحترافية مطلقة وبكفاءة عالية.
+                    </div>
+                </div>
+
+                <div class="type-block">
+                    <div class="type-meta">
+                        <span class="type-name-tag">Body Normal — Paragraphs & Data</span>
+                        <span class="type-specs-tag">Tajawal / 500 / var(--n800)</span>
+                    </div>
+                    <div style="font-size: 1rem; font-weight: 500; line-height: 1.7; color: var(--n800); max-width: 600px;">
+                        تتيح لك منصة مقص إدارة الحجوزات، الموظفين، والمبيعات من مكان واحد. تم تصميم الواجهة لتوفر أقصى درجات السهولة في الاستخدام مع الحفاظ على طابع الفخامة والرقي.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUTTONS -->
+        <section id="buttons" class="chapter">
+            <div class="ch-tag">Components</div>
+            <h2 class="ch-title">Buttons & CTAs</h2>
+            <p class="ch-desc">
+                Interactive elements rely on subtle gradients, scaling, and drop shadows on hover to create a tactile and responsive feel. The primary CTA utilizes the gold gradient.
+            </p>
+
+            <div class="card">
+                <div class="card-label">Primary Actions</div>
+                <div class="btn-showcase">
+                    <button class="btn btn-gold">حفظ التغييرات</button>
+                    <button class="btn btn-gold" disabled>غير متاح (Disabled)</button>
+                </div>
+
+                <div class="card-label" style="margin-top: 2rem;">Secondary Actions</div>
+                <div class="btn-showcase">
+                    <button class="btn btn-outline-gold">تعديل الملف</button>
+                    <button class="btn btn-secondary">إلغاء الأمر</button>
+                </div>
+                
+                <div class="card-label" style="margin-top: 2rem;">Destructive Actions</div>
+                <div class="btn-showcase" style="border-color: rgba(231, 76, 60, 0.2);">
+                    <button class="btn btn-danger">تسجيل خروج (Logout)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- BADGES -->
+        <section id="badges" class="chapter">
+            <div class="ch-tag">Components</div>
+            <h2 class="ch-title">Badges & Status</h2>
+            <p class="ch-desc">
+                Used to indicate system states (like Booking Status). Built with a tinted background and a matching solid border to ensure high contrast and readability within the dark theme.
+            </p>
+
+            <div class="card">
+                <div style="direction: rtl; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span class="badge badge-gold">مميز (Premium)</span>
+                    <span class="badge badge-green">مكتمل (Completed)</span>
+                    <span class="badge badge-blue">مؤكد (Confirmed)</span>
+                    <span class="badge badge-red">ملغي (Canceled)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARDS -->
+        <section id="cards" class="chapter">
+            <div class="ch-tag">Components</div>
+            <h2 class="ch-title">Surfaces: Cards & Stats</h2>
+            <p class="ch-desc">
+                Cards utilize the `dark-3` (#1a1a1a) surface elevated by a subtle 6% white border. Hover states introduce a gold-tinted border and a deep shadow to emphasize interactivity.
+            </p>
+
+            <div class="sh-grid">
+                <!-- Stat Card 1 -->
+                <div class="stat-card-demo">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value">12,500 ﷼</div>
+                    <div class="stat-label">إجمالي إيرادات اليوم</div>
+                </div>
+                
+                <!-- Stat Card 2 -->
+                <div class="stat-card-demo">
+                    <div class="stat-icon" style="background: rgba(46, 204, 113, 0.15); color: var(--success);">📅</div>
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">حجوزات مكتملة</div>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div class="stat-card-demo">
+                    <div class="stat-icon" style="background: rgba(52, 152, 219, 0.15); color: var(--info);">👥</div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">الموظفين المتاحين</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MOTION -->
+        <section id="motion" class="chapter">
+            <div class="ch-tag">Foundation / Styling</div>
+            <h2 class="ch-title">Motion & Animations</h2>
+            <p class="ch-desc">
+                The platform utilizes performance-friendly CSS animations that trigger on first paint to ensure above-the-fold content appears elegantly without layout shifts.
+            </p>
+
+            <div class="card">
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Keyframe Name</th>
+                            <th>Description</th>
+                            <th>Timing & Easing</th>
+                            <th>Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="tok">heroFadeUp</span></td>
+                            <td>Fades in and shifts Y from 18px to 0.</td>
+                            <td>0.45s ease (staggered)</td>
+                            <td>Headers, Paragraphs, CTAs on page load</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">heroSlideRight</span></td>
+                            <td>Fades in and shifts X from RTL start.</td>
+                            <td>0.4s ease</td>
+                            <td>Hero badges, side elements</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">glassCardIn</span></td>
+                            <td>Scales from 0.97 to 1, fades in.</td>
+                            <td>0.4s ease (staggered)</td>
+                            <td>Dashboard statistic cards</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tok">Transition</span></td>
+                            <td>Universal hover state smoothing</td>
+                            <td>all 0.3s</td>
+                            <td>Buttons, Cards, Links</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <footer style="padding: 4rem; text-align: center; color: var(--n700); font-family: var(--fm); font-size: 11px; letter-spacing: 0.1em; border-top: 1px solid rgba(255,255,255,0.04);">
+            ALSHAIB SALON BRAND GUIDELINES • DESIGNED BY AI • MAQASS PLATFORM
+        </footer>
+
+    </main>
+
+    <script>
+        // Simple script to highlight active section in sidebar
+        const sections = document.querySelectorAll('.chapter');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -117,7 +117,7 @@ export default function ExpensesPage() {
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                 <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
                                 <YAxis tick={{ fill: "#888", fontSize: 12 }} />
-                                <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
+                                <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
                                 <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} />
                             </BarChart>

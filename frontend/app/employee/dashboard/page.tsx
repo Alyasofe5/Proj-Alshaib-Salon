@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -62,7 +62,7 @@ export default function EmployeeDashboard() {
 
                 {/* Big CTA */}
                 <div className="text-center mb-6">
-                    <Link href="/employee/new-customer" className="inline-flex items-center gap-3 px-10 py-5 rounded-xl text-black font-extrabold text-lg transition-all hover:-translate-y-1" style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", boxShadow: "0 8px 30px rgba(201,168,76,0.4)" }}>
+                    <Link href="/employee/new-customer" className="inline-flex items-center gap-3 px-10 py-5 rounded-xl text-black font-extrabold text-lg transition-all hover:-translate-y-1" style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", boxShadow: "0 8px 30px rgba(230,179,30,0.4)" }}>
                         <FaPlusCircle size={24} /> تسجيل زبون جديد
                     </Link>
                 </div>

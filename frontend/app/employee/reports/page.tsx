@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -125,8 +125,8 @@ function ReportsContent() {
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 12 }} />
                                     <YAxis tick={{ fill: "#888", fontSize: 12 }} />
-                                    <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 8 }} />
-                                    <Bar dataKey="total" fill="#C9A84C" radius={[6, 6, 0, 0]} name="المبيعات" />
+                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
+                                    <Bar dataKey="total" fill="#E6B31E" radius={[6, 6, 0, 0]} name="المبيعات" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </motion.div>
@@ -158,8 +158,8 @@ function ReportsContent() {
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
                                     <YAxis tick={{ fill: "#888", fontSize: 12 }} />
-                                    <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 8 }} />
-                                    <Line type="monotone" dataKey="total" stroke="#C9A84C" strokeWidth={2} dot={{ fill: "#C9A84C" }} name="المبيعات" />
+                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
+                                    <Line type="monotone" dataKey="total" stroke="#E6B31E" strokeWidth={2} dot={{ fill: "#E6B31E" }} name="المبيعات" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </motion.div>

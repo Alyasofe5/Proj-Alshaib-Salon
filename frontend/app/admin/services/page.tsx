@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -103,7 +103,7 @@ export default function ServicesPage() {
                                             <button onClick={() => handleToggle(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "#888" }}>
                                                 {svc.is_active ? <FaToggleOn className="text-green-500" size={14} /> : <FaToggleOff size={14} />}
                                             </button>
-                                            <button onClick={() => openEdit(svc)} className="p-2 rounded-lg" style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#C9A84C" }}>
+                                            <button onClick={() => openEdit(svc)} className="p-2 rounded-lg" style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}>
                                                 <FaEdit size={12} />
                                             </button>
                                             <button onClick={() => handleDelete(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(231,76,60,0.1)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}>

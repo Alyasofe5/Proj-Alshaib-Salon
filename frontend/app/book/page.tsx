@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; }
 interface Employee { id: number; name: string; }
@@ -94,18 +94,18 @@ function BookingContent() {
         timeSlots.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
 
     const isBooked = (t: string) => {
-        const slotsAtTime = bookedSlots.filter(s => s.booking_time.startsWith(t));
+        const slotsAtTime = bookedSlots.filter((s: any) => s.booking_time.startsWith(t));
         if (slotsAtTime.length === 0) return false;
         if (sel.employee_id) {
             // حلاق محدد — محجوز إذا نفس الحلاق عنده حجز بهالوقت
-            return slotsAtTime.some(s => Number(s.employee_id) === sel.employee_id);
+            return slotsAtTime.some((s: any) => Number(s.employee_id) === sel.employee_id);
         } else {
             // أي حلاق — محجوز فقط إذا كل الحلاقين محجوزين بهالوقت
-            return employees.length > 0 && employees.every(emp => slotsAtTime.some(s => Number(s.employee_id) === emp.id));
+            return employees.length > 0 && employees.every((emp: any) => slotsAtTime.some((s: any) => Number(s.employee_id) === emp.id));
         }
     };
-    const selServices = services.filter(s => sel.service_ids.includes(s.id));
-    const selEmployee = employees.find(e => e.id === sel.employee_id);
+    const selServices = services.filter((s: any) => sel.service_ids.includes(s.id));
+    const selEmployee = employees.find((e: any) => e.id === sel.employee_id);
 
     const dates: string[] = [];
     for (let i = 0; i < 60 && dates.length < bookingDays; i++) {
@@ -562,16 +562,16 @@ function BookingContent() {
                         </div>
                     </section>
                 )}
-
+                
                 {/* ═══════════ BOOKING SECTION ═══════════ */}
                 <section id="booking-section" style={{ background: "transparent" }}>
 
                     {/* Progress bar (steps 2-5) */}
                     {step > 1 && step < 6 && (
-                        <div className="pt-32 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                        <div className="pt-40 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
                             <div className="max-w-3xl mx-auto px-6">
                                 <div className="flex items-center">
-                                    {["الخدمة", "الحلاق", "الموعد", "البيانات"].map((l, i) => {
+                                    {["الخدمة", "الحلاق", "الموعد", "البيانات"].map((l: string, i: number) => {
                                         const stepNum = i + 2;
                                         return (
                                             <div key={i} className="flex items-center flex-1">

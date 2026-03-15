@@ -32,3 +32,6 @@ build-output.txt
 
 # Agents
 .agents/
+
+# Build artifacts
+deploy_combined/

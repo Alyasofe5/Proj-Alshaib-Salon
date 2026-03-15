@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -45,6 +45,7 @@ function BookingContent() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [notFound, setNotFound] = useState(false);
+    const [noBookingPage, setNoBookingPage] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -56,7 +57,14 @@ function BookingContent() {
                 setSalon(d.salon); setServices(d.services || []); setEmployees(d.employees || []);
                 setWorkHours(d.work_hours || { start: "09:00", end: "22:00", interval: 30 });
                 setOffDays(d.off_days || []); setBookingDays(d.booking_days || 7); setStep(1);
-            } catch { setNotFound(true); }
+            } catch (err: unknown) {
+                const axiosErr = err as { response?: { status?: number } };
+                if (axiosErr.response?.status === 403) {
+                    setNoBookingPage(true);
+                } else {
+                    setNotFound(true);
+                }
+            }
         })();
     }, [slug]);
 
@@ -107,6 +115,32 @@ function BookingContent() {
 
     /* ---- STYLES ---- */
     const gold = "#E6B31E";
+
+    if (noBookingPage) return (
+        <div className="min-h-screen flex items-center justify-center" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif" }}>
+            <div className="text-center px-6 max-w-md">
+                <div className="w-24 h-24 mx-auto mb-8 rounded-3xl flex items-center justify-center"
+                    style={{ background: `${gold}10`, border: `2px solid ${gold}20` }}>
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.5">
+                        <rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                    </svg>
+                </div>
+                <h1 className="text-3xl font-black mb-3 text-white" style={{ fontFamily: "'Playfair Display',serif" }}>
+                    الحجز غير متاح
+                </h1>
+                <p className="text-base leading-relaxed mb-8" style={{ color: "rgba(255,255,255,.4)" }}>
+                    صفحة الحجز غير متوفرة لهذا الصالون حالياً. يرجى التواصل مع الصالون مباشرة لحجز موعد.
+                </p>
+                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold"
+                    style={{ background: `${gold}10`, border: `1px solid ${gold}20`, color: gold }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    يتطلب ترقية الباقة
+                </div>
+            </div>
+        </div>
+    );
 
     if (notFound) return (
         <div className="min-h-screen flex items-center justify-center" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif" }}>

@@ -44,6 +44,16 @@ if ($logoPath && !file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $logoPath)) {
     $logoPath = null;
 }
 
+// Features config
+$featuresConfig = getSalonFeaturesConfig($salon);
+$planType = getPlanType($salon);
+
+// Branches for enterprise / admin users
+$branches = [];
+if ($planType === 'enterprise' || ($user['role'] ?? '') === 'admin') {
+    $branches = getSalonBranches($currentUser['user_id']);
+}
+
 sendSuccess([
     'user' => $user,
     'salon' => [
@@ -53,8 +63,11 @@ sendSuccess([
         'logo'        => $logoPath,
         'status'      => $salon['status'],
         'plan'        => $salon['plan_name_ar'] ?? $salon['plan_name'] ?? 'أساسي',
+        'plan_type'   => $planType,
+        'features'    => $featuresConfig,
         'expires_at'  => $salon['subscription_expires_at'],
         'days_left'   => $daysLeft,
         'show_alert'  => ($daysLeft !== null && $daysLeft <= 7 && $daysLeft > 0),
     ],
+    'branches' => $branches,
 ]);

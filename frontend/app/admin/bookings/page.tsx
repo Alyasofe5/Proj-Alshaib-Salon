@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import {
-    FaCalendarAlt, FaClock, FaUser, FaPhone, FaCheck, FaTimes,
-    FaCheckDouble, FaFilter, FaClipboardList, FaWhatsapp, FaTrash
-} from "react-icons/fa";
+    CalendarDays, Clock, User, Phone, Check, X as XIcon,
+    CheckCheck, Filter, ClipboardList, MessageCircle, Trash2, FileText
+} from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 interface Booking {
     id: number;
@@ -116,7 +117,7 @@ export default function AdminBookings() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <FaClipboardList className="text-gold" /> إدارة الحجوزات
+                        <ClipboardList size={18} className="text-gold" /> إدارة الحجوزات
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">إدارة مواعيد الزبائن</p>
                 </div>
@@ -143,7 +144,7 @@ export default function AdminBookings() {
             {/* Filters */}
             <div className="flex gap-2 items-center overflow-x-auto hide-scrollbar pb-1 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
                 <div className="flex-shrink-0">
-                    <FaFilter className="text-gray-500 text-sm hidden md:block" />
+                    <Filter size={14} className="text-gray-500 hidden md:block" />
                 </div>
                 {[
                     { key: "today", label: "اليوم" },
@@ -153,7 +154,7 @@ export default function AdminBookings() {
                     { key: "all", label: "الكل" },
                 ].map((f) => (
                     <button key={f.key} onClick={() => setPeriod(f.key)}
-                        className={`flex-shrink-0 px-3 py-1.5 md:py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-gold text-black" : "bg-dark text-gray-400 hover:text-white"
+                        className={`flex-shrink-0 px-3 py-1.5 md:py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-white/10 text-gold border border-gold/20" : "bg-dark text-gray-400 hover:text-white"
                             }`}
                     >{f.label}</button>
                 ))}
@@ -196,26 +197,26 @@ export default function AdminBookings() {
                                             </span>
                                             <span className="text-white text-sm md:text-base font-bold">{b.customer_name}</span>
                                             <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-xs md:text-sm flex items-center gap-1 hover:text-gold mr-auto md:mr-0">
-                                                <FaPhone size={10} /> <span dir="ltr">{b.customer_phone}</span>
+                                                <Phone size={10} /> <span dir="ltr">{b.customer_phone}</span>
                                             </a>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs md:text-sm text-gray-400 flex-wrap">
                                             <span className="flex items-center gap-1">
-                                                <FaCalendarAlt size={10} className="text-gold" />
+                                                <CalendarDays size={10} className="text-gold" />
                                                 {dayName(b.booking_date)} {b.booking_date}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <FaClock size={10} className="text-gold" />
+                                                <Clock size={10} className="text-gold" />
                                                 {formatTime(b.booking_time)}
                                             </span>
                                             <span className="text-gold font-semibold">{b.service_name}</span>
                                             {b.employee_name && (
                                                 <span className="flex items-center gap-1">
-                                                    <FaUser size={9} /> {b.employee_name}
+                                                <User size={9} /> {b.employee_name}
                                                 </span>
                                             )}
                                         </div>
-                                        {b.notes && <p className="text-[11px] md:text-xs text-gray-500 mt-1 pl-2 border-r-2 border-gray-700">📝 {b.notes}</p>}
+                                        {b.notes && <p className="text-[11px] md:text-xs text-gray-500 mt-1 pl-2 border-r-2 border-gray-700"><FileText size={10} className="inline mr-1" /> {b.notes}</p>}
                                     </div>
 
                                     {/* Actions */}
@@ -227,14 +228,14 @@ export default function AdminBookings() {
                                                     disabled={actionLoading === b.id}
                                                     className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all"
                                                 >
-                                                    <FaCheck size={10} /> تأكيد
+                                                    <Check size={10} /> تأكيد
                                                 </button>
                                                 <button
                                                     onClick={() => handleStatus(b.id, "cancelled")}
                                                     disabled={actionLoading === b.id}
                                                     className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
                                                 >
-                                                    <FaTimes size={10} /> رفض
+                                                    <XIcon size={10} /> رفض
                                                 </button>
                                             </>
                                         )}
@@ -244,7 +245,7 @@ export default function AdminBookings() {
                                                 disabled={actionLoading === b.id}
                                                 className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-all"
                                             >
-                                                <FaCheckDouble size={10} /> إكمال
+                                                <CheckCheck size={10} /> إكمال
                                             </button>
                                         )}
                                         <div className="flex gap-1.5 items-center justify-end w-full md:w-auto mt-2 md:mt-0">
@@ -258,7 +259,7 @@ export default function AdminBookings() {
                                             <button
                                                 onClick={() => handleDelete(b.id)}
                                                 className="flex-1 md:flex-none flex items-center justify-center p-2 rounded-lg text-gray-400 bg-gray-500/10 border border-gray-500/20 hover:text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all"
-                                            ><FaTrash size={12} /></button>
+                                            ><Trash2 size={12} /></button>
                                         </div>
                                     </div>
                                 </div>
@@ -269,7 +270,7 @@ export default function AdminBookings() {
 
                 {bookings.length === 0 && (
                     <div className="text-center py-16 text-gray-500">
-                        <FaClipboardList className="mx-auto text-4xl mb-3 text-gray-700" />
+                        <ClipboardList size={36} className="mx-auto mb-3 text-gray-700" />
                         <p>لا توجد حجوزات {period === "today" ? "لليوم" : ""}</p>
                     </div>
                 )}

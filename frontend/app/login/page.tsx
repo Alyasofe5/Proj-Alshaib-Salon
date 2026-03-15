@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
@@ -90,10 +90,10 @@ export default function LoginPage() {
 
         try {
             const res = await authAPI.login(username, password);
-            const { token, user, salon } = res.data.data;
+            const { token, user, salon, branches } = res.data.data;
 
-            // Save auth
-            login(user, token, salon);
+            // Save auth (including branches for enterprise plan)
+            login(user, token, salon, branches || []);
 
             // Navigate using full page redirect — most reliable on all mobile browsers
             if (user.role === "super_admin") {

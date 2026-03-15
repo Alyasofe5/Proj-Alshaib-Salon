@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { dashboardAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import BranchManager from "@/components/BranchManager";
 import StatCard from "@/components/StatCard";
 import {
     Users,
@@ -100,38 +101,38 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="mx-4 mt-3 mb-0 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
+                    className="mx-4 mt-3 mb-4 rounded-2xl px-4 md:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                     style={{
                         background: isUrgent ? "rgba(231,76,60,.12)" : "rgba(251,191,36,.08)",
                         border: `1px solid ${isUrgent ? "rgba(231,76,60,.3)" : "rgba(251,191,36,.25)"}`,
                     }}
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                             style={{ background: isUrgent ? "rgba(231,76,60,.15)" : "rgba(251,191,36,.12)" }}>
                             <AlarmClock size={20} color={isUrgent ? "#e74c3c" : "#fbbf24"} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <p className="font-bold text-sm" style={{ color: isUrgent ? "#e74c3c" : "#fbbf24" }}>
                                 {daysLeft === 0 ? "اشتراكك ينتهي اليوم!" : `متبقي على انتهاء اشتراكك ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"}`}
                             </p>
                             <p className="text-xs text-gray-500 mt-0.5">
-                                سارع لتجديد اشتراكك لضمان استمرارية خدماتك بدون انقطاع
+                                سارع لتجديد اشتراكك لضمان استمرارية خدماتك
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-3 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0">
                         <a
                             href={`https://wa.me/962781717990?text=${encodeURIComponent(`مرحبا، أريد تجديد اشتراك صالون ${salon?.name || ""}`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 flex-1 sm:flex-none"
                             style={{ background: isUrgent ? "rgba(231,76,60,.2)" : "rgba(251,191,36,.15)", color: isUrgent ? "#e74c3c" : "#fbbf24" }}
                         >
                             <Bell size={13} />
                             جدد الاشتراك
                         </a>
-                        <button onClick={() => setWarnDismissed(true)} className="text-gray-600 hover:text-gray-400 transition-colors">
+                        <button onClick={() => setWarnDismissed(true)} className="text-gray-600 hover:text-gray-400 p-2 sm:p-0 transition-colors">
                             <X size={16} />
                         </button>
                     </div>
@@ -224,10 +225,10 @@ export default function DashboardPage() {
                             مبيعات <span>آخر 7 أيام</span>
                         </div>
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={chartData}>
+                            <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                                <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 12 }} />
-                                <YAxis tick={{ fill: "#888", fontSize: 12 }} />
+                                <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 10 }} />
+                                <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
                                 <Tooltip
                                     contentStyle={{
                                         background: "var(--white)",
@@ -246,6 +247,7 @@ export default function DashboardPage() {
                                     fill="#E6B31E"
                                     radius={[6, 6, 0, 0]}
                                     name="المبيعات"
+                                    cursor={false as unknown as undefined}
                                 />
                             </BarChart>
                         </ResponsiveContainer>
@@ -406,6 +408,16 @@ export default function DashboardPage() {
                         </table>
                     </motion.div>
                 </div>
+
+                {/* Branch Manager — Enterprise Only */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-2 bg-[#252525] rounded-2xl border border-[#3A3A3A] p-4"
+                >
+                    <BranchManager />
+                </motion.div>
             </div>
         </>
     );

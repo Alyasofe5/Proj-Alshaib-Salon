@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $plans = $pdo->query("
     SELECT id, name, name_ar, price, duration_days, max_employees, max_services, features, is_popular
     FROM subscription_plans
-    WHERE is_active = 1
+    WHERE is_active = 1 AND (plan_type IS NULL OR plan_type != 'free')
     ORDER BY price ASC
 ")->fetchAll();
 

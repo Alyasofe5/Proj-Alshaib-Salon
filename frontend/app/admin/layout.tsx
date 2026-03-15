@@ -12,7 +12,7 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const router = useRouter();
-    const { isAuthenticated, _hydrated, setUser, setSalon, logout, hydrate } = useAuthStore();
+    const { isAuthenticated, _hydrated, setUser, setSalon, setBranches, logout, hydrate } = useAuthStore();
 
     // Hydrate on mount (restore token from cookies)
     useEffect(() => {
@@ -27,19 +27,20 @@ export default function AdminLayout({
             return;
         }
 
-        // Fetch user data from API
+        // Fetch user data from API (includes features + branches)
         authAPI
             .me()
             .then((res) => {
-                const { user, salon } = res.data.data;
+                const { user, salon, branches } = res.data.data;
                 setUser(user);
                 if (salon) setSalon(salon);
+                if (branches) setBranches(branches);
             })
             .catch(() => {
                 logout();
                 router.replace("/login");
             });
-    }, [_hydrated, isAuthenticated, router, setUser, setSalon, logout]);
+    }, [_hydrated, isAuthenticated, router, setUser, setSalon, setBranches, logout]);
 
     if (!_hydrated || !isAuthenticated) {
         return (
@@ -52,7 +53,9 @@ export default function AdminLayout({
     return (
         <>
             <Sidebar />
-            <main className="main-content">{children}</main>
+            <main className="main-content">
+                {children}
+            </main>
         </>
     );
 }

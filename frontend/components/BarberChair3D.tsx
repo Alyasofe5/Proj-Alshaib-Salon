@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useMemo, useRef, useEffect, useState } from "react";
+import { Suspense, useMemo, useRef, useEffect, useState, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -9,10 +9,11 @@ import * as THREE from "three";
 useGLTF.preload("/barber_chair.glb");
 
 // ─── 3D Chair Model ───────────────────────────────────────────
-function ChairModel() {
+function ChairModel({ onLoaded }: { onLoaded: () => void }) {
     const { scene } = useGLTF("/barber_chair.glb");
     const clonedScene = useMemo(() => scene.clone(true), [scene]);
     const ref = useRef<THREE.Group>(null!);
+    const calledRef = useRef(false);
 
     useEffect(() => {
         if (clonedScene) {
@@ -23,8 +24,13 @@ function ChairModel() {
             const s = 3 / maxDim;
             clonedScene.scale.setScalar(s);
             clonedScene.position.set(-center.x * s, -center.y * s, -center.z * s);
+
+            if (!calledRef.current) {
+                calledRef.current = true;
+                onLoaded();
+            }
         }
-    }, [clonedScene]);
+    }, [clonedScene, onLoaded]);
 
     useFrame((_, delta) => {
         if (ref.current) ref.current.rotation.y += delta * 0.3;
@@ -34,18 +40,18 @@ function ChairModel() {
 }
 
 // ─── Sparkle positions — computed once, stable across renders ──
-const SPARKLE_POSITIONS = [0, 1, 2, 3, 4].map(i => ({
-    top: `${15 + Math.sin(i * 1.4) * 35}%`,
-    left: `${15 + Math.cos(i * 1.3) * 35}%`,
-    animationDuration: `${2.5 + i * 0.5}s`,
-    animationDelay: `${i * 0.6}s`,
+const SPARKLE_POSITIONS = [0, 1, 2].map(i => ({
+    top: `${20 + Math.sin(i * 2) * 30}%`,
+    left: `${20 + Math.cos(i * 2) * 30}%`,
+    animationDuration: `${2.5 + i * 0.8}s`,
+    animationDelay: `${i * 0.5}s`,
 }));
 
 // ─── Main Component ────────────────────────────────────────────
 export default function BarberChair3D() {
     const [canvasReady, setCanvasReady] = useState(false);
+    const [modelReady, setModelReady] = useState(false);
 
-    // Detect low-end devices once on mount (no re-renders)
     const isLowEnd = useRef<boolean>(false);
     useEffect(() => {
         isLowEnd.current =
@@ -53,12 +59,17 @@ export default function BarberChair3D() {
             window.devicePixelRatio <= 1;
     }, []);
 
+    const handleModelLoaded = useCallback(() => setModelReady(true), []);
+
+    // Show content when both canvas is created AND model is loaded
+    const isVisible = canvasReady && modelReady;
+
     return (
-        <div className="relative w-[350px] h-[350px] md:w-[500px] md:h-[500px] flex items-center justify-center">
+        <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] flex items-center justify-center">
 
             {/* ── Gold ambient glow — pure CSS, instant ── */}
             <div
-                className="absolute inset-0 blur-[100px] opacity-25"
+                className="absolute inset-0 blur-[80px] opacity-20"
                 style={{ background: "radial-gradient(circle, #E6B31E, transparent 60%)" }}
             />
 
@@ -81,55 +92,66 @@ export default function BarberChair3D() {
                 <div
                     key={i}
                     className="absolute w-1.5 h-1.5 rounded-full bg-[#e8c96a] animate-ping"
-                    style={{ ...pos, opacity: 0.6 }}
+                    style={{ ...pos, opacity: 0.5 }}
                 />
             ))}
 
-            {/* ── Spinner — only visible before canvas is ready ── */}
-            {!canvasReady && (
-                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                    <div className="w-10 h-10 rounded-full border-2 border-transparent border-t-[#E6B31E] border-r-[#E6B31E] animate-spin" />
-                </div>
-            )}
-
-            {/* ── Three.js Canvas — fades in when WebGL context is ready ── */}
+            {/* ── Beautiful placeholder — visible while model loads ── */}
             <div
-                className="absolute inset-0 z-10 transition-opacity duration-500"
-                style={{ opacity: canvasReady ? 1 : 0, willChange: "opacity" }}
+                className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none transition-opacity duration-700"
+                style={{ opacity: isVisible ? 0 : 1 }}
+            >
+                <div className="relative">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#E6B31E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40">
+                        <circle cx="6" cy="6" r="3" />
+                        <path d="M8.12 8.12 12 12" />
+                        <path d="M20 4 8.12 15.88" />
+                        <circle cx="6" cy="18" r="3" />
+                        <path d="M14.8 14.8 20 20" />
+                    </svg>
+                    <div
+                        className="absolute -inset-4 rounded-full border animate-ping"
+                        style={{ borderColor: "rgba(230,179,30,.15)", animationDuration: "2s" }}
+                    />
+                </div>
+                <span className="text-[10px] font-semibold mt-3" style={{ color: "rgba(230,179,30,.35)" }}>
+                    جارٍ التحميل...
+                </span>
+            </div>
+
+            {/* ── Three.js Canvas ── */}
+            <div
+                className="absolute inset-0 z-10 transition-opacity duration-700 ease-out"
+                style={{ opacity: isVisible ? 1 : 0 }}
             >
                 <Canvas
                     camera={{ position: [0, 1.5, 5], fov: 40 }}
                     gl={{
                         alpha: true,
-                        // Disable antialias on low-end → ~2x faster rasterization
                         antialias: !isLowEnd.current,
                         powerPreference: isLowEnd.current ? "low-power" : "high-performance",
                     }}
-                    // Cap pixel ratio: low-end gets 1.0, high-end caps at 1.5
                     dpr={isLowEnd.current ? 1 : [1, 1.5]}
                     frameloop="always"
                     onCreated={({ gl }) => {
                         gl.setClearColor(0x000000, 0);
-                        // Trigger fade-in — canvas is painted and ready
                         setCanvasReady(true);
                     }}
                 >
+                    {/* Simplified lighting — 3 instead of 5 */}
                     <ambientLight intensity={0.8} />
                     <directionalLight position={[5, 5, 5]} intensity={2} color="#E6B31E" />
                     <directionalLight position={[-3, 3, -2]} intensity={0.8} color="#ffffff" />
-                    <pointLight position={[0, 4, 0]} intensity={1.5} color="#e8c96a" />
-                    {/* Skip spot light on low-end — each light costs GPU per-fragment */}
                     {!isLowEnd.current && (
-                        <spotLight position={[0, 5, 3]} angle={0.5} penumbra={1} intensity={1} color="#E6B31E" />
+                        <pointLight position={[0, 4, 0]} intensity={1.5} color="#e8c96a" />
                     )}
                     <Suspense fallback={null}>
-                        <ChairModel />
+                        <ChairModel onLoaded={handleModelLoaded} />
                     </Suspense>
                     <OrbitControls
                         enableZoom={false}
                         enablePan={false}
                         autoRotate={false}
-                        // Disable touch drag on low-end to reduce pointer event overhead
                         enableRotate={!isLowEnd.current}
                     />
                 </Canvas>

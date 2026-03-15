@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -152,10 +152,10 @@ export default function ReportsPage() {
                                     <BarChart3 size={15} color="var(--gold)" /> المبيعات <span>اليومية</span>
                                 </div>
                                 <ResponsiveContainer width="100%" height={220}>
-                                    <LineChart data={((data as { chart: { labels: number[]; data: number[] } }).chart?.labels || []).map((d: number, i: number) => ({ day: d, sales: ((data as { chart: { data: number[] } }).chart?.data || [])[i] }))}>
+                                    <LineChart data={((data as { chart: { labels: number[]; data: number[] } }).chart?.labels || []).map((d: number, i: number) => ({ day: d, sales: ((data as { chart: { data: number[] } }).chart?.data || [])[i] }))} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                         <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 11 }} />
-                                        <YAxis tick={{ fill: "#888", fontSize: 11 }} />
+                                        <YAxis orientation="right" tick={{ fill: "#888", fontSize: 11 }} width={30} />
                                         <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
                                         <Line type="monotone" dataKey="sales" stroke="#E6B31E" strokeWidth={2} dot={{ fill: "#E6B31E", r: 3 }} />
                                     </LineChart>
@@ -235,10 +235,11 @@ export default function ReportsPage() {
                                         expenses: ((data as { chart: { expenses: number[] } }).chart?.expenses || [])[i],
                                     }))}
                                     barGap={4}
+                                    margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                                 >
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 11 }} />
-                                    <YAxis tick={{ fill: "#888", fontSize: 11 }} />
+                                    <YAxis orientation="right" tick={{ fill: "#888", fontSize: 11 }} width={30} />
                                     <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }}
                                         formatter={(value, name) => [`${Number(value).toFixed(3)} د.أ`, name === "sales" ? "المبيعات" : "المصاريف"]}
                                     />

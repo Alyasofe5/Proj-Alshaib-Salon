@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -113,13 +113,13 @@ export default function ExpensesPage() {
                     <div className="md:col-span-2 chart-card">
                         <div className="chart-card-title"><TrendingUp size={16} className="inline ml-2" /> مقارنة <span>آخر 6 أشهر</span></div>
                         <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={chartData}>
+                            <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                 <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
-                                <YAxis tick={{ fill: "#888", fontSize: 12 }} />
+                                <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
                                 <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
-                                <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
+                                <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

@@ -1,37 +1,38 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import { Scissors, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-[#040404] text-white" style={{ fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
+        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Cairo', 'Tajawal', sans-serif" }} dir="rtl">
             {/* Navbar */}
-            <nav className="border-b border-white/[.04] px-6 py-4">
+            <nav className="px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                 <div className="max-w-3xl mx-auto flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E6B31E, #e8c96a)" }}>
-                            <Scissors size={16} className="text-[#343434]" />
-                        </div>
-                        <span className="text-[18px] font-black text-white">MAQASS</span>
+                        <MaqassLogoIcon size={36} />
+                        <span className="text-[18px] font-black tracking-wider" style={{ color: "var(--gold)" }}>MAQASS</span>
                     </Link>
-                    <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors">
-                        <ArrowRight size={14} /> العودة للرئيسية
+                    <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-70"
+                        style={{ color: "var(--gold)" }}>
+                        العودة للرئيسية
+                        <ArrowLeft size={14} />
                     </Link>
                 </div>
             </nav>
 
-            <div className="max-w-3xl mx-auto px-6 py-16">
-                <div className="mb-10">
+            <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+                <div className="mb-8 sm:mb-10">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4"
-                        style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.15)", color: "#E6B31E" }}>
+                        style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.15)", color: "var(--gold)" }}>
                         آخر تحديث: مارس 2026
                     </div>
-                    <h1 className="text-4xl font-black mb-3">سياسة الخصوصية</h1>
-                    <p className="text-gray-500">نحن في Maqass نلتزم بحماية خصوصيتك وبياناتك الشخصية.</p>
+                    <h1 className="text-3xl sm:text-4xl font-black mb-3" style={{ color: "var(--text-main)" }}>سياسة الخصوصية</h1>
+                    <p style={{ color: "var(--text-mid)" }}>نحن في Maqass نلتزم بحماية خصوصيتك وبياناتك الشخصية.</p>
                 </div>
 
-                <div className="space-y-8 text-gray-300 leading-relaxed">
+                <div className="space-y-5 sm:space-y-8">
                     {[
                         {
                             title: "١. البيانات التي نجمعها",
@@ -62,15 +63,15 @@ export default function PrivacyPage() {
                             content: "لأي استفسار حول هذه السياسة، تواصل معنا على: info@maqass.app أو +962781717990"
                         },
                     ].map((section, i) => (
-                        <div key={i} className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)" }}>
-                            <h2 className="text-lg font-bold text-white mb-3" style={{ color: "#E6B31E" }}>{section.title}</h2>
-                            <p className="text-gray-400 leading-relaxed">{section.content}</p>
+                        <div key={i} className="rounded-2xl p-5 sm:p-6" style={{ background: "var(--white)", border: "1px solid var(--border)", boxShadow: "0 2px 12px var(--shadow)" }}>
+                            <h2 className="text-base sm:text-lg font-bold mb-3" style={{ color: "var(--gold)" }}>{section.title}</h2>
+                            <p className="text-sm sm:text-base leading-relaxed" style={{ color: "var(--text-mid)" }}>{section.content}</p>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <footer className="border-t border-white/[.04] py-8 px-6 text-center text-sm text-gray-600">
+            <footer className="py-8 px-6 text-center text-sm" style={{ borderTop: "1px solid var(--border)", color: "var(--text-muted)" }}>
                 © {new Date().getFullYear()} Maqass. جميع الحقوق محفوظة.
             </footer>
         </div>

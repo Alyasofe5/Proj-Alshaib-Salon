@@ -18,26 +18,39 @@ import {
     FaPlusCircle,
     FaCalendarAlt,
     FaPrint,
+    FaLock,
 } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import BranchSwitcher from "@/components/BranchSwitcher";
 
-const adminLinks = [
+// Feature keys that each link requires (undefined = always visible)
+type FeatureKey = "has_booking_page" | "has_advanced_reports" | "has_whatsapp" | "has_multi_branch" | "has_custom_api" | "has_priority_support" | "has_full_customize";
+
+interface NavLink {
+    href?: string;
+    label: string;
+    section?: boolean;
+    icon?: React.ComponentType;
+    requiredFeature?: FeatureKey;
+}
+
+const adminLinks: NavLink[] = [
     { label: "الرئيسية", section: true },
     { href: "/admin/dashboard", label: "لوحة التحكم", icon: FaChartPie },
     { label: "الإدارة", section: true },
     { href: "/admin/employees", label: "الموظفون", icon: FaUsers },
     { href: "/admin/services", label: "الخدمات", icon: FaCut },
-    { href: "/admin/bookings", label: "الحجوزات", icon: FaCalendarAlt },
+    { href: "/admin/bookings", label: "الحجوزات", icon: FaCalendarAlt, requiredFeature: "has_booking_page" },
     { href: "/admin/expenses", label: "المصاريف", icon: FaFileInvoiceDollar },
     { label: "التقارير", section: true },
     { href: "/admin/reports", label: "التقارير الشاملة", icon: FaChartBar },
     { href: "/admin/print-report", label: "طباعة التقارير", icon: FaPrint },
     { label: "الإعدادات", section: true },
-    { href: "/admin/booking-settings", label: "إعدادات الحجز", icon: FaCut },
+    { href: "/admin/booking-settings", label: "إعدادات الحجز", icon: FaCut, requiredFeature: "has_booking_page" },
     { href: "/admin/users", label: "المستخدمون", icon: FaUserCog },
 ];
 
-const employeeLinks = [
+const employeeLinks: NavLink[] = [
     { label: "الرئيسية", section: true },
     { href: "/employee/dashboard", label: "لوحتي", icon: FaHome },
     { href: "/employee/new-customer", label: "تسجيل زبون", icon: FaPlusCircle },
@@ -46,6 +59,13 @@ const employeeLinks = [
     { href: "/employee/print-report", label: "طباعة تقريري", icon: FaPrint },
 ];
 
+const planBadges: Record<string, { label: string; color: string }> = {
+    free: { label: "مجاني", color: "bg-gray-500/20 text-gray-400" },
+    basic: { label: "أساسي", color: "bg-blue-500/20 text-blue-400" },
+    professional: { label: "احترافي", color: "bg-purple-500/20 text-purple-400" },
+    enterprise: { label: "مؤسسات", color: "bg-[#E6B31E]/20 text-[#E6B31E]" },
+};
+
 interface SidebarProps {
     role?: "admin" | "employee";
 }
@@ -53,8 +73,20 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const { user, salon, logout } = useAuthStore();
+    const { user, salon, branches, logout, hasFeature, isEnterprise } = useAuthStore();
     const [isOpen, setIsOpen] = useState(false);
+
+    // Prevent background scrolling when sidebar is open
+    useEffect(() => {
+        if (isOpen && window.innerWidth <= 768) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+        return () => {
+            document.body.style.overflow = "auto";
+        };
+    }, [isOpen]);
 
     const handleLogout = () => {
         logout();
@@ -64,15 +96,24 @@ export default function Sidebar({ role }: SidebarProps) {
     const displayName = user?.employee_name || user?.name || user?.username || "مستخدم";
     const initials = displayName.charAt(0).toUpperCase();
     const isEmployee = role === "employee" || user?.role === "employee";
-    const links = isEmployee ? employeeLinks : adminLinks;
+    const rawLinks = isEmployee ? employeeLinks : adminLinks;
     const panelName = isEmployee ? "EMPLOYEE PANEL" : "MANAGEMENT SYSTEM";
     const salonName = salon?.name || "Maqass";
     const salonLogo = salon?.logo;
+    const planType = salon?.plan_type || "basic";
+    const badge = planBadges[planType] || planBadges.basic;
+
+    // Filter links based on features
+    const links = rawLinks.filter(link => {
+        if (link.section) return true;
+        if (!link.requiredFeature) return true;
+        return hasFeature(link.requiredFeature);
+    });
 
     // Define 3 main shortcuts for the bottom nav based on role
     const bottomNavAdmin = [
         { href: "/admin/dashboard", label: "الرئيسية", icon: FaChartPie },
-        { href: "/admin/bookings", label: "الحجوزات", icon: FaCalendarAlt },
+        ...(hasFeature("has_booking_page") ? [{ href: "/admin/bookings", label: "الحجوزات", icon: FaCalendarAlt }] : []),
         { href: "/admin/reports", label: "التقارير", icon: FaChartBar },
     ];
     const bottomNavEmployee = [
@@ -106,6 +147,13 @@ export default function Sidebar({ role }: SidebarProps) {
                     </div>
                 </div>
 
+                {/* Branch Switcher for Enterprise plans */}
+                {isEnterprise() && branches && branches.length > 1 && (
+                    <div className="px-3 mb-2">
+                        <BranchSwitcher />
+                    </div>
+                )}
+
                 <nav className="sidebar-nav">
                     {links.map((link, idx) => {
                         if (link.section) {
@@ -138,12 +186,15 @@ export default function Sidebar({ role }: SidebarProps) {
                         <div className="user-avatar">{initials}</div>
                         <div>
                             <div className="user-name">{displayName}</div>
-                            <div className="user-role">
+                            <div className="user-role flex items-center gap-1.5">
                                 {isEmployee ? (
                                     <><FaCut className="inline ml-1" size={10} /> حلاق</>
                                 ) : (
                                     <><FaCrown className="inline ml-1" size={10} /> مدير النظام</>
                                 )}
+                                <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold ${badge.color}`}>
+                                    {badge.label}
+                                </span>
                             </div>
                         </div>
                     </div>

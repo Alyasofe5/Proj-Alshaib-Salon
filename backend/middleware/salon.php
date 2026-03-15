@@ -39,7 +39,8 @@ function validateSalonSubscription(int $salonId): array
 
     $stmt = $pdo->prepare("
         SELECT s.*, sp.name as plan_name, sp.name_ar as plan_name_ar,
-               sp.max_employees, sp.max_services
+               sp.max_employees, sp.max_services,
+               sp.plan_type, sp.features_config
         FROM salons s
         LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
         WHERE s.id = ?
@@ -141,7 +142,8 @@ function getSalonInfo(int $salonId): array
     global $pdo;
     $stmt = $pdo->prepare("
         SELECT s.*, sp.name as plan_name, sp.name_ar as plan_name_ar,
-               sp.max_employees, sp.max_services
+               sp.max_employees, sp.max_services,
+               sp.plan_type, sp.features_config
         FROM salons s
         LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
         WHERE s.id = ?
@@ -182,4 +184,92 @@ function checkServiceLimit(int $salonId, array $salon): void
     if ($count >= $maxServices) {
         sendError("لقد وصلت للحد الأقصى من الخدمات ({$maxServices}) في باقتك الحالية. يرجى الترقية.", 403);
     }
+}
+
+/**
+ * استخراج features_config من بيانات الصالون
+ * @return array خريطة المميزات الفعّالة
+ */
+function getSalonFeaturesConfig(array $salon): array
+{
+    $raw = $salon['features_config'] ?? null;
+    if (!$raw) {
+        // fallback defaults (free plan)
+        return [
+            'has_booking_page'     => false,
+            'has_advanced_reports'  => false,
+            'has_whatsapp'         => false,
+            'has_multi_branch'     => false,
+            'has_custom_api'       => false,
+            'has_priority_support' => false,
+            'has_full_customize'   => false,
+            'max_bookings_month'   => 50,
+        ];
+    }
+    $config = is_string($raw) ? json_decode($raw, true) : $raw;
+    return is_array($config) ? $config : [];
+}
+
+/**
+ * التحقق مما إذا كانت ميزة معينة مفعّلة في الباقة
+ */
+function hasFeature(array $salon, string $feature): bool
+{
+    $config = getSalonFeaturesConfig($salon);
+    return !empty($config[$feature]);
+}
+
+/**
+ * الحصول على نوع الباقة
+ */
+function getPlanType(array $salon): string
+{
+    return $salon['plan_type'] ?? 'free';
+}
+
+/**
+ * الحصول على فروع الصالون (Enterprise)
+ * يُرجع الفروع التابعة لنفس المالك
+ */
+function getSalonBranches(int $userId): array
+{
+    global $pdo;
+    
+    // Get all salons where this user is admin
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT s.id, s.name, s.slug, s.status, s.logo_path,
+               sp.name_ar as plan_name, sp.plan_type,
+               s.subscription_expires_at
+        FROM salons s
+        LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
+        INNER JOIN users u ON u.salon_id = s.id AND u.id = ?
+        WHERE s.status = 'active'
+        ORDER BY s.id
+    ");
+    $stmt->execute([$userId]);
+    $directSalons = $stmt->fetchAll();
+
+    // Also check owner_user_id link
+    $stmt2 = $pdo->prepare("
+        SELECT s.id, s.name, s.slug, s.status, s.logo_path,
+               sp.name_ar as plan_name, sp.plan_type,
+               s.subscription_expires_at
+        FROM salons s
+        LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
+        WHERE s.owner_user_id = ? AND s.status = 'active'
+        ORDER BY s.id
+    ");
+    $stmt2->execute([$userId]);
+    $linkedSalons = $stmt2->fetchAll();
+
+    // Merge and deduplicate
+    $merged = [];
+    $seen = [];
+    foreach (array_merge($directSalons, $linkedSalons) as $s) {
+        if (!in_array($s['id'], $seen)) {
+            $seen[] = $s['id'];
+            $merged[] = $s;
+        }
+    }
+    return $merged;
 }

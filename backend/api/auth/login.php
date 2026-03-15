@@ -90,6 +90,34 @@ if ($user['s_expires']) {
     $daysLeft = max(0, (int)ceil((strtotime($user['s_expires']) - time()) / 86400));
 }
 
+// الحصول على بيانات الباقة والمميزات
+$planType = 'free';
+$featuresConfig = [];
+$branches = [];
+
+if ($user['s_id']) {
+    // Get plan info
+    $planStmt = $pdo->prepare("
+        SELECT sp.plan_type, sp.features_config
+        FROM salons s
+        LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
+        WHERE s.id = ?
+    ");
+    $planStmt->execute([$user['s_id']]);
+    $planInfo = $planStmt->fetch();
+    if ($planInfo) {
+        $planType = $planInfo['plan_type'] ?? 'free';
+        $rawFeatures = $planInfo['features_config'] ?? null;
+        $featuresConfig = $rawFeatures ? (json_decode($rawFeatures, true) ?: []) : [];
+    }
+
+    // If enterprise plan, fetch available branches
+    if ($planType === 'enterprise' || $user['role'] === 'super_admin') {
+        require_once __DIR__ . '/../../middleware/salon.php';
+        $branches = getSalonBranches($user['id']);
+    }
+}
+
 sendSuccess([
     'token' => $token,
     'user' => [
@@ -108,5 +136,8 @@ sendSuccess([
         'logo'      => $user['s_logo'] ?? null,
         'status'    => $user['s_status'] ?? 'active',
         'days_left' => $daysLeft,
+        'plan_type' => $planType,
+        'features'  => $featuresConfig,
     ],
+    'branches' => $branches,
 ], 200, 'تم تسجيل الدخول بنجاح');

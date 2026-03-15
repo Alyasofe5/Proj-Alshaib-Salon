@@ -24,7 +24,7 @@ if ($method === 'GET') {
         // صالون واحد مع تفاصيل
         $stmt = $pdo->prepare("
             SELECT s.*, sp.name_ar as plan_name, sp.price as plan_price,
-                   sp.max_employees, sp.max_services,
+                   sp.max_employees, sp.max_services, sp.plan_type, sp.features_config,
                    (SELECT COUNT(*) FROM users u WHERE u.salon_id = s.id) as users_count,
                    (SELECT COUNT(*) FROM employees e WHERE e.salon_id = s.id AND e.is_active=1) as employees_count,
                    (SELECT COUNT(*) FROM services sv WHERE sv.salon_id = s.id AND sv.is_active=1) as services_count,
@@ -42,7 +42,7 @@ if ($method === 'GET') {
 
     // كل الصالونات
     $salons = $pdo->query("
-        SELECT s.*, sp.name_ar as plan_name,
+        SELECT s.*, sp.name_ar as plan_name, sp.plan_type,
                (SELECT COUNT(*) FROM employees e WHERE e.salon_id = s.id AND e.is_active=1) as emp_count,
                (SELECT COUNT(*) FROM transactions t WHERE t.salon_id = s.id AND DATE_FORMAT(t.created_at,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')) as month_tx,
                (SELECT COALESCE(SUM(total_amount),0) FROM transactions t WHERE t.salon_id = s.id AND DATE_FORMAT(t.created_at,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')) as month_revenue
@@ -131,7 +131,7 @@ if ($method === 'PUT' && $id) {
     sendSuccess(null, 200, 'تم تعديل الصالون');
 }
 
-// ===== PATCH: تغيير حالة الصالون =====
+// ===== PATCH: تغيير حالة الصالون / تحديث الاشتراك =====
 if ($method === 'PATCH' && $id) {
     $data = getRequestBody();
     $newStatus = $data['status'] ?? '';
@@ -141,6 +141,18 @@ if ($method === 'PATCH' && $id) {
     }
 
     $pdo->prepare("UPDATE salons SET status=? WHERE id=?")->execute([$newStatus, $id]);
+
+    // تغيير الباقة إذا تم تحديدها
+    if (!empty($data['subscription_plan_id'])) {
+        $newPlanId = (int) $data['subscription_plan_id'];
+        $pdo->prepare("UPDATE salons SET subscription_plan_id=? WHERE id=?")->execute([$newPlanId, $id]);
+        
+        // سجل تغيير الباقة (في try-catch لتجنب أخطاء جدول السجلات)
+        try {
+            $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, created_by) VALUES (?,'plan_changed',?)")
+                ->execute([$id, $user['user_id']]);
+        } catch (Exception $e) { /* ignore logging errors */ }
+    }
 
     // تجديد الاشتراك عند التفعيل
     if ($newStatus === 'active' && !empty($data['duration_days'])) {
@@ -153,30 +165,87 @@ if ($method === 'PATCH' && $id) {
         $currentExpiry = $current['subscription_expires_at'] ?? null;
         
         if ($currentExpiry && strtotime($currentExpiry) > time()) {
-            // مدد من تاريخ الانتهاء الحالي
             $pdo->prepare("UPDATE salons SET subscription_expires_at = DATE_ADD(subscription_expires_at, INTERVAL ? DAY) WHERE id = ?")
                 ->execute([$days, $id]);
         } else {
-            // ابدأ من اليوم
             $pdo->prepare("UPDATE salons SET subscription_starts_at = CURDATE(), subscription_expires_at = DATE_ADD(CURDATE(), INTERVAL ? DAY) WHERE id = ?")
                 ->execute([$days, $id]);
         }
     }
 
-    // سجل
-    $action = $newStatus === 'active' ? 'reactivated' : $newStatus;
-    $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, created_by) VALUES (?,?,?)")
-        ->execute([$id, $action, $user['user_id']]);
+    // سجل الحالة
+    try {
+        $action = $newStatus === 'active' ? 'reactivated' : $newStatus;
+        $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, created_by) VALUES (?,?,?)")
+            ->execute([$id, $action, $user['user_id']]);
+    } catch (Exception $e) { /* ignore logging errors */ }
 
-    sendSuccess(null, 200, 'تم تغيير حالة الصالون');
+    sendSuccess(null, 200, 'تم تحديث الصالون بنجاح');
 }
 
-// ===== DELETE: حذف صالون =====
+// ===== DELETE: حذف صالون نهائي مع جميع بياناته =====
 if ($method === 'DELETE' && $id) {
+
+    // حماية: لا يمكن حذف الصالون الرئيسي
     if ($id == 1) sendError('لا يمكن حذف الصالون الرئيسي', 403);
 
-    $pdo->prepare("DELETE FROM salons WHERE id=?")->execute([$id]);
-    sendSuccess(null, 200, 'تم حذف الصالون');
+    // تحقق من وجود الصالون
+    $stmt = $pdo->prepare("SELECT id, name FROM salons WHERE id = ?");
+    $stmt->execute([$id]);
+    $salon = $stmt->fetch();
+    if (!$salon) sendError('الصالون غير موجود', 404);
+
+    // تأكيد نصي (الـ frontend يرسل اسم الصالون)
+    $data = getRequestBody();
+    $confirmName = trim($data['confirm_name'] ?? '');
+    if (strtolower($confirmName) !== strtolower($salon['name'])) {
+        sendError('اسم التأكيد غير مطابق. يرجى كتابة اسم الصالون بدقة.', 422);
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $tables = [
+            'subscription_logs',  // سجلات الاشتراك
+            'notifications',      // الإشعارات
+            'bookings',           // الحجوزات
+            'transactions',       // المعاملات المالية
+            'expenses',           // المصاريف
+            'services',           // الخدمات
+            'employees',          // الموظفون
+            'users',              // حسابات المستخدمين
+        ];
+
+        foreach ($tables as $table) {
+            // تحقق من وجود الجدول قبل الحذف لتجنب الأخطاء
+            $check = $pdo->query("SHOW TABLES LIKE '{$table}'")->fetch();
+            if ($check) {
+                $pdo->prepare("DELETE FROM {$table} WHERE salon_id = ?")->execute([$id]);
+            }
+        }
+
+        // حذف الفروع المرتبطة (parent_salon_id)
+        $checkBranches = $pdo->query("SHOW COLUMNS FROM salons LIKE 'parent_salon_id'")->fetch();
+        if ($checkBranches) {
+            $pdo->prepare("DELETE FROM salons WHERE parent_salon_id = ?")->execute([$id]);
+        }
+
+        // أخيراً: حذف الصالون نفسه
+        $pdo->prepare("DELETE FROM salons WHERE id = ?")->execute([$id]);
+
+        // سجّل العملية في super admin logs إذا موجود
+        try {
+            $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, created_by) VALUES (?, 'permanently_deleted', ?)")
+                ->execute([$id, $user['user_id']]);
+        } catch (Exception $e) { /* ignore if log already deleted */ }
+
+        $pdo->commit();
+        sendSuccess(null, 200, "تم حذف صالون '{$salon['name']}' وجميع بياناته نهائياً");
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        sendError('فشل الحذف: ' . $e->getMessage(), 500);
+    }
 }
 
 sendError('Method not allowed', 405);

@@ -25,12 +25,18 @@ if ($method === 'GET') {
         ORDER BY sp.price ASC
     ")->fetchAll();
 
-    // Decode features JSON
+    // Decode features JSON & features_config
     foreach ($plans as &$p) {
         if ($p['features'] && is_string($p['features'])) {
             $p['features'] = json_decode($p['features'], true) ?? [];
         } else {
             $p['features'] = [];
+        }
+        // Decode features_config if exists
+        if (isset($p['features_config']) && is_string($p['features_config'])) {
+            $p['features_config'] = json_decode($p['features_config'], true) ?? [];
+        } else {
+            $p['features_config'] = $p['features_config'] ?? [];
         }
     }
 
@@ -45,6 +51,8 @@ if ($method === 'POST') {
     $name_ar = trim($data['name_ar'] ?? '');
     $price   = (float) ($data['price'] ?? 0);
     $features = $data['features'] ?? [];
+    $plan_type = trim($data['plan_type'] ?? 'basic');
+    $features_config = $data['features_config'] ?? [];
     $max_employees = (int) ($data['max_employees'] ?? 999);
     $max_services  = (int) ($data['max_services']  ?? 999);
     $duration_days = (int) ($data['duration_days'] ?? 30);
@@ -52,15 +60,47 @@ if ($method === 'POST') {
 
     if (empty($name) || empty($name_ar)) sendError('الاسم مطلوب (عربي وإنجليزي)', 422);
     if ($price < 0) sendError('السعر غير صحيح', 422);
+    if (!in_array($plan_type, ['free','basic','professional','enterprise'])) $plan_type = 'basic';
+
+    // Auto-set features_config based on plan_type if not provided
+    if (empty($features_config)) {
+        $features_config = match($plan_type) {
+            'free' => [
+                'has_booking_page' => false, 'has_advanced_reports' => false,
+                'has_whatsapp' => false, 'has_multi_branch' => false,
+                'has_custom_api' => false, 'has_priority_support' => false,
+                'has_full_customize' => false, 'max_bookings_month' => 50,
+            ],
+            'professional' => [
+                'has_booking_page' => true, 'has_advanced_reports' => true,
+                'has_whatsapp' => true, 'has_multi_branch' => false,
+                'has_custom_api' => false, 'has_priority_support' => true,
+                'has_full_customize' => true, 'max_bookings_month' => -1,
+            ],
+            'enterprise' => [
+                'has_booking_page' => true, 'has_advanced_reports' => true,
+                'has_whatsapp' => true, 'has_multi_branch' => true,
+                'has_custom_api' => true, 'has_priority_support' => true,
+                'has_full_customize' => true, 'max_bookings_month' => -1,
+            ],
+            default => [
+                'has_booking_page' => false, 'has_advanced_reports' => false,
+                'has_whatsapp' => false, 'has_multi_branch' => false,
+                'has_custom_api' => false, 'has_priority_support' => false,
+                'has_full_customize' => false, 'max_bookings_month' => 200,
+            ],
+        };
+    }
 
     $stmt = $pdo->prepare("
-        INSERT INTO subscription_plans (name, name_ar, price, duration_days, max_employees, max_services, features, is_popular, is_active)
-        VALUES (?,?,?,?,?,?,?,?,1)
+        INSERT INTO subscription_plans (name, name_ar, plan_type, price, duration_days, max_employees, max_services, features, features_config, is_popular, is_active)
+        VALUES (?,?,?,?,?,?,?,?,?,?,1)
     ");
     $stmt->execute([
-        $name, $name_ar, $price, $duration_days,
+        $name, $name_ar, $plan_type, $price, $duration_days,
         $max_employees, $max_services,
         json_encode($features, JSON_UNESCAPED_UNICODE),
+        json_encode($features_config, JSON_UNESCAPED_UNICODE),
         $is_popular
     ]);
 
@@ -75,6 +115,8 @@ if ($method === 'PUT' && $id) {
     $name_ar = trim($data['name_ar'] ?? '');
     $price   = (float) ($data['price'] ?? 0);
     $features = $data['features'] ?? [];
+    $plan_type = trim($data['plan_type'] ?? 'basic');
+    $features_config = $data['features_config'] ?? null;
     $max_employees = (int) ($data['max_employees'] ?? 999);
     $max_services  = (int) ($data['max_services']  ?? 999);
     $duration_days = (int) ($data['duration_days'] ?? 30);
@@ -82,23 +124,26 @@ if ($method === 'PUT' && $id) {
     $is_active     = (int) (!empty($data['is_active']));
 
     if (empty($name) || empty($name_ar)) sendError('الاسم مطلوب (عربي وإنجليزي)', 422);
+    if (!in_array($plan_type, ['free','basic','professional','enterprise'])) $plan_type = 'basic';
 
     // If marking as popular, unset others
     if ($is_popular) {
         $pdo->prepare("UPDATE subscription_plans SET is_popular = 0 WHERE id != ?")->execute([$id]);
     }
 
-    $stmt = $pdo->prepare("
-        UPDATE subscription_plans
-        SET name=?, name_ar=?, price=?, duration_days=?, max_employees=?, max_services=?, features=?, is_popular=?, is_active=?
-        WHERE id=?
-    ");
-    $stmt->execute([
-        $name, $name_ar, $price, $duration_days,
-        $max_employees, $max_services,
-        json_encode($features, JSON_UNESCAPED_UNICODE),
-        $is_popular, $is_active, $id
-    ]);
+    $updateSql = "UPDATE subscription_plans SET name=?, name_ar=?, plan_type=?, price=?, duration_days=?, max_employees=?, max_services=?, features=?, is_popular=?, is_active=?";
+    $params = [$name, $name_ar, $plan_type, $price, $duration_days, $max_employees, $max_services, json_encode($features, JSON_UNESCAPED_UNICODE), $is_popular, $is_active];
+
+    // Only update features_config if provided
+    if ($features_config !== null) {
+        $updateSql .= ", features_config=?";
+        $params[] = json_encode($features_config, JSON_UNESCAPED_UNICODE);
+    }
+
+    $updateSql .= " WHERE id=?";
+    $params[] = $id;
+
+    $pdo->prepare($updateSql)->execute($params);
 
     sendSuccess(null, 200, 'تم تحديث الباقة بنجاح — التغييرات تنعكس فوراً على كل مكان');
 }

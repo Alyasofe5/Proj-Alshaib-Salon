@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, Phone, Building2, User, MapPin, Users, MessageSquare, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle, Phone, Building2, User, MapPin, Users, MessageSquare, ArrowLeft, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 import api from "@/lib/api";
 
@@ -16,6 +17,30 @@ const RULES: Record<FormFields, { label: string; validate: (v: string) => string
 };
 
 export default function ContactPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="spinner" /></div>}>
+            <ContactPageInner />
+        </Suspense>
+    );
+}
+
+function ContactPageInner() {
+    const searchParams = useSearchParams();
+    const planName = searchParams.get("plan");    // e.g. "احترافي"
+    const fromCtx  = searchParams.get("from");    // "free" | "cta" | null
+
+    // Context-aware badge + subtitle
+    const isFreeCtx = fromCtx === "free";
+    const badge = isFreeCtx
+        ? "ابدأ رحلتك مجاناً"
+        : planName
+        ? `اشتراك باقة ${planName}`
+        : "ابدأ رحلتك مع Maqass";
+    const subtitle = isFreeCtx
+        ? "سيتواصل معك فريقنا خلال 24 ساعة لمساعدتك في تفعيل باقتك المجانية"
+        : planName
+        ? `سيتواصل معك فريقنا خلال 24 ساعة لإعداد اشتراك باقة ${planName} وتفعيل جميع المميزات`
+        : "سيتواصل معك فريقنا خلال 24 ساعة لمساعدتك في اختيار أفضل باقة لصالونك";
     const [form, setForm] = useState({ salon_name: "", owner_name: "", phone: "", city: "", employees: "1", message: "" });
     const [errors, setErrors] = useState<Partial<Record<FormFields, string>>>({});
     const [touched, setTouched] = useState<Partial<Record<FormFields, boolean>>>({});
@@ -92,26 +117,26 @@ export default function ContactPage() {
                         <span className="text-[18px] font-black tracking-wider" style={{ color: "var(--gold-dark)" }}>MAQASS</span>
                     </Link>
                     <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-70"
-                        style={{ color: "var(--text-mid)" }}>
-                        <ArrowRight size={14} />
+                        style={{ color: "var(--gold)" }}>
                         العودة للرئيسية
+                        <ArrowLeft size={14} />
                     </Link>
                 </div>
             </nav>
 
-            <div className="max-w-5xl mx-auto px-6 py-16">
+            <div className="max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-16">
 
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6"
                         style={{ background: "var(--gold-bg)", border: "1px solid var(--gold-light)", color: "var(--gold-dark)" }}>
-                        ابدأ رحلتك مع Maqass
+                        {badge}
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: "var(--text-main)" }}>
                         أخبرنا عن <span style={{ color: "var(--gold)" }}>صالونك</span>
                     </h1>
                     <p className="text-lg max-w-xl mx-auto" style={{ color: "var(--text-mid)" }}>
-                        سيتواصل معك فريقنا خلال 24 ساعة لإعداد الحساب وبدء الاشتراك مجاناً
+                        {subtitle}
                     </p>
                 </motion.div>
 
@@ -192,7 +217,7 @@ export default function ContactPage() {
                                     </div>
 
                                     {/* Phone + City */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div data-field="phone">
                                             <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
                                                 <Phone size={14} style={{ color: "var(--gold)" }} /> رقم الجوال <span style={{ color: "var(--error)" }}>*</span>
@@ -277,7 +302,7 @@ export default function ContactPage() {
 
                                 <button type="submit" disabled={loading}
                                     className="w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-base transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2 group overflow-hidden relative"
-                                    style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--gold-dark)", boxShadow: "0 8px 30px rgba(200,168,75,.25)" }}>
+                                    style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "#FFFFFF", boxShadow: "0 8px 30px rgba(200,168,75,.25)" }}>
                                     {loading ? <Loader2 size={18} className="animate-spin relative z-10" /> : null}
                                     {loading ? <span className="relative z-10">جاري الإرسال...</span> : (
                                         <>

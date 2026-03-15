@@ -1,0 +1,208 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useAuthStore } from "@/lib/store";
+import api from "@/lib/api";
+import { Building2, ChevronDown, Check, Loader2, ArrowLeftRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+/**
+ * BranchSwitcher — Enterprise plan branch selector
+ * Premium redesign with animations and professional UI.
+ */
+export default function BranchSwitcher() {
+    const { salon, branches, switchSalon } = useAuthStore();
+    const [open, setOpen] = useState(false);
+    const [switching, setSwitching] = useState<number | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    if (!branches || branches.length <= 1) return null;
+
+    const handleSwitch = async (branchId: number) => {
+        if (branchId === salon?.id || switching) return;
+        setSwitching(branchId);
+        try {
+            const res = await api.post("/auth/switch-salon.php", { salon_id: branchId });
+            const { token, salon: newSalon } = res.data.data;
+            switchSalon(newSalon, token, branches);
+            setOpen(false);
+            window.location.reload();
+        } catch {
+            setSwitching(null);
+        }
+    };
+
+    const currentInitial = (salon?.name || "S").charAt(0).toUpperCase();
+
+    return (
+        <div className="relative w-full" ref={dropdownRef}>
+            {/* Trigger Button */}
+            <button
+                onClick={() => setOpen(!open)}
+                className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200"
+                style={{
+                    background: open
+                        ? "linear-gradient(135deg, rgba(230,179,30,0.12), rgba(230,179,30,0.06))"
+                        : "rgba(255,255,255,0.03)",
+                    border: open
+                        ? "1px solid rgba(230,179,30,0.35)"
+                        : "1px solid rgba(255,255,255,0.07)",
+                }}
+            >
+                {/* Current salon avatar */}
+                <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden transition-all"
+                    style={{
+                        background: "linear-gradient(135deg, rgba(230,179,30,0.25), rgba(230,179,30,0.1))",
+                        color: "#E6B31E",
+                        border: "1px solid rgba(230,179,30,0.2)",
+                    }}
+                >
+                    {salon?.logo ? (
+                        <img
+                            src={salon.logo.startsWith("http") ? salon.logo : `/${salon.logo}`}
+                            alt={salon.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                    ) : currentInitial}
+                </div>
+
+                {/* Name + label */}
+                <div className="flex-1 text-right min-w-0">
+                    <p className="text-[11px] text-[#E6B31E]/60 font-medium leading-none mb-0.5">الفرع الحالي</p>
+                    <p className="text-xs font-bold text-white truncate leading-none">{salon?.name || "اختر الفرع"}</p>
+                </div>
+
+                {/* Chevron */}
+                <motion.div
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-shrink-0 text-[#E6B31E]/50 group-hover:text-[#E6B31E] transition-colors"
+                >
+                    <ChevronDown size={13} />
+                </motion.div>
+            </button>
+
+            {/* Dropdown */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute top-full left-0 right-0 mt-2 z-50 overflow-hidden"
+                        style={{
+                            background: "#1E1E1E",
+                            border: "1px solid rgba(230,179,30,0.2)",
+                            borderRadius: "14px",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(230,179,30,0.05)",
+                            minWidth: "220px",
+                        }}
+                    >
+                        {/* Header */}
+                        <div className="px-3 pt-3 pb-2 flex items-center gap-2">
+                            <ArrowLeftRight size={11} className="text-[#E6B31E]" />
+                            <span className="text-[10px] font-bold text-[#E6B31E]/70 uppercase tracking-wider">
+                                التبديل بين الفروع
+                            </span>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(230,179,30,0.15), transparent)", margin: "0 12px 8px" }} />
+
+                        {/* Branch list */}
+                        <div className="px-1.5 pb-1.5 space-y-0.5 max-h-[260px] overflow-y-auto">
+                            {branches.map((branch) => {
+                                const isActive = branch.id === salon?.id;
+                                const isLoading = switching === branch.id;
+                                const initial = branch.name.charAt(0).toUpperCase();
+
+                                return (
+                                    <button
+                                        key={branch.id}
+                                        onClick={() => handleSwitch(branch.id)}
+                                        disabled={isActive || !!switching}
+                                        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-150 disabled:cursor-not-allowed group"
+                                        style={{
+                                            background: isActive
+                                                ? "linear-gradient(135deg, rgba(230,179,30,0.12), rgba(230,179,30,0.06))"
+                                                : "transparent",
+                                            border: isActive
+                                                ? "1px solid rgba(230,179,30,0.2)"
+                                                : "1px solid transparent",
+                                            opacity: switching && !isActive ? 0.5 : 1,
+                                        }}
+                                        onMouseEnter={e => {
+                                            if (!isActive && !switching) {
+                                                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+                                                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.07)";
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!isActive) {
+                                                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                                                (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
+                                            }
+                                        }}
+                                    >
+                                        {/* Avatar */}
+                                        <div
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden"
+                                            style={{
+                                                background: isActive
+                                                    ? "linear-gradient(135deg, rgba(230,179,30,0.3), rgba(230,179,30,0.15))"
+                                                    : "rgba(255,255,255,0.05)",
+                                                color: isActive ? "#E6B31E" : "#8A8A8A",
+                                                border: isActive ? "1px solid rgba(230,179,30,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                                            }}
+                                        >
+                                            {branch.logo_path ? (
+                                                <img
+                                                    src={branch.logo_path.startsWith("http") ? branch.logo_path : `/${branch.logo_path}`}
+                                                    alt={branch.name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                                />
+                                            ) : initial}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 text-right min-w-0">
+                                            <p className={`text-xs font-bold truncate ${isActive ? "text-[#E6B31E]" : "text-[#CACACA]"}`}>
+                                                {branch.name}
+                                            </p>
+                                            <p className="text-[10px] text-[#5A5A5A] truncate">/{branch.slug}</p>
+                                        </div>
+
+                                        {/* Status indicator */}
+                                        {isActive && (
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                                                style={{ background: "rgba(230,179,30,0.15)" }}>
+                                                <Check size={10} className="text-[#E6B31E]" />
+                                            </div>
+                                        )}
+                                        {isLoading && (
+                                            <Loader2 size={13} className="animate-spin text-[#E6B31E] flex-shrink-0" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}

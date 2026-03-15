@@ -15,15 +15,26 @@ if (getMethod() !== 'GET') sendError('Method not allowed', 405);
 $slug = trim($_GET['slug'] ?? '');
 if (empty($slug)) sendError('رابط الصالون مطلوب');
 
-// معلومات الصالون
+// معلومات الصالون مع بيانات الباقة
 $stmt = $pdo->prepare("
-    SELECT id, name, slug, logo_path, status, owner_phone, settings
-    FROM salons WHERE slug = ? AND status = 'active'
+    SELECT s.id, s.name, s.slug, s.logo_path, s.status, s.owner_phone, s.settings,
+           sp.plan_type, sp.features_config
+    FROM salons s
+    LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
+    WHERE s.slug = ? AND s.status = 'active'
 ");
 $stmt->execute([$slug]);
 $salon = $stmt->fetch();
 
 if (!$salon) sendError('الصالون غير موجود أو غير نشط', 404);
+
+// التحقق من ميزة صفحة الحجز — المجاني لا يملك صفحة حجز
+$featuresConfig = $salon['features_config'] ? json_decode($salon['features_config'], true) : [];
+$hasBookingPage = !empty($featuresConfig['has_booking_page']);
+
+if (!$hasBookingPage) {
+    sendError('صفحة الحجز غير متوفرة في الباقة الحالية لهذا الصالون. يرجى ترقية الاشتراك.', 403);
+}
 
 $salonId = (int) $salon['id'];
 

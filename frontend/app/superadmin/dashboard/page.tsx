@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -17,14 +17,25 @@ interface Salon {
     id: number; name: string; slug: string;
     owner_name: string; owner_email: string; owner_phone: string;
     status: "active" | "suspended" | "expired";
-    plan_name: string; emp_count: number; month_tx: number;
+    plan_name: string; plan_type?: string; emp_count: number; month_tx: number;
     month_revenue: number; subscription_expires_at: string;
     subscription_starts_at: string; created_at: string;
+}
+interface FeaturesConfig {
+    has_booking_page?: boolean;
+    has_advanced_reports?: boolean;
+    has_whatsapp?: boolean;
+    has_multi_branch?: boolean;
+    has_custom_api?: boolean;
+    has_priority_support?: boolean;
+    has_full_customize?: boolean;
+    max_bookings_month?: number;
 }
 interface Plan {
     id: number; name: string; name_ar: string;
     price: number; duration_days: number;
     max_employees: number; max_services: number;
+    plan_type?: string; features_config?: FeaturesConfig;
     features: string[]; is_popular: boolean; is_active: boolean;
     salons_count?: number;
 }
@@ -50,10 +61,22 @@ function getDaysLeft(expiresAt: string): number | null {
 }
 
 // ─── Salon Details Popup ──────────────────────────────────────────────────────
-function SalonDetailsPopup({ salon, onClose, onStatusChange }: {
-    salon: Salon; onClose: () => void; onStatusChange: (id: number, status: string, days?: number) => void;
+function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan }: {
+    salon: Salon; plans: Plan[]; onClose: () => void;
+    onStatusChange: (id: number, status: string, days?: number) => void;
+    onUpdatePlan: (salonId: number, planId: number, days: number) => void;
 }) {
     const dLeft = getDaysLeft(salon.subscription_expires_at);
+    const [customDays, setCustomDays] = useState("");
+    const [selectedPlanId, setSelectedPlanId] = useState(0);
+    const planTypeLabels: Record<string, { label: string; color: string }> = {
+        free: { label: "مجاني", color: "bg-gray-500/15 text-gray-400 border-gray-500/30" },
+        basic: { label: "أساسي", color: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
+        professional: { label: "احترافي", color: "bg-purple-500/15 text-purple-400 border-purple-500/30" },
+        enterprise: { label: "مؤسسات", color: "bg-[#E6B31E]/15 text-[#E6B31E] border-[#E6B31E]/30" },
+    };
+    const pt = planTypeLabels[salon.plan_type || "basic"] || planTypeLabels.basic;
+
     return (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-[#2D2D2D] border border-[#4A4535] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
@@ -66,7 +89,10 @@ function SalonDetailsPopup({ salon, onClose, onStatusChange }: {
                         </div>
                         <div>
                             <h3 className="font-bold text-[#FCFAF1] text-lg">{salon.name}</h3>
-                            <p className="text-xs text-[#8A8A8A] dir-ltr">/{salon.slug}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs text-[#8A8A8A] dir-ltr">/{salon.slug}</p>
+                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${pt.color}`}>{pt.label}</span>
+                            </div>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-[#8A8A8A] hover:text-[#FCFAF1] transition-colors p-1"><FaTimes /></button>
@@ -127,34 +153,84 @@ function SalonDetailsPopup({ salon, onClose, onStatusChange }: {
                         </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    {/* ── تغيير الباقة ── */}
+                    <div className="bg-[#343434] rounded-xl p-4 border border-[#E6B31E]/20 space-y-3">
+                        <p className="text-sm text-[#E6B31E] font-bold flex items-center gap-2">
+                            <FaCogs size={12} /> تغيير الباقة والاشتراك
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] text-[#8A8A8A] mb-1 block">الباقة الجديدة</label>
+                                <select value={selectedPlanId}
+                                    onChange={e => setSelectedPlanId(Number(e.target.value))}
+                                    className="w-full bg-[#2D2D2D] border border-[#4A4535] rounded-lg px-2 py-2 text-xs focus:border-[#E6B31E] outline-none">
+                                    <option value={0}>بدون تغيير</option>
+                                    {plans.map(p => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name_ar} — {p.price > 0 ? `${p.price} د.أ` : "مجاني"}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-[#8A8A8A] mb-1 block">مدة مخصصة (أيام)</label>
+                                <input type="number" min="1" max="3650" placeholder="مثال: 7"
+                                    value={customDays}
+                                    onChange={e => setCustomDays(e.target.value)}
+                                    className="w-full bg-[#2D2D2D] border border-[#4A4535] rounded-lg px-2 py-2 text-xs focus:border-[#E6B31E] outline-none" dir="ltr" />
+                            </div>
+                        </div>
+                        {(selectedPlanId > 0 || customDays) && (
+                            <button
+                                onClick={() => {
+                                    const days = customDays ? parseInt(customDays) : 30;
+                                    if (selectedPlanId > 0) {
+                                        onUpdatePlan(salon.id, selectedPlanId, days);
+                                    } else if (customDays) {
+                                        onStatusChange(salon.id, "active", days);
+                                    }
+                                }}
+                                className="w-full py-2.5 rounded-xl text-sm font-bold bg-[#E6B31E] text-black hover:bg-[#b8973f] transition-all">
+                                {selectedPlanId > 0 ? `تغيير الباقة وتجديد ${customDays || 30} يوم` : `تجديد ${customDays} يوم`}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="space-y-2">
+                        <p className="text-xs text-[#8A8A8A] font-bold">إجراءات سريعة</p>
+                        <div className="flex flex-wrap gap-2">
+                            <button onClick={() => onStatusChange(salon.id, "active", 1)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ يوم</button>
+                            <button onClick={() => onStatusChange(salon.id, "active", 3)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ 3 أيام</button>
+                            <button onClick={() => onStatusChange(salon.id, "active", 7)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ أسبوع</button>
+                            <button onClick={() => onStatusChange(salon.id, "active", 30)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-[#E6B31E]/10 text-[#E6B31E] hover:bg-[#E6B31E]/20 transition-all">+ شهر</button>
+                            <button onClick={() => onStatusChange(salon.id, "active", 180)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all">+ 6 أشهر</button>
+                            <button onClick={() => onStatusChange(salon.id, "active", 365)}
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all">+ سنة</button>
+                        </div>
+                    </div>
+
+                    {/* Suspend / Activate */}
+                    <div className="flex gap-2 pt-1">
                         {salon.status === "active" ? (
                             <button onClick={() => onStatusChange(salon.id, "suspended")}
-                                className="flex-1 py-2.5 sm:py-2 rounded-xl text-sm font-bold bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25 transition-all">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25 transition-all">
                                 إيقاف الصالون
                             </button>
                         ) : (
                             <button onClick={() => onStatusChange(salon.id, "active", 30)}
-                                className="flex-1 py-2.5 sm:py-2 rounded-xl text-sm font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all">
                                 تفعيل (شهر)
                             </button>
                         )}
-                        <button onClick={() => onStatusChange(salon.id, "active", 30)}
-                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25 transition-all">
-                            + شهر
-                        </button>
-                        <button onClick={() => onStatusChange(salon.id, "active", 180)}
-                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-all">
-                            + 6 أشهر
-                        </button>
-                        <button onClick={() => onStatusChange(salon.id, "active", 365)}
-                            className="flex-1 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-all">
-                            + سنة
-                        </button>
                         {salon.owner_phone && (
                             <a href={`https://wa.me/${salon.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                                className="flex-1 py-2.5 sm:py-2 rounded-xl text-sm font-bold bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all text-center">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all text-center">
                                 واتساب
                             </a>
                         )}
@@ -181,6 +257,9 @@ export default function SuperAdminDashboard() {
     const [activeTab, setActiveTab] = useState<"dashboard" | "salons" | "contacts" | "revenues" | "plans">("dashboard");
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{ salon: Salon } | null>(null);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [newSalon, setNewSalon] = useState({
         name: "", slug: "", owner_name: "", owner_phone: "", owner_email: "",
         subscription_plan_id: 1, duration_days: 30, admin_username: "", admin_password: "",
@@ -288,6 +367,40 @@ export default function SuperAdminDashboard() {
             const e = err as { response?: { data?: { message?: string } } };
             toast(e.response?.data?.message || 'حدث خطأ', 'error');
         }
+    };
+
+    const handleUpdatePlan = async (salonId: number, planId: number, days: number) => {
+        try {
+            await api.patch(`/superadmin/salons.php?id=${salonId}`, {
+                status: 'active',
+                subscription_plan_id: planId,
+                duration_days: days,
+            });
+            setSelectedSalon(null);
+            await loadData();
+            const plan = plans.find(p => p.id === planId);
+            toast(`✅ تم تحديث الباقة إلى ${plan?.name_ar || 'جديد'} — ${days} يوم`, 'success');
+        } catch (err: unknown) {
+            const e = err as { response?: { data?: { message?: string } } };
+            toast(e.response?.data?.message || 'حدث خطأ', 'error');
+        }
+    };
+
+    const handleDeleteSalon = async () => {
+        if (!deleteModal) return;
+        setDeleteLoading(true);
+        try {
+            await api.delete(`/superadmin/salons.php?id=${deleteModal.salon.id}`, {
+                data: { confirm_name: deleteConfirmText.trim() },
+            });
+            setDeleteModal(null);
+            setDeleteConfirmText("");
+            await loadData();
+            toast(`🗑️ تم حذف صالون "${deleteModal.salon.name}" نهائياً`, 'success');
+        } catch (err: unknown) {
+            const e = err as { response?: { data?: { message?: string } } };
+            toast(e.response?.data?.message || 'فشل الحذف، تحقق من الاسم', 'error');
+        } finally { setDeleteLoading(false); }
     };
 
     const handleAddRevenue = async () => {
@@ -440,7 +553,7 @@ export default function SuperAdminDashboard() {
 
             {/* ── Tabs ── */}
             <div className="max-w-7xl mx-auto px-4 mt-4">
-                <div className="flex gap-2 bg-[#2D2D2D] rounded-xl p-1 w-fit flex-wrap">
+                <div className="flex gap-2 bg-[#2D2D2D] rounded-xl p-1 overflow-x-auto hide-scrollbars w-full md:w-fit">
                     {[
                         { key: "dashboard" as const, label: "لوحة التحكم", icon: <FaChartLine /> },
                         { key: "salons" as const, label: "إدارة الصالونات", icon: <FaBuilding /> },
@@ -448,12 +561,12 @@ export default function SuperAdminDashboard() {
                         { key: "plans" as const, label: "إدارة الباقات", icon: <FaCogs /> },
                         {
                             key: "contacts" as const,
-                            label: <span className="flex items-center gap-1.5">طلبات التسجيل {contactsNewCount > 0 && <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black bg-red-500 text-[#FCFAF1]">{contactsNewCount}</span>}</span>,
+                            label: <span className="flex items-center gap-1.5 whitespace-nowrap">طلبات التسجيل {contactsNewCount > 0 && <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black bg-red-500 text-[#FCFAF1]">{contactsNewCount}</span>}</span>,
                             icon: <FaEnvelope />,
                         },
                     ].map((tab) => (
                         <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key ? "bg-[#E6B31E] text-black" : "text-[#CACACA] hover:text-[#FCFAF1] hover:bg-[#3A3A3A]"}`}>
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${activeTab === tab.key ? "bg-[#E6B31E] text-black" : "text-[#CACACA] hover:text-[#FCFAF1] hover:bg-[#3A3A3A]"}`}>
                             {tab.icon} {tab.label}
                         </button>
                     ))}
@@ -562,34 +675,59 @@ export default function SuperAdminDashboard() {
                         {/* Subscription Details */}
                         <div className="bg-[#2D2D2D] border border-[#4A4535] rounded-2xl p-6">
                             <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><FaBuilding className="text-[#E6B31E]" /> تفاصيل اشتراكات الصالونات</h3>
-                            <div className="space-y-3">
+                            <div className="space-y-2.5">
                                 {salons.slice(0, 8).map((s) => {
                                     const dLeft = getDaysLeft(s.subscription_expires_at);
                                     const isExpiring = dLeft !== null && dLeft <= 7 && s.status === 'active';
+                                    const planColors: Record<string, string> = {
+                                        free: "bg-gray-500/15 text-gray-400 border-gray-500/20",
+                                        basic: "bg-blue-500/15 text-blue-400 border-blue-500/20",
+                                        professional: "bg-purple-500/15 text-purple-400 border-purple-500/20",
+                                        enterprise: "bg-[#E6B31E]/15 text-[#E6B31E] border-[#E6B31E]/20",
+                                    };
+                                    const planColor = planColors[s.plan_type || "basic"] || planColors.basic;
                                     return (
-                                        <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#343434] rounded-xl p-4 border border-[#3A3A3A] gap-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-[#3A3A3A] border border-[#4A4535] flex items-center justify-center text-[#E6B31E] font-bold">{s.name.charAt(0)}</div>
-                                                <div>
-                                                    <p className="font-medium text-sm">{s.name}</p>
-                                                    <p className="text-xs text-gray-600">/{s.slug} • {s.owner_name || '—'}</p>
+                                        <div key={s.id} className="bg-[#343434] rounded-xl border border-[#3A3A3A] overflow-hidden">
+                                            {/* Row 1: Salon identity + status + action */}
+                                            <div className="flex items-center justify-between px-4 py-3 border-b border-[#3A3A3A]/60">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-8 h-8 rounded-lg bg-[#3A3A3A] border border-[#4A4535] flex items-center justify-center text-[#E6B31E] font-bold text-sm flex-shrink-0">{s.name.charAt(0)}</div>
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold text-sm truncate">{s.name}</p>
+                                                        <p className="text-[11px] text-[#666] truncate">/{s.slug} • {s.owner_name || '—'}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    {statusBadge(s.status)}
+                                                    <button onClick={() => setSelectedSalon(s)}
+                                                        className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-[#E6B31E]/10 text-[#E6B31E] hover:bg-[#E6B31E]/20 transition-all border border-[#E6B31E]/15">
+                                                        <FaInfoCircle size={8} /> تفاصيل
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {s.plan_name && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/20">{s.plan_name}</span>}
-                                                {s.subscription_starts_at && <span className="text-xs text-gray-600 hidden sm:inline">بدأ: {new Date(s.subscription_starts_at).toLocaleDateString("ar-JO")}</span>}
-                                                {s.subscription_expires_at && <span className="text-xs text-[#8A8A8A]">ينتهي: {new Date(s.subscription_expires_at).toLocaleDateString("ar-JO")}</span>}
-                                                {dLeft !== null && s.status === 'active' && (
-                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isExpiring ? "bg-yellow-500/15 text-yellow-400" : "bg-emerald-500/15 text-emerald-400"}`}>
-                                                        {dLeft === 0 ? "ينتهي اليوم" : `${dLeft} يوم`}
+                                            {/* Row 2: Plan / Dates / Days — horizontal scrollable strip */}
+                                            <div className="flex items-center gap-4 px-4 py-2.5 overflow-x-auto">
+                                                {s.plan_name && (
+                                                    <span className={`text-[11px] px-2.5 py-0.5 rounded-full border whitespace-nowrap flex-shrink-0 font-medium ${planColor}`}>{s.plan_name}</span>
+                                                )}
+                                                <span className="w-px h-3 bg-[#4A4A4A] flex-shrink-0" />
+                                                {s.subscription_starts_at && (
+                                                    <span className="text-[11px] whitespace-nowrap flex-shrink-0">
+                                                        <span className="text-[#555]">بدأ </span>
+                                                        <span className="text-[#8A8A8A]">{new Date(s.subscription_starts_at).toLocaleDateString("ar-JO")}</span>
                                                     </span>
                                                 )}
-                                                {statusBadge(s.status)}
-                                                {/* Details Button */}
-                                                <button onClick={() => setSelectedSalon(s)}
-                                                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25 transition-all border border-[#E6B31E]/20">
-                                                    <FaInfoCircle size={9} /> تفاصيل
-                                                </button>
+                                                {s.subscription_expires_at && (
+                                                    <span className="text-[11px] whitespace-nowrap flex-shrink-0">
+                                                        <span className="text-[#555]">ينتهي </span>
+                                                        <span className={isExpiring ? "text-yellow-400 font-semibold" : "text-[#8A8A8A]"}>{new Date(s.subscription_expires_at).toLocaleDateString("ar-JO")}</span>
+                                                    </span>
+                                                )}
+                                                {dLeft !== null && s.status === 'active' && (
+                                                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${isExpiring ? "bg-yellow-500/15 text-yellow-400" : "bg-emerald-500/15 text-emerald-400"}`}>
+                                                        {dLeft === 0 ? "⚠ ينتهي اليوم" : `${dLeft} يوم متبقي`}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -775,7 +913,7 @@ export default function SuperAdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             {plansData.map(p => (
                                 <div key={p.id}
-                                    className={`relative bg-[#2D2D2D] border rounded-2xl p-5 transition-all hover:border-[#4A4535] ${
+                                    className={`relative flex flex-col bg-[#2D2D2D] border rounded-2xl p-5 transition-all hover:border-[#4A4535] ${
                                         p.is_popular ? 'border-[#E6B31E]/30' : 'border-[#4A4535]'
                                     } ${!p.is_active ? 'opacity-50' : ''}`}>
 
@@ -906,6 +1044,13 @@ export default function SuperAdminDashboard() {
                                                         ) : (
                                                             <button onClick={() => handleStatusChange(salon.id, "active")} className="text-emerald-500 hover:text-emerald-400 text-xs bg-emerald-500/10 px-2 py-1 rounded-lg">تفعيل</button>
                                                         )}
+                                                        <button
+                                                            onClick={() => { setDeleteModal({ salon }); setDeleteConfirmText(""); }}
+                                                            className="text-red-400/70 hover:text-red-400 text-xs bg-red-500/10 hover:bg-red-500/20 px-2 py-1 rounded-lg transition-all"
+                                                            title="حذف نهائي"
+                                                        >
+                                                            <FaTrash size={10} />
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -921,7 +1066,7 @@ export default function SuperAdminDashboard() {
 
             {/* ── Salon Details Popup ── */}
             {selectedSalon && (
-                <SalonDetailsPopup salon={selectedSalon} onClose={() => setSelectedSalon(null)} onStatusChange={handleStatusChange} />
+                <SalonDetailsPopup salon={selectedSalon} plans={plans} onClose={() => setSelectedSalon(null)} onStatusChange={handleStatusChange} onUpdatePlan={handleUpdatePlan} />
             )}
 
             {/* ── Create Salon Modal ── */}
@@ -954,7 +1099,21 @@ export default function SuperAdminDashboard() {
                                         {plans.map((p) => <option key={p.id} value={p.id}>{p.name_ar} - {p.price} د.أ</option>)}
                                     </select>
                                 </div>
-                                <div><label className="text-sm text-[#CACACA] mb-1 block">مدة الاشتراك</label><select value={newSalon.duration_days} onChange={(e) => setNewSalon({ ...newSalon, duration_days: Number(e.target.value) })} className="w-full bg-[#343434] border border-[#4A4535] rounded-xl px-3 py-2.5 text-sm focus:border-[#E6B31E] outline-none"><option value={30}>شهر (30 يوم)</option><option value={180}>6 أشهر (180 يوم)</option><option value={365}>سنة (365 يوم)</option></select></div>
+                                <div>
+                                    <label className="text-sm text-[#CACACA] mb-1 block">مدة الاشتراك</label>
+                                    <div className="flex gap-2">
+                                        <input type="number" min="1" max="3650" value={newSalon.duration_days}
+                                            onChange={(e) => setNewSalon({ ...newSalon, duration_days: Number(e.target.value) || 1 })}
+                                            className="w-20 bg-[#343434] border border-[#4A4535] rounded-xl px-2 py-2.5 text-sm focus:border-[#E6B31E] outline-none text-center" dir="ltr" />
+                                        <span className="text-xs text-[#8A8A8A] self-center">يوم</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {[{d:1,l:'يوم'},{d:3,l:'3 أيام'},{d:7,l:'أسبوع'},{d:14,l:'أسبوعين'},{d:30,l:'شهر'},{d:90,l:'3 أشهر'},{d:180,l:'6 أشهر'},{d:365,l:'سنة'}].map(({d,l}) => (
+                                            <button key={d} type="button" onClick={() => setNewSalon({...newSalon, duration_days: d})}
+                                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${newSalon.duration_days === d ? 'bg-[#E6B31E] text-black' : 'bg-[#3A3A3A] text-[#8A8A8A] hover:text-[#CACACA]'}`}>{l}</button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                             <div className="border-t border-[#4A4535] pt-4">
                                 <p className="text-sm text-[#E6B31E] mb-3 flex items-center gap-2"><FaCogs /> حساب مدير الصالون</p>
@@ -1133,6 +1292,64 @@ export default function SuperAdminDashboard() {
                     </div>
                 </div>
             )}
+        {/* ── Delete Salon Modal ── */}
+        {deleteModal && (
+            <div className="fixed inset-0 z-[99] flex items-center justify-center p-4" dir="rtl">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { setDeleteModal(null); setDeleteConfirmText(""); }} />
+                <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+                    style={{ background: "#1E1E1E", border: "1px solid rgba(239,68,68,0.4)" }}>
+                    <div className="p-5 flex items-center gap-3" style={{ background: "rgba(239,68,68,0.1)", borderBottom: "1px solid rgba(239,68,68,0.2)" }}>
+                        <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+                            <FaTrash size={16} className="text-red-400" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-red-400">حذف نهائي وكامل</p>
+                            <p className="text-xs text-[#8A8A8A]">هذا الإجراء لا يمكن التراجع عنه</p>
+                        </div>
+                    </div>
+                    <div className="p-5 space-y-4">
+                        <div className="rounded-xl p-3.5 text-xs space-y-1.5" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                            <p className="font-bold text-red-400 mb-2">سيتم حذف جميع البيانات نهائياً:</p>
+                            {["الموظفون وحساباتهم", "جميع المعاملات المالية", "الخدمات والحجوزات", "المصاريف والتقارير", "الفروع المرتبطة", "سجلات الاشتراكات"].map(item => (
+                                <p key={item} className="text-red-300/70 flex items-center gap-1.5"><span className="text-red-500">✗</span> {item}</p>
+                            ))}
+                        </div>
+                        <div className="text-center">
+                            <p className="text-xs text-[#8A8A8A] mb-1.5">الصالون المراد حذفه</p>
+                            <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold"
+                                style={{ background: "rgba(239,68,68,0.15)", color: "#FF6B6B", border: "1px solid rgba(239,68,68,0.3)" }}>
+                                {deleteModal!.salon.name}
+                            </span>
+                        </div>
+                        <div>
+                            <label className="text-xs text-[#AAAAAA] block mb-1.5">اكتب اسم الصالون بالضبط للتأكيد: <span className="text-red-400 font-bold">*</span></label>
+                            <input
+                                type="text" value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)}
+                                placeholder={deleteModal!.salon.name} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                                style={{ background: "#2A2A2A", border: `1px solid ${deleteConfirmText === deleteModal!.salon.name ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.1)"}`, color: "#FFFFFF" }}
+                                onKeyDown={e => { if (e.key === "Enter" && deleteConfirmText === deleteModal!.salon.name) handleDeleteSalon(); }}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex gap-3 pt-1">
+                            <button onClick={() => { setDeleteModal(null); setDeleteConfirmText(""); }}
+                                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
+                                style={{ background: "rgba(255,255,255,0.06)", color: "#AAAAAA", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                إلغاء
+                            </button>
+                            <button onClick={handleDeleteSalon}
+                                disabled={deleteConfirmText !== deleteModal!.salon.name || deleteLoading}
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] flex items-center justify-center gap-2"
+                                style={{ background: "linear-gradient(135deg, #dc2626, #ef4444)", color: "#FFFFFF", boxShadow: "0 8px 24px rgba(239,68,68,0.3)" }}>
+                                {deleteLoading
+                                    ? <><span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> جاري الحذف...</>
+                                    : <><FaTrash size={12} /> حذف نهائي</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
         </div>
     );
 }

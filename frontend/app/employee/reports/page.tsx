@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { reportsAPI } from "@/lib/api";
 import StatCard from "@/components/StatCard";
 import { FaUsers, FaCoins, FaPercent, FaChartLine } from "react-icons/fa";
+import { TrendingUp, BarChart3 } from "lucide-react";
 import {
     BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -45,7 +46,7 @@ function ReportsContent() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title">📈 تقاريري <span>الشخصية</span></div>
+                <div className="topbar-title"><TrendingUp size={18} className="inline ml-2 text-gold" /> تقاريري <span>الشخصية</span></div>
                 <div className="flex gap-2">
                     <Link href="/employee/reports?period=daily"
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "daily" ? "btn-gold" : "btn-outline-gold"}`}>يومي</Link>
@@ -61,12 +62,12 @@ function ReportsContent() {
                 <div className="mb-4 flex items-center gap-3">
                     {period === "daily" && (
                         <><label className="text-gray-400">التاريخ:</label>
-                            <input type="date" className="form-input w-[200px]" value={date}
+                            <input type="date" className="form-input w-[150px]" value={date}
                                 onChange={(e) => setDate(e.target.value)} /></>
                     )}
                     {period === "monthly" && (
                         <><label className="text-gray-400">الشهر:</label>
-                            <input type="month" className="form-input w-[200px]" value={month}
+                            <input type="month" className="form-input w-[150px]" value={month}
                                 onChange={(e) => setMonth(e.target.value)} /></>
                     )}
                     {period === "yearly" && (
@@ -119,14 +120,14 @@ function ReportsContent() {
                 {period === "monthly" && data.daily_breakdown && (
                     <>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="chart-card mb-4">
-                            <div className="chart-card-title">📈 مبيعاتي اليومية</div>
+                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-gold" /> مبيعاتي اليومية</div>
                             <ResponsiveContainer width="100%" height={250}>
-                                <BarChart data={data.daily_breakdown.filter((d: any) => d.cnt > 0)}>
+                                <BarChart data={data.daily_breakdown.filter((d: any) => d.cnt > 0)} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 12 }} />
-                                    <YAxis tick={{ fill: "#888", fontSize: 12 }} />
-                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
-                                    <Bar dataKey="total" fill="#E6B31E" radius={[6, 6, 0, 0]} name="المبيعات" />
+                                    <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
+                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
+                                    <Bar dataKey="total" fill="#E6B31E" radius={[6, 6, 0, 0]} name="المبيعات" cursor={false as unknown as undefined} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </motion.div>
@@ -152,13 +153,13 @@ function ReportsContent() {
                 {period === "yearly" && data.monthly_breakdown && (
                     <>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="chart-card mb-4">
-                            <div className="chart-card-title">📊 مبيعاتي الشهرية - {year}</div>
+                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-gold" /> مبيعاتي الشهرية - {year}</div>
                             <ResponsiveContainer width="100%" height={250}>
-                                <LineChart data={data.monthly_breakdown}>
+                                <LineChart data={data.monthly_breakdown} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
-                                    <YAxis tick={{ fill: "#888", fontSize: 12 }} />
-                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8 }} />
+                                    <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
+                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
                                     <Line type="monotone" dataKey="total" stroke="#E6B31E" strokeWidth={2} dot={{ fill: "#E6B31E" }} name="المبيعات" />
                                 </LineChart>
                             </ResponsiveContainer>

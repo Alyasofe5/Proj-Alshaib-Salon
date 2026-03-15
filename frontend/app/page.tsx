@@ -6,7 +6,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   CalendarCheck, BarChart3, Users, Wallet,
-  PenLine, Settings, Rocket, Mail, Phone, MapPin, Menu, X, ArrowLeft, Play, Lock, Check
+  PenLine, Settings, Rocket, Mail, Phone, MapPin, Menu, X, ArrowLeft, Play, Lock, Check,
+  Store, Star
 } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
@@ -21,7 +22,7 @@ const SPARKLE_LOADING = [0, 1, 2, 3, 4].map(i => ({
 const BarberChair3D = dynamic(() => import("@/components/BarberChair3D"), {
   ssr: false,
   loading: () => (
-    <div className="relative w-[350px] h-[350px] md:w-[500px] md:h-[500px] flex items-center justify-center">
+    <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] flex items-center justify-center">
       <div className="absolute inset-0 blur-[100px] opacity-20" style={{ background: "radial-gradient(circle, #C8A84B, transparent 60%)" }} />
       <div className="absolute inset-[10%] rounded-full border opacity-15" style={{ borderColor: "#C8A84B" }} />
       <div className="absolute inset-[5%] rounded-full border opacity-8 animate-spin" style={{ borderColor: "#E8D08A", animationDuration: "30s", animationTimingFunction: "linear" }} />
@@ -81,9 +82,9 @@ interface ApiPlan {
 }
 
 const FALLBACK_PLANS: ApiPlan[] = [
-  { id: 1, name: "Free", name_ar: "مجاني", price: "0.000", is_popular: false, features: ["حتى 2 موظف", "50 حجز/شهر", "تقارير أساسية", "رابط حجز مخصص"] },
-  { id: 2, name: "Professional", name_ar: "احترافي", price: "15.000", is_popular: true, features: ["موظفين غير محدود", "حجوزات غير محدودة", "تقارير متقدمة", "إشعارات واتساب", "دعم فني أولوية", "تخصيص كامل"] },
-  { id: 3, name: "Enterprise", name_ar: "مؤسسات", price: "35.000", is_popular: false, features: ["فروع متعددة", "كل مميزات الاحترافي", "API مخصص", "مدير حساب خاص", "تدريب الفريق"] },
+  { id: 2, name: "Basic", name_ar: "أساسي", price: "10.000", is_popular: false, features: ["عدد موظفين غير محدود", "إدارة المصاريف", "كشوفات مالية شهرية", "دعم فني خلال 24 ساعة", "تتبع لسير العمل بشكل كامل"] },
+  { id: 3, name: "Professional", name_ar: "احترافي", price: "18.000", is_popular: true, features: ["موظفين غير محدود", "حجوزات غير محدودة", "تقارير متقدمة", "إشعارات واتساب", "دعم فني أولوية", "تخصيص كامل"] },
+  { id: 4, name: "Enterprise", name_ar: "مؤسسات", price: "32.000", is_popular: false, features: ["إدارة فروع متعددة", "ربط API مخصص", "شامل مميزات الاحترافي"] },
 ];
 
 // ============================================================
@@ -105,7 +106,13 @@ export default function LandingPage() {
     const API = process.env.NEXT_PUBLIC_API_URL || "/api";
     fetch(`${API}/public/plans.php`)
       .then(r => r.ok ? r.json() : null)
-      .then(res => { if (res?.data?.length) setPlans(res.data); })
+      .then(res => {
+        if (res?.data?.length) {
+          // Never display the free plan publicly in pricing section
+          const paid = res.data.filter((p: ApiPlan) => parseFloat(p.price) > 0);
+          if (paid.length) setPlans(paid);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -142,13 +149,18 @@ export default function LandingPage() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full px-2 py-1.5"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
             {["المميزات", "كيف يعمل", "الباقات", "تواصل"].map((l, i) => (
               <a key={i} href={`#${["features", "how", "pricing", "contact"][i]}`}
-                className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white"
-                style={{ color: "var(--text-mid)" }}
-              >{l}</a>
+                className="px-4 py-1.5 text-sm font-semibold transition-colors duration-200 inline-flex flex-col items-center gap-0.5 group"
+                style={{ color: "var(--color-text-secondary)" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-accent)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-text-secondary)"; }}
+              >
+                <span>{l}</span>
+                <span className="h-[2px] w-0 group-hover:w-full transition-all duration-200 rounded-full"
+                  style={{ background: "var(--color-accent)" }} />
+              </a>
             ))}
           </div>
 
@@ -156,7 +168,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2 mr-auto z-10">
             <Link href="/login" className="hidden md:block text-sm font-semibold px-4 py-2 transition-colors"
               style={{ color: "var(--text-mid)" }}>تسجيل الدخول</Link>
-            <Link href="/contact"
+            <Link href="/contact?from=free"
               className="hidden sm:flex items-center gap-1.5 text-sm font-bold px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all hover:scale-105"
               style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--btn-text)", boxShadow: "0 4px 16px rgba(200,168,75,.3)" }}
             >ابدأ مجاناً</Link>
@@ -187,7 +199,7 @@ export default function LandingPage() {
                 <Link href="/login" onClick={() => setMenuOpen(false)}
                   className="px-4 py-3 rounded-xl text-sm font-semibold"
                   style={{ color: "var(--text-mid)" }}>تسجيل الدخول</Link>
-                <Link href="/contact" onClick={() => setMenuOpen(false)}
+                <Link href="/contact?from=free" onClick={() => setMenuOpen(false)}
                   className="px-4 py-3 rounded-xl text-sm font-bold text-center"
                   style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--btn-text)" }}
                 >ابدأ مجاناً ←</Link>
@@ -198,7 +210,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ==================== HERO ==================== */}
-      <section className="relative min-h-[100svh] flex flex-col items-center justify-center overflow-hidden" dir="rtl">
+      <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden pt-20 pb-16" dir="rtl">
         
         {/* ── Cinematic Background Image ── */}
         <div className="absolute inset-0 z-0">
@@ -218,15 +230,17 @@ export default function LandingPage() {
           @keyframes hero-pulse-glow { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
           @keyframes hero-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
           @keyframes hero-line-grow { 0%{width:0} 100%{width:80px} }
+          @keyframes dash-progress { 0%{width:0} 100%{width:100%} }
+          @keyframes dash-count { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
         `}</style>
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto text-center flex flex-col items-center">
+        <div className="relative z-10 w-full max-w-6xl mx-auto text-center flex flex-col items-center flex-1 justify-center">
           
           {/* ── 3D Perspective Wrapper ── */}
           <div className="w-full" style={{ perspective: "1200px" }}>
 
             {/* ── Main Hero Grid: Text + Floating Cards ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full pt-28 pb-16 px-4 md:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center w-full px-4 md:px-8">
 
               {/* ── Left Column: Text Content ── */}
               <div className="text-right order-2 lg:order-1">
@@ -234,7 +248,7 @@ export default function LandingPage() {
                 {/* Gold accent line */}
                 <motion.div
                   initial={{ width: 0 }} animate={{ width: 80 }} transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-[3px] rounded-full mb-6 mr-auto lg:mr-0 lg:ml-auto"
+                  className="h-[3px] rounded-full mb-6 ml-auto"
                   style={{ background: "linear-gradient(to left, #E6B31E, transparent)" }}
                 />
 
@@ -251,7 +265,7 @@ export default function LandingPage() {
                 {/* Main Heading */}
                 <motion.h1
                   initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight mb-6"
+                  className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight mb-5 sm:mb-6"
                 >
                   <span style={{ color: "#FCFAF1" }}>أدِر صالونك</span>
                   <br />
@@ -272,7 +286,7 @@ export default function LandingPage() {
                 {/* Subheading */}
                 <motion.p
                   initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35 }}
-                  className="text-base md:text-lg lg:text-xl leading-relaxed mb-8 max-w-xl"
+                  className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed mb-6 sm:mb-8 max-w-xl"
                   style={{ color: "rgba(255,255,255,0.6)" }}
                 >
                   حجوزات ذكية، إدارة موظفين، تقارير مالية فورية — كل ما تحتاجه في منصة واحدة مصممة للصالونات الطموحة.
@@ -283,8 +297,8 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45 }}
                   className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8"
                 >
-                  <Link href="/contact"
-                    className="group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-sm font-black overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+                  <Link href="/contact?from=free"
+                    className="group relative inline-flex items-center gap-2 sm:gap-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl text-sm font-black overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
                     style={{ background: "#E6B31E", color: "#111", boxShadow: "0 0 0 1px rgba(230,179,30,.3), 0 12px 40px -8px rgba(230,179,30,.5)" }}
                   >
                     <span className="relative z-10">ابدأ مجاناً</span>
@@ -292,11 +306,11 @@ export default function LandingPage() {
                     <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12" />
                   </Link>
                   <a href="#features"
-                    className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-white/[0.06]"
+                    className="inline-flex items-center gap-2 sm:gap-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-white/[0.06]"
                     style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.8)", backdropFilter: "blur(10px)" }}
                   >
-                    <Play size={14} className="text-[#E6B31E]" />
                     <span>شاهد كيف يعمل</span>
+                    <Play size={14} className="text-[#E6B31E]" />
                   </a>
                 </motion.div>
 
@@ -314,72 +328,63 @@ export default function LandingPage() {
                 </motion.div>
               </div>
 
-              {/* ── Right Column: Trust & Impact ── */}
+              {/* ── Right Column: 3D Barber Chair ── */}
               <motion.div
-                initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="relative order-1 lg:order-2 w-full"
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="relative order-1 lg:order-2 w-full hidden sm:flex items-center justify-center"
               >
-                {/* Glow */}
-                <div className="absolute -inset-6 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 60%, rgba(230,179,30,.08) 0%, transparent 70%)", filter: "blur(30px)" }} />
-
-                {/* Stats Grid 2x2 */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 relative z-10 mb-4">
-                  {[
-                    { icon: "🏪", num: "200+", label: "صالون يثق بنا", accent: "#E6B31E" },
-                    { icon: "📅", num: "50K+", label: "حجز تم إنجازه", accent: "#34D399" },
-                    { icon: "⭐", num: "98%", label: "رضا العملاء", accent: "#FFD700" },
-                    { icon: "⚡", num: "5 دقائق", label: "للبدء بالعمل", accent: "#60A5FA" },
-                  ].map((s, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.4 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                      className="rounded-2xl p-4 sm:p-5 text-center transition-all duration-300 hover:-translate-y-1"
-                      style={{
-                        background: "rgba(22,22,22,.85)",
-                        border: "1px solid rgba(255,255,255,.06)",
-                        backdropFilter: "blur(20px)",
-                        boxShadow: "0 12px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03)",
-                      }}
-                    >
-                      <div className="text-2xl sm:text-3xl mb-2">{s.icon}</div>
-                      <div className="text-xl sm:text-2xl font-black mb-1" style={{ color: s.accent }}>{s.num}</div>
-                      <div className="text-[10px] sm:text-xs font-semibold" style={{ color: "rgba(255,255,255,.5)" }}>{s.label}</div>
-                    </motion.div>
-                  ))}
+                {/* 3D Chair */}
+                <div className="relative z-10">
+                  <BarberChair3D />
                 </div>
 
-                {/* Testimonial Card */}
+                {/* Floating glass micro-cards around the chair */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.8 }}
-                  className="relative rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: "rgba(22,22,22,.8)",
-                    border: "1px solid rgba(230,179,30,.1)",
-                    backdropFilter: "blur(16px)",
-                    boxShadow: "0 12px 40px rgba(0,0,0,.3)",
-                  }}
+                  animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-4 sm:top-8 left-0 sm:-left-4 z-20 flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                  style={{ background: "rgba(22,22,22,.92)", border: "1px solid rgba(230,179,30,.15)", boxShadow: "0 12px 40px rgba(0,0,0,.5)", backdropFilter: "blur(16px)" }}
                 >
-                  <div className="flex items-center gap-0.5 mb-3">
-                    {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#E6B31E", fontSize: 14 }}>★</span>)}
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,179,30,.12)" }}>
+                    <Store size={16} style={{ color: "#E6B31E" }} />
                   </div>
-                  <p className="text-sm sm:text-base leading-relaxed mb-4" style={{ color: "rgba(255,255,255,.7)" }}>
-                    &ldquo;منصة مقص غيّرت طريقة إدارتنا بالكامل. الحجوزات أصبحت أسرع، والتقارير المالية واضحة. أنصح بها لكل صالون.&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0" style={{ background: "rgba(230,179,30,.15)", color: "#E6B31E" }}>م</div>
-                    <div>
-                      <div className="text-sm font-bold" style={{ color: "#FCFAF1" }}>محمد الشايب</div>
-                      <div className="text-[11px]" style={{ color: "rgba(255,255,255,.4)" }}>صاحب صالون — عمّان</div>
-                    </div>
+                  <div>
+                    <div className="text-sm font-black" style={{ color: "#E6B31E" }}>200+</div>
+                    <div className="text-[9px] font-semibold" style={{ color: "rgba(255,255,255,.4)" }}>صالون يثق بنا</div>
                   </div>
                 </motion.div>
 
-                {/* Floating notification */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+                  className="absolute top-4 sm:top-8 right-0 sm:-right-2 z-20 flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                  style={{ background: "rgba(22,22,22,.92)", border: "1px solid rgba(52,211,153,.15)", boxShadow: "0 12px 40px rgba(0,0,0,.5)", backdropFilter: "blur(16px)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(52,211,153,.12)" }}>
+                    <CalendarCheck size={16} style={{ color: "#34D399" }} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-black" style={{ color: "#34D399" }}>50K+</div>
+                    <div className="text-[9px] font-semibold" style={{ color: "rgba(255,255,255,.4)" }}>حجز تم إنجازه</div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                  className="absolute bottom-8 sm:bottom-12 left-2 sm:-left-2 z-20 flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                  style={{ background: "rgba(22,22,22,.92)", border: "1px solid rgba(255,215,0,.15)", boxShadow: "0 12px 40px rgba(0,0,0,.5)", backdropFilter: "blur(16px)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,215,0,.12)" }}>
+                    <Star size={16} style={{ color: "#FFD700" }} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-black" style={{ color: "#FFD700" }}>98%</div>
+                    <div className="text-[9px] font-semibold" style={{ color: "rgba(255,255,255,.4)" }}>رضا العملاء</div>
+                  </div>
+                </motion.div>
+
+                {/* Floating notification — bottom right */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-3 right-4 sm:-right-4 z-20 hidden sm:flex items-center gap-2.5 px-4 py-3 rounded-xl"
+                  className="absolute -bottom-2 right-4 sm:-right-4 z-20 flex items-center gap-2.5 px-4 py-3 rounded-xl"
                   style={{ background: "rgba(22,22,22,.96)", border: "1px solid rgba(52,211,153,.2)", boxShadow: "0 16px 48px rgba(0,0,0,.6)", backdropFilter: "blur(16px)" }}
                 >
                   <div className="relative flex h-2.5 w-2.5 flex-shrink-0">
@@ -399,7 +404,7 @@ export default function LandingPage() {
           {/* ── Bottom Social Proof ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}
-            className="flex items-center justify-center gap-5 mt-4 pb-16"
+            className="flex items-center justify-center gap-5 mt-8 md:mt-12"
           >
             <div className="flex -space-x-2 rtl:space-x-reverse">
               {[
@@ -422,16 +427,17 @@ export default function LandingPage() {
 
         </div>
 
-        {/* Scroll indicator — outside content wrapper, at very bottom */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1"
-        >
-          <div className="text-[9px] font-semibold mb-1" style={{ color: "rgba(255,255,255,.25)" }}>اكتشف المزيد</div>
-          <div className="w-5 h-8 rounded-full flex items-start justify-center pt-1.5" style={{ border: "1.5px solid rgba(255,255,255,.12)" }}>
-            <div className="w-1 h-1.5 rounded-full" style={{ background: "#E6B31E", animation: "hero-float 1.5s ease-in-out infinite" }} />
-          </div>
-        </motion.div>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+          <motion.div
+            animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
+            className="flex flex-col items-center gap-1"
+          >
+            <div className="text-[9px] font-semibold mb-1" style={{ color: "rgba(255,255,255,.25)" }}>اكتشف المزيد</div>
+            <div className="w-5 h-8 rounded-full flex items-start justify-center pt-1.5" style={{ border: "1.5px solid rgba(255,255,255,.12)" }}>
+              <div className="w-1 h-1.5 rounded-full" style={{ background: "#E6B31E", animation: "hero-float 1.5s ease-in-out infinite" }} />
+            </div>
+          </motion.div>
+        </div>
 
       </section>
 
@@ -445,7 +451,7 @@ export default function LandingPage() {
               style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.2)", color: "var(--gold)" }}>
               المميزات
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4" style={{ color: "var(--text-main)" }}>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4" style={{ color: "var(--text-main)" }}>
               كل ما تحتاجه
               <br />
               <span style={{ color: "var(--gold)" }}>في مكان واحد</span>
@@ -529,10 +535,9 @@ export default function LandingPage() {
             className="text-center mb-10 md:mb-16 lg:mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6"
               style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.2)", color: "var(--gold)" }}>
-              الباقات
- مرنة
+              باقات مرنة
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black" style={{ color: "var(--text-main)" }}>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black" style={{ color: "var(--text-main)" }}>
               اختر <span style={{ color: "var(--gold)" }}>باقتك</span>
             </h2>
           </motion.div>
@@ -544,36 +549,36 @@ export default function LandingPage() {
               return (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.15 }} viewport={{ once: true }}
-                  className={`relative rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl ${p.is_popular ? "shadow-lg" : ""}`}
+                  className={`relative rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl flex flex-col ${p.is_popular ? "shadow-lg" : ""}`}
                   style={{
-                    background: p.is_popular ? "linear-gradient(135deg, var(--gold-dark), #6b5220)" : "var(--white)",
-                    border: p.is_popular ? "none" : "1px solid var(--border)",
+                    background: p.is_popular ? "linear-gradient(135deg, #1a1a1a, #2a2218)" : "var(--white)",
+                    border: p.is_popular ? "1px solid rgba(230,179,30,.25)" : "1px solid var(--border)",
                   }}>
                   {p.is_popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-black whitespace-nowrap"
-                      style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--gold-dark)" }}>
-                      الأكثر شعبية ⭐
+                      style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "#FCFAF1" }}>
+                      الأكثر شعبية <Star size={12} className="inline-block" style={{ fill: "#FCFAF1", color: "#FCFAF1" }} />
                     </div>
                   )}
-                  <h3 className="text-lg font-bold mb-4" style={{ color: p.is_popular ? "#FFD700" : "var(--text-main)" }}>{p.name_ar}</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: p.is_popular ? "#FCFAF1" : "var(--text-main)" }}>{p.name_ar}</h3>
                   <div className="flex items-end gap-1 mb-6">
-                    <span className="text-5xl font-black" style={{ color: "var(--gold)" }}>
+                    <span className="text-4xl sm:text-5xl font-black" style={{ color: p.is_popular ? "#FCFAF1" : "var(--gold)" }}>
                       {isFree ? "0" : priceNum % 1 === 0 ? priceNum.toFixed(0) : priceNum.toFixed(3)}
                     </span>
-                    <span className="text-sm mb-2" style={{ color: p.is_popular ? "rgba(204,214,246,.6)" : "var(--text-muted)" }}>د.أ / شهرياً</span>
+                    <span className="text-sm mb-2" style={{ color: p.is_popular ? "rgba(252,250,241,.65)" : "var(--text-muted)" }}>د.أ / شهرياً</span>
                   </div>
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-3 mb-8 flex-1">
                     {p.features.map((f, fi) => (
                       <li key={fi} className="flex items-center gap-2 text-sm"
-                        style={{ color: p.is_popular ? "#FFD700" : "var(--text-mid)" }}>
-                        <span className="text-xs" style={{ color: "var(--gold)" }}>✓</span> {f}
+                        style={{ color: p.is_popular ? "#FCFAF1" : "var(--text-mid)" }}>
+                        <span className="text-xs" style={{ color: p.is_popular ? "#FFD700" : "var(--gold)" }}>✓</span> {f}
                       </li>
                     ))}
                   </ul>
-                  <Link href="/contact"
-                    className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.03]`}
+                  <Link href={`/contact${isFree ? "?from=free" : `?plan=${encodeURIComponent(p.name_ar || p.name)}`}`}
+                    className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.03] mt-auto`}
                     style={p.is_popular
-                      ? { background: "linear-gradient(135deg, rgba(230,179,30,.16), rgba(230,179,30,.08))", border: "1px solid rgba(230,179,30,.3)", boxShadow: "0 0 40px rgba(230,179,30,.14)", color: "var(--gold)" }
+                      ? { background: "linear-gradient(135deg, rgba(230,179,30,.16), rgba(230,179,30,.08))", border: "1px solid rgba(230,179,30,.3)", boxShadow: "0 0 40px rgba(230,179,30,.14)", color: "#FCFAF1" }
                       : { background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-main)" }
                     }>
                     {isFree ? "ابدأ مجاناً" : "اشترك الآن"}
@@ -601,7 +606,7 @@ export default function LandingPage() {
           <p className="text-base md:text-lg mb-8 md:mb-10" style={{ color: "var(--text-mid)" }}>
             انضم لمئات الصالونات التي تثق بـ Maqass
           </p>
-          <Link href="/contact"
+          <Link href="/contact?from=cta"
             className="group relative inline-flex items-center gap-2 md:gap-3 px-6 py-3.5 md:px-10 md:py-5 rounded-full text-sm md:text-lg font-bold overflow-hidden"
             style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--btn-text)", boxShadow: "0 20px 60px rgba(0,0,0,.4)" }}>
             <span className="relative z-10 font-bold">ابدأ الآن — مجاناً</span>
@@ -615,7 +620,7 @@ export default function LandingPage() {
       <footer id="contact" className="py-12 md:py-16 px-4 md:px-6" dir="rtl"
         style={{ background: "var(--white)", borderTop: "1px solid var(--border)" }}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10 mb-10 md:mb-12">
             <div className="md:col-span-2">
               <Link href="/" className="flex items-center gap-2 group mb-4">
                 <div className="transition-transform duration-500 group-hover:scale-110 flex-shrink-0">

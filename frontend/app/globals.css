@@ -115,10 +115,13 @@ body {
 }
 
 /* ===== Scrollbar ===== */
-::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar       { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-surface); }
 ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+.hide-scrollbars::-webkit-scrollbar { display: none; }
+.hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ===== Sidebar ===== */
 .sidebar {
@@ -133,6 +136,7 @@ body {
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
+  overscroll-behavior: contain; /* Prevents scroll chaining to body */
 }
 
 .sidebar-logo {
@@ -470,6 +474,19 @@ body {
 .form-input::placeholder { color: var(--color-text-muted); }
 select.form-input { appearance: none; cursor: pointer; }
 
+/* Date / month / time input — make native calendar icon white */
+input[type="date"].form-input,
+input[type="month"].form-input,
+input[type="time"].form-input {
+  color-scheme: dark;
+}
+input[type="date"].form-input::-webkit-calendar-picker-indicator,
+input[type="month"].form-input::-webkit-calendar-picker-indicator,
+input[type="time"].form-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 /* ===== Card (settings etc.) ===== */
 .card {
   background: var(--color-cards);
@@ -621,6 +638,8 @@ textarea.input { resize: none; line-height: 1.6; }
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
   z-index: 999;
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 /* ===== Bottom Nav (Mobile Only) ===== */

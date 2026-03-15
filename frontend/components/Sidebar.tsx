@@ -149,7 +149,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
                 {/* Branch Switcher for Enterprise plans */}
                 {isEnterprise() && branches && branches.length > 1 && (
-                    <div className="px-3 mb-2">
+                    <div className="mt-4 px-3 mb-2">
                         <BranchSwitcher />
                     </div>
                 )}

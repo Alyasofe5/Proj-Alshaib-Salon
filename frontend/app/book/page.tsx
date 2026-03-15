@@ -568,7 +568,7 @@ function BookingContent() {
 
                     {/* Progress bar (steps 2-5) */}
                     {step > 1 && step < 6 && (
-                        <div className="pt-24 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                        <div className="pt-32 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
                             <div className="max-w-3xl mx-auto px-6">
                                 <div className="flex items-center">
                                     {["الخدمة", "الحلاق", "الموعد", "البيانات"].map((l, i) => {

@@ -1,0 +1,21 @@
+User-Agent: Googlebot
+User-Agent: Bingbot
+User-Agent: Slurp
+User-Agent: DuckDuckBot
+User-Agent: Baiduspider
+User-Agent: YandexBot
+Allow: /
+Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /api/
+Disallow: /employee/
+
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /api/
+Disallow: /employee/
+
+Host: https://www.maqas.site
+Sitemap: https://www.maqas.site/sitemap.xml

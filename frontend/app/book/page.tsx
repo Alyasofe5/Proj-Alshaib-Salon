@@ -40,7 +40,7 @@ function BookingContent() {
     const [offDays, setOffDays] = useState<number[]>([]);
     const [bookingDays, setBookingDays] = useState(7);
     const [step, setStep] = useState(0);
-    const [sel, setSel] = useState({ service_id: 0, employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
+    const [sel, setSel] = useState({ service_ids: [] as number[], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -104,7 +104,7 @@ function BookingContent() {
             return employees.length > 0 && employees.every(emp => slotsAtTime.some(s => Number(s.employee_id) === emp.id));
         }
     };
-    const selService = services.find(s => s.id === sel.service_id);
+    const selServices = services.filter(s => sel.service_ids.includes(s.id));
     const selEmployee = employees.find(e => e.id === sel.employee_id);
 
     const dates: string[] = [];
@@ -608,41 +608,71 @@ function BookingContent() {
                                         <p className="text-sm text-white/25 mt-3">اختر من قائمة خدماتنا لبدء الحجز</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                        {services.map((s, i) => (
-                                            <motion.button key={s.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                                                onClick={() => { setSel({ ...sel, service_id: s.id }); setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                                className="group relative text-right rounded-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                                                style={{ background: "linear-gradient(135deg, #343434 0%, #343434 100%)", border: "1px solid rgba(255,255,255,.06)" }}
-                                                onMouseEnter={e => { e.currentTarget.style.borderColor = `${gold}30`; e.currentTarget.style.boxShadow = `0 25px 60px ${gold}08, inset 0 1px 0 ${gold}10`; }}
-                                                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}>
-                                                <div className="h-[2px] w-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
-                                                <div className="p-6 md:p-7">
-                                                    <div className="flex justify-between items-start mb-5">
-                                                        <div className="w-11 h-11 rounded-xl flex items-center justify-center opacity-40 group-hover:opacity-100 transition-all duration-500" style={{ background: `${gold}08`, color: gold }}>
-                                                            <IconScissors />
+                                        {services.map((s, i) => {
+                                            const isSelected = sel.service_ids.includes(s.id);
+                                            return (
+                                                <motion.button key={s.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                                                    onClick={() => {
+                                                        const newIds = isSelected 
+                                                            ? sel.service_ids.filter(id => id !== s.id)
+                                                            : [...sel.service_ids, s.id];
+                                                        setSel({ ...sel, service_ids: newIds });
+                                                    }}
+                                                    className="group relative text-right rounded-2xl transition-all duration-500 overflow-hidden"
+                                                    style={{ 
+                                                        background: isSelected ? `${gold}15` : "linear-gradient(135deg, #343434 0%, #343434 100%)", 
+                                                        border: isSelected ? `2px solid ${gold}` : "1px solid rgba(255,255,255,.06)",
+                                                        transform: isSelected ? "scale(1.02)" : "none",
+                                                        boxShadow: isSelected ? `0 20px 40px ${gold}15` : "none"
+                                                    }}>
+                                                    <div className="p-6 md:p-7">
+                                                        <div className="flex justify-between items-start mb-5">
+                                                            <div className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500" 
+                                                                style={{ background: isSelected ? gold : `${gold}08`, color: isSelected ? "#000" : gold }}>
+                                                                <IconScissors />
+                                                            </div>
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} 
+                                                                style={{ background: isSelected ? gold : `${gold}15`, color: isSelected ? "#000" : gold }}>
+                                                                {isSelected ? <IconCheck /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>}
+                                                            </div>
                                                         </div>
-                                                        <div className="w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-x-2 group-hover:translate-x-0" style={{ background: `${gold}15`, color: gold }}>
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                                                        <h3 className={`text-lg font-bold mb-1 transition-colors ${isSelected ? "text-white" : "text-white group-hover:text-[#E6B31E]"}`}>{s.name}</h3>
+                                                        {s.duration_minutes && <p className={`text-xs mb-5 ${isSelected ? "text-white/60" : "text-white/20"}`}>{s.duration_minutes} دقيقة</p>}
+                                                        {!s.duration_minutes && <div className="mb-5" />}
+                                                        <div className="flex items-end justify-between pt-4" style={{ borderTop: `1px solid ${isSelected ? gold + '20' : 'rgba(255,255,255,.04)'}` }}>
+                                                            <div>
+                                                                <span className="text-3xl font-black" style={{ color: gold }}>{Number(s.price).toFixed(2)}</span>
+                                                                <span className={`text-[10px] mr-1 ${isSelected ? "text-white/40" : "text-white/20"}`}>د.أ</span>
+                                                            </div>
+                                                            <span className={`text-[10px] tracking-[.2em] uppercase transition-colors ${isSelected ? "text-white" : "text-white/15"}`}>
+                                                                {isSelected ? "محدد" : "إضافة"}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                    <h3 className="text-lg font-bold text-white group-hover:text-[#E6B31E] transition-colors mb-1">{s.name}</h3>
-                                                    {s.duration_minutes && <p className="text-xs text-white/20 mb-5">{s.duration_minutes} دقيقة</p>}
-                                                    {!s.duration_minutes && <div className="mb-5" />}
-                                                    <div className="flex items-end justify-between pt-4" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                                                        <div>
-                                                            <span className="text-3xl font-black" style={{ color: gold }}>{Number(s.price).toFixed(2)}</span>
-                                                            <span className="text-[10px] text-white/20 mr-1">د.أ</span>
-                                                        </div>
-                                                        <span className="text-[10px] tracking-[.2em] uppercase text-white/15 group-hover:text-white/40 transition-colors">اختيار</span>
-                                                    </div>
-                                                </div>
-                                            </motion.button>
-                                        ))}
+                                                </motion.button>
+                                            );
+                                        })}
                                     </div>
-                                    <button onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2 mx-auto mt-12 text-sm text-white/25 hover:text-white/60 transition-colors tracking-wider group">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="group-hover:-translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                                        رجوع
-                                    </button>
+
+                                    {/* Next Button for Step 2 */}
+                                    <div className="flex flex-col items-center mt-12 gap-6">
+                                        <button 
+                                            onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                                            disabled={sel.service_ids.length === 0}
+                                            className="h-16 px-12 rounded-full text-base font-bold tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg disabled:opacity-20 disabled:scale-100 group"
+                                            style={{ background: gold, color: "#000", boxShadow: sel.service_ids.length > 0 ? `0 20px 60px ${gold}25` : "none" }}>
+                                            <span className="flex items-center gap-3">
+                                                التالي: اختيار الحلاق
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                                            </span>
+                                        </button>
+                                        
+                                        <button onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); }} 
+                                            className="flex items-center gap-2 text-sm text-white/25 hover:text-white/60 transition-colors tracking-wider group">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="group-hover:-translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                                            رجوع
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
 
@@ -765,11 +795,21 @@ function BookingContent() {
                                         {/* Summary */}
                                         <div className="p-6 rounded-2xl mb-8" style={{ background: `${gold}05`, border: `1px solid ${gold}10` }}>
                                             <div className="space-y-3 text-sm">
-                                                <div className="flex justify-between"><span className="text-white/40">الخدمة</span><span className="font-bold">{selService?.name}</span></div>
+                                                <div className="flex justify-between items-start">
+                                                    <span className="text-white/40">الخدمات</span>
+                                                    <div className="text-left flex flex-col items-end">
+                                                        {selServices.map(s => (
+                                                            <span key={s.id} className="font-bold">{s.name} ({Number(s.price).toFixed(2)})</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                                 {selEmployee && <div className="flex justify-between"><span className="text-white/40">الحلاق</span><span className="font-bold">{selEmployee.name}</span></div>}
                                                 <div className="flex justify-between"><span className="text-white/40">الموعد</span><span className="font-bold" style={{ color: gold }}>{sel.booking_date} — {fmt12(sel.booking_time)}</span></div>
                                                 <div className="flex justify-between pt-3" style={{ borderTop: `1px solid ${gold}10` }}>
-                                                    <span className="text-white/40">المبلغ</span><span className="text-xl font-black" style={{ color: gold }}>{Number(selService?.price || 0).toFixed(2)} د.أ</span>
+                                                    <span className="text-white/40">المبلغ الإجمالي</span>
+                                                    <span className="text-xl font-black" style={{ color: gold }}>
+                                                        {selServices.reduce((sum, s) => sum + Number(s.price), 0).toFixed(2)} د.أ
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -852,9 +892,20 @@ function BookingContent() {
 
                                     <div className="p-6 rounded-2xl mb-10" style={{ background: "#343434", border: "1px solid rgba(255,255,255,.05)" }}>
                                         <div className="space-y-3 text-sm text-right">
-                                            <div className="flex justify-between"><span className="text-white/30">الخدمة</span><span className="font-bold">{selService?.name}</span></div>
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-white/30">الخدمات</span>
+                                                <div className="text-left flex flex-col items-end">
+                                                    {selServices.map(s => (
+                                                        <span key={s.id} className="font-bold">{s.name}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
                                             {selEmployee && <div className="flex justify-between"><span className="text-white/30">الحلاق</span><span className="font-bold">{selEmployee.name}</span></div>}
                                             <div className="flex justify-between"><span className="text-white/30">الموعد</span><span className="font-bold" style={{ color: gold }}>{sel.booking_date} — {fmt12(sel.booking_time)}</span></div>
+                                            <div className="flex justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
+                                                <span className="text-white/30">المبلغ الإجمالي</span>
+                                                <span className="font-bold">{selServices.reduce((sum, s) => sum + Number(s.price), 0).toFixed(2)} د.أ</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -863,7 +914,7 @@ function BookingContent() {
                                             <a href={`https://wa.me/${salon.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
                                                 className="h-12 px-8 rounded-full text-sm font-bold flex items-center gap-2 transition-all hover:scale-105" style={{ background: "#25D366", color: "#fff" }}>واتساب</a>
                                         )}
-                                        <button onClick={() => { setStep(1); setSel({ service_id: 0, employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" }); }}
+                                        <button onClick={() => { setStep(1); setSel({ service_ids: [], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" }); }}
                                             className="h-12 px-8 rounded-full text-sm font-bold transition-all hover:scale-105"
                                             style={{ border: "1px solid rgba(255,255,255,.1)", color: "#fff" }}>حجز جديد</button>
                                     </div>

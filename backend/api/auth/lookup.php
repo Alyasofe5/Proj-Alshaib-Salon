@@ -35,10 +35,10 @@ if (!$result) {
     sendSuccess(['found' => false]);
 }
 
-// Build full logo URL
+// Always return logo_path from DB — frontend handles missing images gracefully
 $logoUrl = null;
 $logoPath = $result['salon_logo'];
-if ($logoPath && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $logoPath)) {
+if ($logoPath) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $logoUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/' . $logoPath;
 }

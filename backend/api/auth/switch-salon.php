@@ -86,11 +86,8 @@ if ($salon['subscription_expires_at']) {
     $daysLeft = max(0, (int)ceil((strtotime($salon['subscription_expires_at']) - time()) / 86400));
 }
 
-// Verify logo exists
-$logoPath = $salon['logo_path'];
-if ($logoPath && !file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $logoPath)) {
-    $logoPath = null;
-}
+// Always return logo_path from DB — frontend handles missing images gracefully
+$logoPath = $salon['logo_path'] ?: null;
 
 // Get features config
 $featuresConfig = getSalonFeaturesConfig($salon);

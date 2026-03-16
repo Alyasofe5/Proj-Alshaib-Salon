@@ -847,7 +847,7 @@ function BookingContent() {
                                                     style={{ background: "#343434", border: `1.5px solid ${sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
                                                     onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
                                                     onBlur={e => { e.currentTarget.style.borderColor = sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
-                                                    placeholder="07XXXXXXXX" dir="ltr" />
+                                                    placeholder="07XXXXXXXX" dir="rtl" />
                                                 {sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) && (
                                                     <p className="text-xs mt-1.5" style={{ color: "#e74c3c" }}>
                                                         {!sel.customer_phone.startsWith("07") ? "الرقم يجب أن يبدأ بـ 07" : `الرقم يجب أن يكون 10 أرقام (${sel.customer_phone.length}/10)`}

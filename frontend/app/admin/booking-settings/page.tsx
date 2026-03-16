@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload } from "react-icons/fa";
+import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { assetUrl } from "@/lib/assets";
+import UpgradeCard from "@/components/UpgradeCard";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -286,12 +287,12 @@ export default function BookingSettingsPage() {
                                     }}
                                         className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25"}`}
                                     >
-                                        {copiedLink ? "✅ تم النسخ" : "📋 نسخ الرابط"}
+                                        {copiedLink ? <><FaCheckCircle size={11} /> تم النسخ</> : <><FaCopy size={11} /> نسخ الرابط</>}
                                     </button>
                                     <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`احجز موعدك الآن في ${settings.name}! 💇‍♂️\n\n${baseUrl}/book/?s=${settings.slug}`)}`, "_blank")}
                                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
                                     >
-                                        مشاركة واتساب 💬
+                                        <FaWhatsapp size={12} /> مشاركة واتساب
                                     </button>
                                     <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
                                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[#CACACA] hover:text-[#FCFAF1] hover:bg-white/10 transition-all"
@@ -374,18 +375,11 @@ export default function BookingSettingsPage() {
                                         </div>
                                     </div>
 
-                                    <p className="text-[11px] text-[#FCFAF1]/40 text-center leading-relaxed">
-                                        متاحة فقط في باقة<br />
-                                        <span style={{ color: gold }} className="font-bold">الاحترافي والمؤسسات</span>
-                                    </p>
-
-                                    <button
-                                        onClick={() => window.location.href = "/admin/dashboard"}
-                                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
-                                        style={{ background: `${gold}20`, color: gold, border: `1px solid ${gold}40` }}
-                                    >
-                                        ترقية الباقة ⬆️
-                                    </button>
+                                    <UpgradeCard
+                                        plan="professional"
+                                        featureName="صفحة الحجز والباركود"
+                                        compact
+                                    />
                                 </>
                             )}
                         </div>
@@ -408,7 +402,8 @@ export default function BookingSettingsPage() {
                                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden flex items-center justify-center transition-all"
                                     style={{ background: "#343434", border: `2px solid ${currentLogo ? `${gold}40` : "rgba(230,179,30,.15)"}` }}>
                                     {assetUrl(currentLogo) ? (
-                                        <img src={assetUrl(currentLogo)!} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                                        <img src={assetUrl(currentLogo)!} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity"
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; setCurrentLogo(null); }} />
                                     ) : (
                                         <div className="text-center">
                                             <span className="text-3xl font-black" style={{ color: gold }}>{settings.name?.charAt(0) || "?"}</span>

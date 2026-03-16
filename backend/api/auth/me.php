@@ -38,11 +38,8 @@ if (!$user) {
 $salon = getSalonInfo($salonId);
 $daysLeft = getSubscriptionDaysLeft($salon);
 
-// Verify logo file exists
-$logoPath = $salon['logo_path'];
-if ($logoPath && !file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $logoPath)) {
-    $logoPath = null;
-}
+// Always return logo_path from DB — frontend handles missing images gracefully
+$logoPath = $salon['logo_path'] ?: null;
 
 // Features config
 $featuresConfig = getSalonFeaturesConfig($salon);

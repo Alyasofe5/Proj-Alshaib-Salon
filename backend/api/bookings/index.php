@@ -67,7 +67,9 @@ if (getMethod() === 'GET' && isset($_GET['view']) && $_GET['view'] === 'calendar
             'services'      => $b['service_names'],
             'price'         => (float)$b['total_price'],
             'employee_name' => $b['employee_name'],
+            'employee_id'   => $b['employee_id'] ? (int)$b['employee_id'] : null,
             'notes'         => $b['notes'],
+            'booking_date'  => $b['booking_date'],
         ];
     }
 
@@ -243,6 +245,72 @@ if ($method === 'DELETE') {
 
     if ($stmt->rowCount() === 0) sendError('الحجز غير موجود', 404);
     sendSuccess(null, 200, 'تم حذف الحجز');
+}
+
+// ===== PUT: تعديل بيانات الحجز =====
+if ($method === 'PUT') {
+    $id = $_GET['id'] ?? null;
+    if (!$id) sendError('معرف الحجز مطلوب');
+
+    $data = getRequestBody();
+
+    // Fetch current booking
+    $fetchSql = "SELECT * FROM bookings WHERE id = ?";
+    $fetchParams = [(int)$id];
+    if ($filterSalon) { $fetchSql .= " AND salon_id = ?"; $fetchParams[] = $filterSalon; }
+    $fetchStmt = $pdo->prepare($fetchSql);
+    $fetchStmt->execute($fetchParams);
+    $current = $fetchStmt->fetch();
+    if (!$current) sendError('الحجز غير موجود', 404);
+
+    // Fields that can be updated
+    $customerName = trim($data['customer_name'] ?? $current['customer_name']);
+    $customerPhone = trim($data['customer_phone'] ?? $current['customer_phone']);
+    $bookingDate = $data['booking_date'] ?? $current['booking_date'];
+    $bookingTime = $data['booking_time'] ?? $current['booking_time'];
+    $employeeId = isset($data['employee_id']) ? (int)$data['employee_id'] : (int)$current['employee_id'];
+    $notes = trim($data['notes'] ?? $current['notes'] ?? '');
+
+    // Validate
+    if (empty($customerName)) sendError('اسم العميل مطلوب');
+    if (empty($customerPhone)) sendError('رقم الهاتف مطلوب');
+
+    // Validate employee if changed
+    if ($employeeId != $current['employee_id']) {
+        $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+        $empCheck->execute([$employeeId, $current['salon_id']]);
+        if (!$empCheck->fetch()) sendError('الموظف المختار غير موجود أو غير نشط');
+    }
+
+    // Check for duplicate if time/date/employee changed
+    if ($bookingDate !== $current['booking_date'] || $bookingTime !== $current['booking_time'] || $employeeId != $current['employee_id']) {
+        $dupCheck = $pdo->prepare("
+            SELECT id FROM bookings 
+            WHERE salon_id = ? AND employee_id = ? AND booking_date = ? AND booking_time = ?
+            AND status IN ('pending', 'confirmed') AND id != ?
+        ");
+        $dupCheck->execute([$current['salon_id'], $employeeId, $bookingDate, $bookingTime, (int)$id]);
+        if ($dupCheck->fetch()) {
+            sendError('هذا الموعد محجوز مسبقاً لهذا الموظف');
+        }
+    }
+
+    $sql = "UPDATE bookings SET customer_name = ?, customer_phone = ?, booking_date = ?, booking_time = ?, employee_id = ?, notes = ? WHERE id = ?";
+    $params = [$customerName, $customerPhone, $bookingDate, $bookingTime, $employeeId, $notes, (int)$id];
+    if ($filterSalon) { $sql .= " AND salon_id = ?"; $params[] = $filterSalon; }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    sendSuccess([
+        'id' => (int)$id,
+        'customer_name' => $customerName,
+        'customer_phone' => $customerPhone,
+        'booking_date' => $bookingDate,
+        'booking_time' => $bookingTime,
+        'employee_id' => $employeeId,
+        'notes' => $notes,
+    ], 200, 'تم تعديل الحجز بنجاح');
 }
 
 // ===== POST: إضافة حجز يدوي من الأدمن =====

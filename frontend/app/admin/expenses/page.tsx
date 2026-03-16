@@ -104,7 +104,7 @@ export default function ExpensesPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                     <StatCard icon={<FaArrowTrendUp />} value={summary?.total_income?.toFixed(3) || "0"} label="إجمالي الدخل (د.أ)" sub={`${summary?.transactions_count || 0} عملية`} color="green" />
                     <StatCard icon={<FaArrowTrendDown />} value={summary?.total_expenses?.toFixed(3) || "0"} label="إجمالي المصاريف (د.أ)" sub={`${expenses.length} بند`} color="red" />
-                    <StatCard icon={<FaCoins />} value={Math.abs(summary?.net_profit ?? 0).toFixed(3)} label={`صافي ${isProfit ? "الربح" : "الخسارة"} (د.أ)`} sub={isProfit ? "✅ ربح" : "❌ خسارة"} color={isProfit ? "gold" : "red"} />
+                    <StatCard icon={<FaCoins />} value={Math.abs(summary?.net_profit ?? 0).toFixed(3)} label={`صافي ${isProfit ? "الربح" : "الخسارة"} (د.أ)`} sub={isProfit ? "● ربح" : "● خسارة"} color={isProfit ? "gold" : "red"} />
                     <StatCard icon={<FaPercent />} value={`${summary?.total_income ? Math.abs(Math.round(((summary?.net_profit ?? 0) / summary.total_income) * 100)) : 0}%`} label={`هامش ${isProfit ? "الربح" : "الخسارة"}`} sub="من إجمالي الدخل" color={isProfit ? "green" : "red"} />
                 </div>
 

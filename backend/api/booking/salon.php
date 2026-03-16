@@ -95,7 +95,7 @@ $host = $_SERVER['HTTP_HOST'];
 $baseUrl = $protocol . '://' . $host . '/';
 
 $logoUrl = null;
-if ($salon['logo_path'] && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $salon['logo_path'])) {
+if ($salon['logo_path']) {
     $logoUrl = $baseUrl . $salon['logo_path'];
 }
 

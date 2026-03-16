@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { dashboardAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import BranchManager from "@/components/BranchManager";
+import UpgradeCard from "@/components/UpgradeCard";
 
 import StatCard from "@/components/StatCard";
 import {
@@ -410,7 +411,7 @@ export default function DashboardPage() {
                     </motion.div>
                 </div>
 
-                {/* Branch Manager — Enterprise Only */}
+                {/* Branch Manager — Enterprise Only (Handles its own lock view) */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -419,6 +420,7 @@ export default function DashboardPage() {
                 >
                     <BranchManager />
                 </motion.div>
+
             </div>
         </>
     );

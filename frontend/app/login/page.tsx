@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { authAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { FaSignInAlt, FaUser, FaLock, FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
-import { AlertTriangle, Clock, Phone, RefreshCw } from "lucide-react";
+import { AlertTriangle, Clock, Phone, RefreshCw, ShieldAlert } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
-// Expired / Suspended Screen
+// ─── Expired / Suspended Screen ──────────────────────────
 function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
     message: string;
     salonName: string;
@@ -56,23 +56,31 @@ function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
     );
 }
 
+// ─── Login Page ──────────────────────────────────────────
 export default function LoginPage() {
     const { login } = useAuthStore();
 
-    // Use refs instead of state for input values — avoids re-render interference on mobile
+    // Use refs for input values — avoids re-render interference on mobile
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [shake, setShake] = useState(false);
     const [blockedState, setBlockedState] = useState<{ message: string; salonName: string } | null>(null);
 
     if (blockedState) {
         return <SubscriptionBlockedScreen message={blockedState.message} salonName={blockedState.salonName} onRetry={() => setBlockedState(null)} />;
     }
 
+    const triggerShake = () => {
+        setShake(true);
+        setTimeout(() => setShake(false), 600);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
+        // Prevent ALL default behavior — no reload, no navigation
         e.preventDefault();
         e.stopPropagation();
 
@@ -82,7 +90,8 @@ export default function LoginPage() {
 
         if (!username || !password) {
             setError("يرجى إدخال اسم المستخدم وكلمة المرور");
-            return;
+            triggerShake();
+            return false;
         }
 
         setError("");
@@ -111,9 +120,20 @@ export default function LoginPage() {
                 setBlockedState({ message: msg, salonName: usernameRef.current?.value || username });
             } else {
                 setError(msg);
+                triggerShake();
+
+                // Focus and select the password field so the user can re-type
+                setTimeout(() => {
+                    if (passwordRef.current) {
+                        passwordRef.current.value = "";
+                        passwordRef.current.focus();
+                    }
+                }, 100);
             }
             setLoading(false);
         }
+
+        return false;
     };
 
     return (
@@ -137,20 +157,47 @@ export default function LoginPage() {
                 </div>
 
                 {/* Login Card */}
-                <div className="chart-card">
+                <motion.div
+                    className="chart-card"
+                    animate={shake ? { x: [0, -12, 12, -8, 8, -4, 4, 0] } : {}}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
                     <h2 className="text-lg font-bold text-white mb-6 text-center">
                         <FaSignInAlt className="inline ml-2 text-gold" />
                         تسجيل الدخول
                     </h2>
 
-                    {error && (
-                        <div className="mb-4 px-4 py-3 rounded-xl text-sm font-bold text-center"
-                            style={{ background: "rgba(239,68,68,.12)", border: "1.5px solid rgba(239,68,68,.5)", color: "#fca5a5" }}>
-                            ⚠️ {error}
-                        </div>
-                    )}
+                    {/* Error Message with Animation */}
+                    <AnimatePresence mode="wait">
+                        {error && (
+                            <motion.div
+                                key="error-msg"
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.3 }}
+                                className="mb-5 px-4 py-3.5 rounded-2xl text-sm font-bold flex items-center gap-3"
+                                style={{
+                                    background: "rgba(239,68,68,.1)",
+                                    border: "1.5px solid rgba(239,68,68,.35)",
+                                    color: "#fca5a5",
+                                }}
+                            >
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style={{ background: "rgba(239,68,68,.15)" }}>
+                                    <ShieldAlert size={18} className="text-red-400" />
+                                </div>
+                                <span>{error}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} method="post" action="#" noValidate>
+                    {/* Form — no action, no method, prevents browser from intercepting submit */}
+                    <form
+                        onSubmit={handleSubmit}
+                        noValidate
+                        autoComplete="off"
+                    >
                         <div className="mb-4">
                             <label className="form-label">
                                 <FaUser className="inline ml-1 text-gold" />
@@ -159,10 +206,10 @@ export default function LoginPage() {
                             <input
                                 ref={usernameRef}
                                 type="text"
-                                name="username"
+                                name="mq_user"
                                 className="form-input"
                                 placeholder="أدخل اسم المستخدم"
-                                autoComplete="username"
+                                autoComplete="off"
                                 autoCapitalize="none"
                                 autoCorrect="off"
                                 spellCheck={false}
@@ -180,10 +227,10 @@ export default function LoginPage() {
                                 <input
                                     ref={passwordRef}
                                     type={showPassword ? "text" : "password"}
-                                    name="password"
+                                    name="mq_pass"
                                     className="form-input"
                                     placeholder="أدخل كلمة المرور"
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     autoCapitalize="none"
                                     autoCorrect="off"
                                     spellCheck={false}
@@ -219,7 +266,7 @@ export default function LoginPage() {
                             )}
                         </button>
                     </form>
-                </div>
+                </motion.div>
 
                 <p className="text-center text-xs mt-6" style={{ color: "var(--text-muted)" }}>
                     © {new Date().getFullYear()} <span style={{ color: "var(--gold)" }}>Maqass</span> Platform. All rights reserved.

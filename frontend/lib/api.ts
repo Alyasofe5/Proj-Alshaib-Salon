@@ -156,6 +156,8 @@ export const bookingsAPI = {
         api.delete(`/bookings/index.php?id=${id}`),
     createBooking: (data: Record<string, unknown>) =>
         api.post("/bookings/index.php", data),
+    updateBooking: (id: number, data: Record<string, unknown>) =>
+        api.put(`/bookings/index.php?id=${id}`, data),
     getBookedSlots: (slug: string, date: string) =>
         api.get("/booking/book.php", { params: { slug, date } }),
 };

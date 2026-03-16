@@ -9,6 +9,7 @@ import {
     FaCheckCircle, FaTimesCircle, FaSpinner, FaExchangeAlt,
     FaCrown, FaLock, FaTrash, FaExclamationTriangle,
 } from "react-icons/fa";
+import UpgradeCard from "@/components/UpgradeCard";
 import { assetUrl } from "@/lib/assets";
 
 interface Branch {
@@ -133,20 +134,10 @@ export default function BranchManager() {
     // ── If not enterprise, show upgrade prompt
     if (!canManage) {
         return (
-            <div className="rounded-2xl border border-[#E6B31E]/20 bg-gradient-to-br from-[#E6B31E]/5 to-transparent p-6 text-center">
-                <FaCrown className="mx-auto text-3xl text-[#E6B31E]/40 mb-3" />
-                <p className="text-sm font-bold text-[#E6B31E]">ميزة المؤسسات</p>
-                <p className="text-xs text-[#8A8A8A] mt-1">
-                    إدارة الفروع المتعددة متاحة فقط لباقة المؤسسات
-                </p>
-                <a
-                    href={`https://wa.me/962781717990?text=${encodeURIComponent("مرحبا، أريد الترقية إلى باقة المؤسسات")}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#E6B31E]/10 text-[#E6B31E] hover:bg-[#E6B31E]/20 transition-all"
-                >
-                    <FaCrown size={10} /> الترقية الآن
-                </a>
-            </div>
+            <UpgradeCard
+                plan="professional"
+                featureName="الباقة الاحترافية الشاملة"
+            />
         );
     }
 

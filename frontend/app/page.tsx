@@ -647,7 +647,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-bold mb-4" style={{ color: "var(--text-main)" }}>تواصل</h4>
               <ul className="space-y-2.5 text-sm" style={{ color: "var(--text-mid)" }}>
-                <li className="flex items-center gap-2"><Mail size={14} style={{ color: "var(--gold)" }} /> info@maqass.app</li>
+                <li className="flex items-center gap-2"><Mail size={14} style={{ color: "var(--gold)" }} /> <a href="mailto:info@maqas.site" className="hover:text-[#E6B31E] transition-colors">info@maqas.site</a></li>
                 <li className="flex items-center gap-2">
                   <Phone size={14} style={{ color: "var(--gold)" }} />
                   <a href="https://wa.me/962781717990" target="_blank" rel="noopener noreferrer"

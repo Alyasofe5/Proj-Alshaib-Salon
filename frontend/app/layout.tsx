@@ -221,6 +221,50 @@ export default function RootLayout({
           }}
         />
 
+        {/* ── JSON-LD: WebSite + SiteNavigationElement (helps Google generate Sitelinks) ── */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  name: SITE_NAME,
+                  alternateName: "Maqass",
+                  url: SITE_URL,
+                  inLanguage: "ar",
+                  publisher: {
+                    "@type": "Organization",
+                    name: "Maqass",
+                    url: SITE_URL,
+                  },
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  name: "تواصل معنا",
+                  url: `${SITE_URL}/contact`,
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  name: "سياسة الخصوصية",
+                  url: `${SITE_URL}/privacy`,
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  name: "الشروط والأحكام",
+                  url: `${SITE_URL}/terms`,
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  name: "تسجيل الدخول",
+                  url: `${SITE_URL}/login`,
+                },
+              ],
+            }),
+          }}
+        />
+
         {/* ── Preconnect to speed up font loading ── */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link

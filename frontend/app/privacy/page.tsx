@@ -60,7 +60,7 @@ export default function PrivacyPage() {
                         },
                         {
                             title: "٧. التواصل معنا",
-                            content: "لأي استفسار حول هذه السياسة، تواصل معنا على: info@maqass.app أو +962781717990"
+                            content: "لأي استفسار حول هذه السياسة، تواصل معنا على: info@maqas.site أو +962781717990"
                         },
                     ].map((section, i) => (
                         <div key={i} className="rounded-2xl p-5 sm:p-6" style={{ background: "var(--white)", border: "1px solid var(--border)", boxShadow: "0 2px 12px var(--shadow)" }}>

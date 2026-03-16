@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { bookingsAPI, employeesAPI, servicesAPI } from "@/lib/api";
 import {
     ChevronRight, ChevronLeft, Calendar, Clock, User, Phone, X,
-    Scissors, FileText, Plus, Check, AlertCircle, Loader2
+    Scissors, FileText, Plus, Check, AlertCircle, Loader2,
+    Pencil, Trash2
 } from "lucide-react";
 
 interface CalendarBooking {
@@ -19,6 +20,7 @@ interface CalendarBooking {
     employee_name: string | null;
     employee_id?: number;
     notes: string | null;
+    booking_date?: string;
 }
 
 interface Employee { id: number; name: string; is_active: boolean; }
@@ -60,6 +62,24 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
     const [formError, setFormError] = useState("");
     const [formSuccess, setFormSuccess] = useState("");
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
+
+    // Edit modal state
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingBooking, setEditingBooking] = useState<CalendarBooking | null>(null);
+    const [editForm, setEditForm] = useState({
+        customer_name: "",
+        customer_phone: "",
+        employee_id: "",
+        booking_time: "",
+        notes: "",
+    });
+    const [editSaving, setEditSaving] = useState(false);
+    const [editError, setEditError] = useState("");
+    const [editSuccess, setEditSuccess] = useState("");
+
+    // Delete state
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
     const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
 
@@ -234,6 +254,69 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                 ? prev.service_ids.filter(s => s !== id)
                 : [...prev.service_ids, id]
         }));
+    };
+
+    // ── Open Edit Modal ──
+    const openEditModal = (booking: CalendarBooking) => {
+        setEditingBooking(booking);
+        setEditForm({
+            customer_name: booking.customer_name,
+            customer_phone: booking.customer_phone,
+            employee_id: booking.employee_id ? String(booking.employee_id) : "",
+            booking_time: booking.time?.replace(/:00$/, "") || booking.time || "",
+            notes: booking.notes || "",
+        });
+        setEditError("");
+        setEditSuccess("");
+        setShowEditModal(true);
+    };
+
+    // ── Submit Edit ──
+    const handleEditSubmit = async () => {
+        if (!editingBooking) return;
+        setEditError("");
+        setEditSuccess("");
+
+        if (!editForm.customer_name.trim()) { setEditError("اسم العميل مطلوب"); return; }
+        if (!editForm.customer_phone.trim()) { setEditError("رقم الهاتف مطلوب"); return; }
+
+        setEditSaving(true);
+        try {
+            const bookingDate = editingBooking.booking_date || selectedDate || "";
+            await bookingsAPI.updateBooking(editingBooking.id, {
+                customer_name: editForm.customer_name,
+                customer_phone: editForm.customer_phone,
+                employee_id: editForm.employee_id ? parseInt(editForm.employee_id) : undefined,
+                booking_time: editForm.booking_time,
+                booking_date: bookingDate,
+                notes: editForm.notes,
+            });
+            setEditSuccess("تم تعديل الحجز بنجاح ✓");
+            setTimeout(() => {
+                setShowEditModal(false);
+                setEditingBooking(null);
+                fetchBookings();
+            }, 1000);
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { message?: string } } };
+            setEditError(error.response?.data?.message || "حدث خطأ أثناء التعديل");
+        } finally {
+            setEditSaving(false);
+        }
+    };
+
+    // ── Delete Booking ──
+    const handleDeleteBooking = async (id: number) => {
+        setDeletingId(id);
+        try {
+            await bookingsAPI.delete(id);
+            setDeleteConfirm(null);
+            fetchBookings();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setDeletingId(null);
+        }
     };
 
     return (
@@ -503,14 +586,54 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                     )}
                                                 </div>
 
-                                                {/* Price */}
-                                                <div className="flex-shrink-0 text-left">
+                                                {/* Price + Actions */}
+                                                <div className="flex-shrink-0 flex flex-col items-end gap-2">
                                                     <div className="px-2.5 py-1.5 rounded-lg" style={{
                                                         background: "rgba(230,179,30,.06)",
                                                     }}>
                                                         <p className="text-[#E6B31E] font-black text-xs sm:text-sm">{b.price.toFixed(2)}</p>
                                                         <p className="text-[8px] text-[#E6B31E]/50 text-center font-bold">د.أ</p>
                                                     </div>
+                                                    {role === "admin" && (
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); openEditModal(b); }}
+                                                                title="تعديل الحجز"
+                                                                className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                                                style={{ background: "rgba(230,179,30,.1)", color: "#E6B31E", border: "1px solid rgba(230,179,30,.15)" }}
+                                                            >
+                                                                <Pencil size={11} />
+                                                            </button>
+                                                            {deleteConfirm === b.id ? (
+                                                                <div className="flex items-center gap-1">
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteBooking(b.id); }}
+                                                                        disabled={deletingId === b.id}
+                                                                        className="px-2 py-1.5 rounded-lg text-[9px] font-bold transition-all"
+                                                                        style={{ background: "rgba(231,76,60,.2)", color: "#e74c3c", border: "1px solid rgba(231,76,60,.3)" }}
+                                                                    >
+                                                                        {deletingId === b.id ? <Loader2 size={10} className="animate-spin" /> : "تأكيد"}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }}
+                                                                        className="px-2 py-1.5 rounded-lg text-[9px] font-bold text-gray-500 hover:text-white transition-all"
+                                                                        style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)" }}
+                                                                    >
+                                                                        إلغاء
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); setDeleteConfirm(b.id); }}
+                                                                    title="حذف الحجز"
+                                                                    className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                                                    style={{ background: "rgba(231,76,60,.1)", color: "#e74c3c", border: "1px solid rgba(231,76,60,.15)" }}
+                                                                >
+                                                                    <Trash2 size={11} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -746,6 +869,182 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         <>
                                             <Check size={16} />
                                             تأكيد الحجز
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ═══════ Edit Booking Modal ═══════ */}
+            <AnimatePresence>
+                {showEditModal && editingBooking && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+                        onClick={() => !editSaving && setShowEditModal(false)}
+                    >
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative w-full sm:w-[480px] sm:max-w-[90vw] max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl"
+                            style={{ background: "#1E1E1E", border: "1px solid rgba(230,179,30,.15)" }}
+                        >
+                            {/* Header */}
+                            <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 rounded-t-3xl sm:rounded-t-2xl"
+                                style={{ background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,179,30,.12)" }}>
+                                        <Pencil size={14} color="#E6B31E" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-sm text-white">تعديل الحجز</h3>
+                                        <p className="text-[10px] text-gray-500">{editingBooking.customer_name} — {formatTime(editingBooking.time)}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => !editSaving && setShowEditModal(false)} className="text-gray-500 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            <div className="px-5 py-4 space-y-4">
+                                {/* Customer Name */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-gray-400 mb-1.5 block">اسم العميل *</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.customer_name}
+                                        onChange={e => setEditForm(p => ({ ...p, customer_name: e.target.value }))}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
+                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                {/* Customer Phone */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-gray-400 mb-1.5 block">رقم الهاتف *</label>
+                                    <input
+                                        type="tel"
+                                        inputMode="numeric"
+                                        maxLength={10}
+                                        value={editForm.customer_phone}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                                            setEditForm(p => ({ ...p, customer_phone: val }));
+                                        }}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
+                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)", direction: "rtl" }}
+                                    />
+                                </div>
+
+                                {/* Employee Selection */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-gray-400 mb-1.5 block">الموظف</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {employees.map(emp => (
+                                            <button
+                                                key={emp.id}
+                                                onClick={() => setEditForm(p => ({ ...p, employee_id: String(emp.id) }))}
+                                                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                                                    editForm.employee_id === String(emp.id)
+                                                        ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.02]"
+                                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                                }`}
+                                                style={{
+                                                    background: editForm.employee_id === String(emp.id) ? "rgba(230,179,30,.12)" : "#2A2A2A",
+                                                    border: `1px solid ${editForm.employee_id === String(emp.id) ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.06)"}`,
+                                                }}
+                                            >
+                                                <User size={12} className="inline ml-1" />
+                                                {emp.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Time Selection */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-gray-400 mb-1.5 block">الوقت</label>
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-36 overflow-y-auto">
+                                        {generateTimeSlots().map(time => {
+                                            const selected = editForm.booking_time === time;
+                                            return (
+                                                <button
+                                                    key={time}
+                                                    onClick={() => setEditForm(p => ({ ...p, booking_time: time }))}
+                                                    className={`py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
+                                                        selected
+                                                            ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.03]"
+                                                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                                                    }`}
+                                                    style={{
+                                                        background: selected ? "rgba(230,179,30,.12)" : "#2A2A2A",
+                                                        border: `1px solid ${selected ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.04)"}`,
+                                                    }}
+                                                >
+                                                    {formatTime(time)}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Notes */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-gray-400 mb-1.5 block">ملاحظات</label>
+                                    <textarea
+                                        value={editForm.notes}
+                                        onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))}
+                                        rows={2}
+                                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none resize-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
+                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                {/* Error / Success */}
+                                {editError && (
+                                    <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 px-3 py-2.5 rounded-xl border border-red-500/20">
+                                        <AlertCircle size={14} />
+                                        {editError}
+                                    </div>
+                                )}
+                                {editSuccess && (
+                                    <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-2.5 rounded-xl border border-emerald-500/20">
+                                        <Check size={14} />
+                                        {editSuccess}
+                                    </div>
+                                )}
+
+                                {/* Submit */}
+                                <button
+                                    onClick={handleEditSubmit}
+                                    disabled={editSaving}
+                                    className="w-full h-12 rounded-xl font-bold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    style={{
+                                        background: "linear-gradient(135deg, #E6B31E, #D4A41A)",
+                                        color: "#000",
+                                    }}
+                                >
+                                    {editSaving ? (
+                                        <>
+                                            <Loader2 size={16} className="animate-spin" />
+                                            جاري الحفظ...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Check size={16} />
+                                            حفظ التعديلات
                                         </>
                                     )}
                                 </button>

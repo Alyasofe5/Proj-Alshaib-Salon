@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { reportsAPI, expensesAPI } from "@/lib/api";
-import { FaPrint, FaArrowRight, FaFileAlt, FaCoins, FaMoneyBillWave, FaChartLine, FaUsers, FaCalendarAlt } from "react-icons/fa";
+import { FaPrint, FaArrowRight, FaFileAlt, FaCoins, FaMoneyBillWave, FaChartLine, FaUsers, FaCalendarAlt, FaCut, FaClipboardList, FaReceipt, FaUserTie, FaMoneyBill, FaUniversity, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 export default function AdminPrintReportPage() {
     const [data, setData] = useState<any>(null);
@@ -135,7 +135,7 @@ export default function AdminPrintReportPage() {
                         marginBottom: "12px",
                         color: "#000"
                     }}>
-                        ✂️
+                        <FaCut />
                     </div>
                     <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--gold)", letterSpacing: "2px", margin: "0 0 6px" }}>
                         AL SHAYEB
@@ -204,7 +204,7 @@ export default function AdminPrintReportPage() {
                     border: `1px solid ${isProfit ? "rgba(46, 204, 113, 0.3)" : "rgba(231, 76, 60, 0.3)"}`,
                     color: isProfit ? "#2ecc71" : "#e74c3c"
                 }}>
-                    <span>{isProfit ? "✅ الوضع المالي: أنت في ربح" : "❌ الوضع المالي: أنت في خسارة"}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>{isProfit ? <><FaCheckCircle /> الوضع المالي: أنت في ربح</> : <><FaTimesCircle /> الوضع المالي: أنت في خسارة</>}</span>
                     <span style={{ fontSize: "16px" }}>{Math.abs(netProfit).toFixed(3)} د.أ</span>
                 </div>
 
@@ -225,7 +225,7 @@ export default function AdminPrintReportPage() {
                             borderRadius: "2px"
                         }} />
                         <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                            📋 تفاصيل العمليات
+                            <FaClipboardList style={{ display: "inline", marginLeft: "6px", color: "var(--gold)" }} /> تفاصيل العمليات
                         </span>
                         <span className="badge badge-gold" style={{ marginRight: "auto" }}>
                             {transactions.length} عملية
@@ -268,7 +268,7 @@ export default function AdminPrintReportPage() {
                                             </td>
                                             <td>
                                                 <span className={`badge ${tx.payment_method === "cash" ? "badge-green" : "badge-blue"}`}>
-                                                    {tx.payment_method === "cash" ? "💵 نقد" : "🏦 تحويل"}
+                                                    {tx.payment_method === "cash" ? <><FaMoneyBill style={{ display: "inline", marginLeft: "4px" }} /> نقد</> : <><FaUniversity style={{ display: "inline", marginLeft: "4px" }} /> تحويل</>}
                                                 </span>
                                             </td>
                                             <td style={{ color: "#666", fontSize: "12px" }}>
@@ -308,7 +308,7 @@ export default function AdminPrintReportPage() {
                             borderRadius: "2px"
                         }} />
                         <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                            💸 المصاريف
+                            <FaReceipt style={{ display: "inline", marginLeft: "6px", color: "#e74c3c" }} /> المصاريف
                         </span>
                         <span className="badge badge-red" style={{ marginRight: "auto" }}>
                             {expenses.length} بند
@@ -391,7 +391,7 @@ export default function AdminPrintReportPage() {
                                 borderRadius: "2px"
                             }} />
                             <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                                👷 أداء الموظفين
+                                <FaUserTie style={{ display: "inline", marginLeft: "6px", color: "#3498db" }} /> أداء الموظفين
                             </span>
                             <span className="badge badge-blue" style={{ marginRight: "auto" }}>
                                 {empStats.length} موظف

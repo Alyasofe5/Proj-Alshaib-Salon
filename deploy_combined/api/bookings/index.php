@@ -12,6 +12,68 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../middleware/response.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 
+// ===== Calendar View: accessible by admin + employee =====
+if (getMethod() === 'GET' && isset($_GET['view']) && $_GET['view'] === 'calendar') {
+    $user = requireAuth(); // any logged-in user
+    $salonId = $user['salon_id'] ?? null;
+    $role = $user['role'] ?? '';
+    $employeeId = $user['employee_id'] ?? null;
+
+    $month = $_GET['month'] ?? date('Y-m');
+    if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
+        sendError('صيغة الشهر غير صحيحة، استخدم YYYY-MM');
+    }
+
+    $startDate = $month . '-01';
+    $endDate = date('Y-m-t', strtotime($startDate));
+
+    $sql = "SELECT b.id, b.customer_name, b.customer_phone, b.booking_date, b.booking_time, 
+                   b.status, b.notes, b.employee_id,
+                   GROUP_CONCAT(COALESCE(s.name, 'غير معروف') SEPARATOR ' + ') as service_names,
+                   SUM(COALESCE(s.price, 0)) as total_price,
+                   e.name as employee_name
+            FROM bookings b
+            LEFT JOIN booking_services bs ON b.id = bs.booking_id
+            LEFT JOIN services s ON bs.service_id = s.id
+            LEFT JOIN employees e ON b.employee_id = e.id
+            WHERE b.booking_date BETWEEN ? AND ?
+            AND b.status IN ('confirmed', 'completed')";
+    $params = [$startDate, $endDate];
+
+    if ($role !== 'super_admin' && $salonId) {
+        $sql .= " AND b.salon_id = ?";
+        $params[] = $salonId;
+    }
+    if ($role === 'employee' && $employeeId) {
+        $sql .= " AND b.employee_id = ?";
+        $params[] = $employeeId;
+    }
+
+    $sql .= " GROUP BY b.id ORDER BY b.booking_date ASC, b.booking_time ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $bookings = $stmt->fetchAll();
+
+    $calendarData = [];
+    foreach ($bookings as $b) {
+        $date = $b['booking_date'];
+        if (!isset($calendarData[$date])) $calendarData[$date] = [];
+        $calendarData[$date][] = [
+            'id'            => (int)$b['id'],
+            'customer_name' => $b['customer_name'],
+            'customer_phone'=> $b['customer_phone'],
+            'time'          => $b['booking_time'],
+            'status'        => $b['status'],
+            'services'      => $b['service_names'],
+            'price'         => (float)$b['total_price'],
+            'employee_name' => $b['employee_name'],
+            'notes'         => $b['notes'],
+        ];
+    }
+
+    sendSuccess(['month' => $month, 'bookings' => $calendarData, 'total' => count($bookings)]);
+}
+
 $user = authenticate(['admin', 'super_admin']);
 $method = getMethod();
 $salonId = $user['salon_id'] ?? null;

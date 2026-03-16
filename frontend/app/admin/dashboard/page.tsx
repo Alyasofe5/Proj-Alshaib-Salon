@@ -313,7 +313,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ===== Booking Calendar (Pro/Enterprise with booking feature) ===== */}
-                {salon?.features?.has_booking_page && ['professional', 'enterprise'].includes(salon?.plan_type || '') && (
+                {['professional', 'enterprise'].includes(salon?.plan_type || '') && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

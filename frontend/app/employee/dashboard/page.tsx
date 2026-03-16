@@ -92,7 +92,7 @@ export default function EmployeeDashboard() {
                 </motion.div>
 
                 {/* Booking Calendar — Pro/Enterprise only */}
-                {salon?.features?.has_booking_page && ['professional', 'enterprise'].includes(salon?.plan_type || '') && (
+                {['professional', 'enterprise'].includes(salon?.plan_type || '') && (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="chart-card mt-6">
                         <BookingCalendar role="employee" />
                     </motion.div>

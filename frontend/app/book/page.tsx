@@ -165,6 +165,8 @@ function BookingContent() {
                 ::-webkit-scrollbar-track { background: #000; }
                 ::-webkit-scrollbar-thumb { background: ${gold}40; border-radius: 3px; }
                 ::selection { background: ${gold}30; }
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
             <div className="min-h-screen" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif", color: "#fff" }}>
@@ -177,25 +179,25 @@ function BookingContent() {
                     {/* Separator — opacity avoids color interpolation flash */}
                     <div className="absolute bottom-0 inset-x-0 h-px pointer-events-none transition-opacity duration-500"
                         style={{ background: "rgba(255,255,255,0.06)", opacity: scrolled ? 1 : 0 }} />
-                    <div className="max-w-6xl mx-auto px-6 md:px-10 h-16 md:h-20 flex items-center justify-between">
-                        <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); if (step > 1) setStep(1); }} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-                            <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden" style={{ background: `${gold}15`, border: `1px solid ${gold}20` }}>
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 h-14 sm:h-16 md:h-20 flex items-center justify-between">
+                        <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); if (step > 1) setStep(1); }} className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center overflow-hidden" style={{ background: `${gold}15`, border: `1px solid ${gold}20` }}>
                                 {salon?.logo ? (
                                     <img src={salon.logo} alt={salon.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.innerHTML = `<span style="color:${gold};font-family:'Playfair Display',serif;font-weight:900">${salon?.name?.charAt(0) || ""}</span>`; }} />
                                 ) : (
-                                    <span className="text-base font-black" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>{salon?.name?.charAt(0)}</span>
+                                    <span className="text-sm sm:text-base font-black" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>{salon?.name?.charAt(0)}</span>
                                 )}
                             </div>
-                            <span className="text-xs font-bold tracking-[.2em] uppercase text-white/80">{salon?.name}</span>
+                            <span className="text-[10px] sm:text-xs font-bold tracking-[.15em] sm:tracking-[.2em] uppercase text-white/80 max-w-[120px] sm:max-w-none truncate">{salon?.name}</span>
                         </button>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             {salon?.instagram && (
                                 <a href={`https://instagram.com/${salon.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconInstagram /></a>
+                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconInstagram /></a>
                             )}
                             {salon?.phone && (
                                 <a href={`tel:${salon.phone}`}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconPhone /></a>
+                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconPhone /></a>
                             )}
                             <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                 className="hidden sm:flex h-9 px-5 rounded-full items-center text-xs font-bold tracking-wider uppercase transition-all hover:scale-105"
@@ -208,7 +210,7 @@ function BookingContent() {
                 <AnimatePresence>
                     {step === 1 && (
                         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
-                            className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-16 md:pt-20">
+                            className="relative min-h-[75vh] sm:min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-14 sm:pt-16 md:pt-20">
 
                             {/* Background — Image or Gradient */}
                             {salon?.hero_image ? (
@@ -237,36 +239,36 @@ function BookingContent() {
                             )}
 
                             {/* Content */}
-                            <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+                            <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
                                 <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
-                                    <p className="text-xs md:text-sm tracking-[.35em] uppercase mb-6 md:mb-8" style={{ color: gold }}>
+                                    <p className="text-[10px] sm:text-xs md:text-sm tracking-[.25em] sm:tracking-[.35em] uppercase mb-4 sm:mb-6 md:mb-8" style={{ color: gold }}>
                                         — مرحباً بك في —
                                     </p>
                                 </motion.div>
 
                                 <motion.h1 initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }}
-                                    className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black leading-[0.9] mb-6 md:mb-8"
+                                    className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] mb-4 sm:mb-6 md:mb-8"
                                     style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}>
                                     {salon?.name}
                                 </motion.h1>
 
                                 {salon?.description && (
                                     <motion.p initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6, duration: 0.8 }}
-                                        className="text-base md:text-lg text-white/40 max-w-lg mx-auto leading-relaxed mb-8 md:mb-12">
+                                        className="text-sm sm:text-base md:text-lg text-white/50 max-w-md sm:max-w-lg mx-auto leading-relaxed mb-6 sm:mb-8 md:mb-12">
                                         {salon.description}
                                     </motion.p>
                                 )}
 
                                 <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8, duration: 0.8 }}
-                                    className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                    className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                                     <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                        className="h-14 px-10 rounded-full text-sm font-bold tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg"
+                                        className="w-full sm:w-auto h-12 sm:h-14 px-8 sm:px-10 rounded-full text-sm font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg"
                                         style={{ background: gold, color: "#000", boxShadow: `0 20px 60px ${gold}20` }}>
                                         احجز موعدك الآن
                                     </button>
                                     {salon?.phone && (
                                         <a href={`https://wa.me/${salon.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
-                                            className="h-14 px-8 rounded-full text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:scale-105"
+                                            className="w-full sm:w-auto h-12 sm:h-14 px-8 rounded-full text-sm font-bold tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105"
                                             style={{ border: `1px solid rgba(255,255,255,.15)`, color: "#fff" }}>
                                             <span>تواصل معنا</span>
                                         </a>
@@ -275,7 +277,7 @@ function BookingContent() {
 
                                 {/* Info badges */}
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }}
-                                    className="mt-12 md:mt-16 flex items-center justify-center gap-6 md:gap-10 text-xs text-white/30">
+                                    className="mt-8 sm:mt-12 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 md:gap-10 text-[11px] sm:text-xs text-white/40">
                                     {salon?.address && <span className="flex items-center gap-1.5"><IconMap /> {salon.address}</span>}
                                     <span className="flex items-center gap-1.5">🕐 {fmt12(workHours.start)} — {fmt12(workHours.end)}</span>
                                 </motion.div>
@@ -303,11 +305,11 @@ function BookingContent() {
                                     <p className="text-xs tracking-[.4em] uppercase font-semibold" style={{ color: gold }}>من نحن</p>
                                     <div className="h-px w-16" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
                                 </div>
-                                <h2 className="text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>تعرّف علينا</h2>
+                                <h2 className="text-2xl sm:text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>تعرّف علينا</h2>
                             </motion.div>
                         </div>
 
-                        <div className="max-w-6xl mx-auto px-6 md:px-10 pb-16 md:pb-24">
+                        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 pb-12 sm:pb-16 md:pb-24">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                                 {/* ─── About Card ─── */}
@@ -321,7 +323,7 @@ function BookingContent() {
                                     <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
                                         style={{ background: `radial-gradient(circle, ${gold}18 0%, transparent 70%)` }} />
 
-                                    <div className="relative p-8 md:p-10">
+                                    <div className="relative p-5 sm:p-8 md:p-10">
                                         {/* Salon Header */}
                                         <div className="flex items-center gap-3 mb-8">
                                             {/* Salon logo or fallback icon */}
@@ -355,7 +357,7 @@ function BookingContent() {
                                         <div className="h-px mb-8" style={{ background: "linear-gradient(90deg, transparent, rgba(230,179,30,.2), transparent)" }} />
 
                                         {/* Info Grid */}
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                                             {/* Working Hours */}
                                             <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.05)" }}>
                                                 <div className="flex items-center gap-2 mb-2">
@@ -471,13 +473,13 @@ function BookingContent() {
                                     <p className="text-xs tracking-[.4em] uppercase font-semibold" style={{ color: gold }}>خدماتنا</p>
                                     <div className="h-px w-16" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
                                 </div>
-                                <h2 className="text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>ما نقدمه لك</h2>
-                                <p className="text-sm text-white/25 mt-4 max-w-md mx-auto">مجموعة من الخدمات المميزة لتجربة حلاقة لا تُنسى</p>
+                                <h2 className="text-2xl sm:text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>ما نقدمه لك</h2>
+                                <p className="text-xs sm:text-sm text-white/25 mt-3 sm:mt-4 max-w-md mx-auto">مجموعة من الخدمات المميزة لتجربة حلاقة لا تُنسى</p>
                             </motion.div>
                         </div>
 
                         {/* Services Grid — Premium Showcase */}
-                        <div className="max-w-6xl mx-auto px-6 md:px-10 pb-20 md:pb-32">
+                        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 pb-16 sm:pb-20 md:pb-32">
                             {(() => {
                                 const fallbackImages: Record<string, string> = {
                                     'حلاقة': '/services/haircut.webp',
@@ -490,7 +492,7 @@ function BookingContent() {
                                 };
                                 const defaultImg = '/services/haircut.webp';
                                 return (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                         {services.map((s, i) => (
                                             <motion.div key={s.id}
                                                 initial={{ opacity: 0, y: 50 }}
@@ -500,7 +502,7 @@ function BookingContent() {
                                                 className="group relative rounded-3xl overflow-hidden cursor-default"
                                                 style={{ background: "#343434" }}>
                                                 {/* Image */}
-                                                <div className="relative h-52 md:h-60 overflow-hidden">
+                                                <div className="relative h-40 sm:h-52 md:h-60 overflow-hidden">
                                                     <img
                                                         src={s.image || fallbackImages[s.name] || defaultImg}
                                                         alt={s.name}
@@ -516,7 +518,7 @@ function BookingContent() {
                                                     </div>
                                                 </div>
                                                 {/* Content */}
-                                                <div className="p-6 relative">
+                                                <div className="p-4 sm:p-6 relative">
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <div className="w-9 h-9 rounded-lg flex items-center justify-center"
                                                             style={{ background: `${gold}10`, color: gold }}>
@@ -548,9 +550,9 @@ function BookingContent() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
-                                className="text-center mt-16 md:mt-20">
+                                className="text-center mt-10 sm:mt-16 md:mt-20">
                                 <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                    className="h-16 px-12 rounded-full text-base font-bold tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg group"
+                                    className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full text-sm sm:text-base font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg group"
                                     style={{ background: gold, color: "#000", boxShadow: `0 20px 60px ${gold}25` }}>
                                     <span className="flex items-center gap-3">
                                         احجز موعدك الآن
@@ -568,21 +570,21 @@ function BookingContent() {
 
                     {/* Progress bar (steps 2-5) */}
                     {step > 1 && step < 6 && (
-                        <div className="pt-40 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                            <div className="max-w-3xl mx-auto px-6">
+                        <div className="pt-20 sm:pt-40 pb-4 sm:pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                            <div className="max-w-3xl mx-auto px-4 sm:px-6">
                                 <div className="flex items-center">
                                     {["الخدمة", "الحلاق", "الموعد", "البيانات"].map((l: string, i: number) => {
                                         const stepNum = i + 2;
                                         return (
                                             <div key={i} className="flex items-center flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-500"
+                                                <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold transition-all duration-500"
                                                         style={{ background: step >= stepNum ? gold : "transparent", color: step >= stepNum ? "#000" : "#444", border: step < stepNum ? "1px solid #222" : "none", boxShadow: step === stepNum ? `0 0 25px ${gold}30` : "none" }}>
                                                         {step > stepNum ? "✓" : i + 1}
                                                     </div>
-                                                    <span className={`text-xs font-semibold hidden sm:block ${step >= stepNum ? "text-white" : "text-gray-700"}`}>{l}</span>
+                                                    <span className={`text-[9px] sm:text-xs font-semibold ${step >= stepNum ? "text-white" : "text-gray-700"}`}>{l}</span>
                                                 </div>
-                                                {i < 3 && <div className="flex-1 h-px mx-3" style={{ background: step > stepNum ? gold : "#3A3A3A" }} />}
+                                                {i < 3 && <div className="flex-1 h-px mx-1.5 sm:mx-3 hidden sm:block" style={{ background: step > stepNum ? gold : "#3A3A3A" }} />}
                                             </div>
                                         );
                                     })}
@@ -592,7 +594,7 @@ function BookingContent() {
                     )}
 
                     {/* Content area */}
-                    <div className={`max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-20`}>
+                    <div className={`max-w-5xl mx-auto px-4 sm:px-6 md:px-10 py-8 sm:py-12 md:py-20 ${step > 1 && step < 6 ? 'pb-24 sm:pb-12' : ''}`}>
                         <AnimatePresence mode="wait">
 
                             {/* S2: Services (first booking step) */}
@@ -604,7 +606,7 @@ function BookingContent() {
                                             <p className="text-xs tracking-[.35em] uppercase font-semibold" style={{ color: gold }}>الخطوة الأولى</p>
                                             <div className="h-px w-10" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
                                         </div>
-                                        <h2 className="text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر خدمتك</h2>
+                                        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر خدمتك</h2>
                                         <p className="text-sm text-white/25 mt-3">اختر من قائمة خدماتنا لبدء الحجز</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -625,7 +627,7 @@ function BookingContent() {
                                                         transform: isSelected ? "scale(1.02)" : "none",
                                                         boxShadow: isSelected ? `0 20px 40px ${gold}15` : "none"
                                                     }}>
-                                                    <div className="p-6 md:p-7">
+                                                    <div className="p-4 sm:p-6 md:p-7">
                                                         <div className="flex justify-between items-start mb-5">
                                                             <div className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500" 
                                                                 style={{ background: isSelected ? gold : `${gold}08`, color: isSelected ? "#000" : gold }}>
@@ -659,7 +661,7 @@ function BookingContent() {
                                         <button 
                                             onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                             disabled={sel.service_ids.length === 0}
-                                            className="h-16 px-12 rounded-full text-base font-bold tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg disabled:opacity-20 disabled:scale-100 group"
+                                            className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full text-sm sm:text-base font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg disabled:opacity-20 disabled:scale-100 group"
                                             style={{ background: gold, color: "#000", boxShadow: sel.service_ids.length > 0 ? `0 20px 60px ${gold}25` : "none" }}>
                                             <span className="flex items-center gap-3">
                                                 التالي: اختيار الحلاق
@@ -685,7 +687,7 @@ function BookingContent() {
                                             <p className="text-xs tracking-[.35em] uppercase font-semibold" style={{ color: gold }}>الخطوة الثانية</p>
                                             <div className="h-px w-10" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
                                         </div>
-                                        <h2 className="text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر الحلاق</h2>
+                                        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر الحلاق</h2>
                                         <p className="text-sm text-white/25 mt-3">اختر الحلاق المفضل لديك أو اترك الاختيار لنا</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-3xl mx-auto">
@@ -731,10 +733,10 @@ function BookingContent() {
                                     </div>
 
                                     <div className="max-w-2xl mx-auto">
-                                        <div className="flex gap-2.5 flex-wrap justify-center pb-6 px-1">
+                                        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto hide-scrollbar pb-4 sm:pb-6 px-1 sm:flex-wrap sm:justify-center">
                                             {dates.map(d => (
                                                 <button key={d} onClick={() => { setSel({ ...sel, booking_date: d, booking_time: "" }); loadBooked(d); }}
-                                                    className="flex-shrink-0 w-[76px] py-4 rounded-2xl text-center transition-all duration-300"
+                                                    className="flex-shrink-0 w-[66px] sm:w-[76px] py-3 sm:py-4 rounded-xl sm:rounded-2xl text-center transition-all duration-300"
                                                     style={{
                                                         background: sel.booking_date === d ? gold : "#343434",
                                                         color: sel.booking_date === d ? "#000" : "#666",
@@ -752,7 +754,7 @@ function BookingContent() {
                                         {sel.booking_date && (
                                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
                                                 <p className="text-xs text-white/30 mb-4 tracking-wider uppercase">الأوقات المتاحة</p>
-                                                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+                                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                                                     {timeSlots.map(t => {
                                                         const bk = isBooked(t);
                                                         const isPast = sel.booking_date === new Date().toISOString().split("T")[0] && t < new Date().toTimeString().slice(0, 5);
@@ -924,29 +926,40 @@ function BookingContent() {
                     </div>
                 </section>
 
+                {/* ═══════════ STICKY MOBILE BOOK BUTTON ═══════════ */}
+                {step === 1 && (
+                    <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden p-3" style={{ background: "linear-gradient(0deg, rgba(0,0,0,.95) 60%, transparent)", backdropFilter: "blur(10px)" }}>
+                        <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                            className="w-full h-12 rounded-full text-sm font-bold tracking-[.1em] uppercase"
+                            style={{ background: gold, color: "#000", boxShadow: `0 -4px 30px ${gold}30` }}>
+                            احجز موعدك الآن
+                        </button>
+                    </div>
+                )}
+
                 {/* ═══════════ FOOTER ═══════════ */}
-                <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                    <div className="max-w-6xl mx-auto px-6 md:px-10 py-16 md:py-20">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8 mb-14">
+                <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)" }} className={step === 1 ? 'pb-16 sm:pb-0' : ''}>
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-10 sm:py-16 md:py-20">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 md:gap-8 mb-10 sm:mb-14">
                             {/* Brand */}
-                            <div className="md:col-span-2">
-                                <h3 className="text-2xl md:text-3xl font-black mb-4" style={{ fontFamily: "'Playfair Display',serif" }}>{salon?.name}</h3>
-                                {salon?.description && <p className="text-sm text-white/25 leading-relaxed max-w-sm">{salon.description}</p>}
-                                <div className="flex items-center gap-3 mt-6">
+                            <div className="col-span-2 sm:col-span-2 md:col-span-2">
+                                <h3 className="text-xl sm:text-2xl md:text-3xl font-black mb-3 sm:mb-4" style={{ fontFamily: "'Playfair Display',serif" }}>{salon?.name}</h3>
+                                {salon?.description && <p className="text-xs sm:text-sm text-white/25 leading-relaxed max-w-sm line-clamp-2 sm:line-clamp-none">{salon.description}</p>}
+                                <div className="flex items-center gap-3 mt-4 sm:mt-6">
                                     {salon?.instagram && (
                                         <a href={`https://instagram.com/${salon.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconInstagram /></a>
+                                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconInstagram /></a>
                                     )}
                                     {salon?.phone && (
                                         <a href={`tel:${salon.phone}`}
-                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconPhone /></a>
+                                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconPhone /></a>
                                     )}
                                 </div>
                             </div>
                             {/* Contact */}
                             <div>
-                                <p className="text-[10px] font-bold tracking-[.3em] uppercase mb-4" style={{ color: gold }}>تواصل</p>
-                                <div className="space-y-3 text-sm text-white/30">
+                                <p className="text-[10px] font-bold tracking-[.2em] sm:tracking-[.3em] uppercase mb-3 sm:mb-4" style={{ color: gold }}>تواصل</p>
+                                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-white/30">
                                     {salon?.phone && <p dir="ltr" className="text-right">{salon.phone}</p>}
                                     {salon?.address && <p>{salon.address}</p>}
                                     {salon?.instagram && <p>{salon.instagram}</p>}
@@ -954,12 +967,12 @@ function BookingContent() {
                             </div>
                             {/* Hours */}
                             <div>
-                                <p className="text-[10px] font-bold tracking-[.3em] uppercase mb-4" style={{ color: gold }}>أوقات العمل</p>
-                                <p className="text-sm text-white/30 mb-2">{fmt12(workHours.start)} — {fmt12(workHours.end)}</p>
-                                {offDays.length > 0 && <p className="text-xs text-white/15">إجازة: {offDays.map(d => dayNames[d]).join("، ")}</p>}
+                                <p className="text-[10px] font-bold tracking-[.2em] sm:tracking-[.3em] uppercase mb-3 sm:mb-4" style={{ color: gold }}>أوقات العمل</p>
+                                <p className="text-xs sm:text-sm text-white/30 mb-2">{fmt12(workHours.start)} — {fmt12(workHours.end)}</p>
+                                {offDays.length > 0 && <p className="text-[10px] sm:text-xs text-white/15">إجازة: {offDays.map(d => dayNames[d]).join("، ")}</p>}
                             </div>
                         </div>
-                        <div className="flex items-center justify-between pt-8" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 sm:pt-8" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
                             <p className="text-[10px] text-white/15">&copy; {new Date().getFullYear()} {salon?.name}</p>
                             <div className="flex items-center gap-3">
                                 <a href="https://wr-technologies.net/" target="_blank" rel="noopener noreferrer"

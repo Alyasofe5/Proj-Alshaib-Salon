@@ -190,11 +190,13 @@ export default function Sidebar({ role }: SidebarProps) {
                                 {isEmployee ? (
                                     <><FaCut className="inline ml-1" size={10} /> حلاق</>
                                 ) : (
-                                    <><FaCrown className="inline ml-1" size={10} /> مدير النظام</>
+                                    <>
+                                        <FaCrown className="inline ml-1" size={10} /> مدير النظام
+                                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold ${badge.color}`}>
+                                            {badge.label}
+                                        </span>
+                                    </>
                                 )}
-                                <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold ${badge.color}`}>
-                                    {badge.label}
-                                </span>
                             </div>
                         </div>
                     </div>

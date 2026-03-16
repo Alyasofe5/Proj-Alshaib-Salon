@@ -115,18 +115,53 @@ if ($method === 'PATCH') {
 
     $data = getRequestBody();
     $newStatus = $data['status'] ?? '';
+    $assignedEmployeeId = !empty($data['assigned_employee_id']) ? (int)$data['assigned_employee_id'] : null;
 
     if (!in_array($newStatus, ['confirmed', 'cancelled', 'completed'])) {
         sendError('الحالة غير صحيحة');
     }
 
+    // جلب بيانات الحجز الحالي
+    $fetchSql = "SELECT employee_id, salon_id FROM bookings WHERE id = ?";
+    $fetchParams = [(int)$id];
+    if ($filterSalon) { $fetchSql .= " AND salon_id = ?"; $fetchParams[] = $filterSalon; }
+    $fetchStmt = $pdo->prepare($fetchSql);
+    $fetchStmt->execute($fetchParams);
+    $currentBooking = $fetchStmt->fetch();
+    if (!$currentBooking) sendError('الحجز غير موجود', 404);
+
+    // إذا كان "أي حلاق" (employee_id = null) والمدير يريد تأكيد — يجب اختيار حلاق
+    if ($newStatus === 'confirmed' && $currentBooking['employee_id'] === null) {
+        if (!$assignedEmployeeId) {
+            sendError('يجب اختيار حلاق لتأكيد هذا الحجز');
+        }
+        // تحقق من أن الموظف ينتمي لنفس الصالون وهو نشط
+        $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+        $empCheck->execute([$assignedEmployeeId, $currentBooking['salon_id']]);
+        $emp = $empCheck->fetch();
+        if (!$emp) sendError('الموظف المختار غير موجود أو غير نشط');
+
+        // تحديث الحجز: الحالة + تعيين الموظف
+        $sql = "UPDATE bookings SET status = ?, employee_id = ? WHERE id = ?";
+        $params = [$newStatus, $assignedEmployeeId, (int)$id];
+        if ($filterSalon) { $sql .= " AND salon_id = ?"; $params[] = $filterSalon; }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        if ($stmt->rowCount() === 0) sendError('فشل التحديث', 500);
+
+        sendSuccess([
+            'status'        => $newStatus,
+            'employee_id'   => $assignedEmployeeId,
+            'employee_name' => $emp['name'],
+        ], 200, 'تم تأكيد الحجز وتعيين الحلاق');
+    }
+
+    // الحالة العادية
     $sql = "UPDATE bookings SET status = ? WHERE id = ?";
     $params = [$newStatus, (int)$id];
     if ($filterSalon) { $sql .= " AND salon_id = ?"; $params[] = $filterSalon; }
-
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-
     if ($stmt->rowCount() === 0) sendError('الحجز غير موجود', 404);
 
     sendSuccess(['status' => $newStatus], 200, 'تم تحديث حالة الحجز');

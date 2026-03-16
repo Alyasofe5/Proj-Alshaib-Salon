@@ -1,13 +1,14 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage } from "react-icons/fa";
+import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -257,7 +258,7 @@ export default function BookingSettingsPage() {
 
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8 md:space-y-10">
 
-                {/* ══════ Section: Booking Link ══════ */}
+                {/* ══════ Section: Booking Link + QR Code ══════ */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
@@ -265,38 +266,132 @@ export default function BookingSettingsPage() {
                         </div>
                         <h2 className="text-xl font-bold">رابط الحجز للزبائن</h2>
                     </div>
-                    <div className="rounded-2xl p-5 md:p-6" style={{ background: "linear-gradient(135deg, rgba(230,179,30,.08) 0%, rgba(230,179,30,.02) 100%)", border: "1px solid rgba(230,179,30,.2)" }}>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(230,179,30,.15)" }}>
-                                    <FaExternalLinkAlt size={14} color={gold} />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                        {/* ── Booking Link Card ── */}
+                        <div className="lg:col-span-2 rounded-2xl p-5 md:p-6" style={{ background: "linear-gradient(135deg, rgba(230,179,30,.08) 0%, rgba(230,179,30,.02) 100%)", border: "1px solid rgba(230,179,30,.2)" }}>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(230,179,30,.15)" }}>
+                                        <FaExternalLinkAlt size={14} color={gold} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[#FCFAF1] font-bold text-sm">رابط الحجز</p>
+                                        <p className="text-[#8A8A8A] text-xs mt-0.5 font-mono truncate" dir="ltr">{baseUrl}/book/?s={settings.slug}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-[#FCFAF1] font-bold text-sm">رابط الحجز</p>
-                                    <p className="text-[#8A8A8A] text-xs mt-0.5 font-mono" dir="ltr">{baseUrl}/book/?s={settings.slug}</p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <button onClick={() => {
+                                        navigator.clipboard.writeText(`${baseUrl}/book/?s=${settings.slug}`);
+                                        setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
+                                    }}
+                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25"}`}
+                                    >
+                                        {copiedLink ? "✅ تم النسخ" : "📋 نسخ الرابط"}
+                                    </button>
+                                    <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`احجز موعدك الآن في ${settings.name}! 💇‍♂️\n\n${baseUrl}/book/?s=${settings.slug}`)}`, "_blank")}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
+                                    >
+                                        مشاركة واتساب 💬
+                                    </button>
+                                    <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[#CACACA] hover:text-[#FCFAF1] hover:bg-white/10 transition-all"
+                                    >
+                                        <FaExternalLinkAlt size={10} /> معاينة
+                                    </a>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => {
-                                    navigator.clipboard.writeText(`${baseUrl}/book/?s=${settings.slug}`);
-                                    setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
-                                }}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25"}`}
-                                >
-                                    {copiedLink ? "✅ تم النسخ" : "📋 نسخ الرابط"}
-                                </button>
-                                <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`احجز موعدك الآن في ${settings.name}! 💇‍♂️\n\n${baseUrl}/book/?s=${settings.slug}`)}`, "_blank")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
-                                >
-                                    مشاركة 💬
-                                </button>
-                                <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[#CACACA] hover:text-[#FCFAF1] hover:bg-white/10 transition-all"
-                                >
-                                    <FaExternalLinkAlt size={10} />
-                                </a>
                             </div>
                         </div>
+
+                        {/* ── QR Code Card ── */}
+                        <div className="rounded-2xl p-5 flex flex-col items-center gap-4" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.15)" }}>
+                            <div className="flex items-center gap-2 self-start">
+                                <FaQrcode style={{ color: gold }} size={14} />
+                                <p className="text-sm font-bold text-[#FCFAF1]">باركود الحجز</p>
+                            </div>
+
+                            {['professional', 'enterprise'].includes(salon?.plan_type || '') ? (
+                                <>
+                                    {/* QR Code Display */}
+                                    <div className="p-3 rounded-xl" style={{ background: "#fff" }}>
+                                        <QRCodeSVG
+                                            id="salon-qr-svg"
+                                            value={`${baseUrl}/book/?s=${settings.slug}`}
+                                            size={140}
+                                            bgColor="#ffffff"
+                                            fgColor="#000000"
+                                            level="H"
+                                            includeMargin={false}
+                                        />
+                                    </div>
+
+                                    {/* Hidden Canvas for Download */}
+                                    <QRCodeCanvas
+                                        id="salon-qr-canvas"
+                                        value={`${baseUrl}/book/?s=${settings.slug}`}
+                                        size={800}
+                                        bgColor="#ffffff"
+                                        fgColor="#000000"
+                                        level="H"
+                                        includeMargin={true}
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <p className="text-[10px] text-[#FCFAF1]/25 text-center">امسح الكود بالموبايل للحجز مباشرة</p>
+
+                                    {/* Download Button */}
+                                    <button
+                                        onClick={() => {
+                                            const canvas = document.getElementById("salon-qr-canvas") as HTMLCanvasElement;
+                                            if (!canvas) return;
+                                            const link = document.createElement("a");
+                                            link.download = `qr-${settings.slug}.png`;
+                                            link.href = canvas.toDataURL("image/png");
+                                            link.click();
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                                        style={{ background: `${gold}15`, color: gold, border: `1px solid ${gold}30` }}
+                                    >
+                                        <FaDownload size={11} /> تنزيل الباركود
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Locked QR — Blurred Preview */}
+                                    <div className="relative p-3 rounded-xl" style={{ background: "#fff" }}>
+                                        <div style={{ filter: "blur(6px)", pointerEvents: "none" }}>
+                                            <QRCodeSVG
+                                                value={`${baseUrl}/book/?s=${settings.slug}`}
+                                                size={140}
+                                                bgColor="#ffffff"
+                                                fgColor="#000000"
+                                                level="H"
+                                                includeMargin={false}
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl"
+                                            style={{ background: "rgba(0,0,0,.55)" }}>
+                                            <span className="text-2xl">🔒</span>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-[11px] text-[#FCFAF1]/40 text-center leading-relaxed">
+                                        متاحة فقط في باقة<br />
+                                        <span style={{ color: gold }} className="font-bold">الاحترافي والمؤسسات</span>
+                                    </p>
+
+                                    <button
+                                        onClick={() => window.location.href = "/admin/dashboard"}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                                        style={{ background: `${gold}20`, color: gold, border: `1px solid ${gold}40` }}
+                                    >
+                                        ترقية الباقة ⬆️
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
                     </div>
                 </motion.section>
 

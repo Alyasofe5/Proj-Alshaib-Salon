@@ -143,3 +143,15 @@ export const salonAPI = {
         });
     },
 };
+
+// ===== Bookings API =====
+export const bookingsAPI = {
+    getAll: (params?: Record<string, string>) =>
+        api.get("/bookings/index.php", { params }),
+    calendar: (month: string) =>
+        api.get("/bookings/calendar.php", { params: { month } }),
+    updateStatus: (id: number, data: Record<string, unknown>) =>
+        api.patch(`/bookings/index.php?id=${id}`, data),
+    delete: (id: number) =>
+        api.delete(`/bookings/index.php?id=${id}`),
+};

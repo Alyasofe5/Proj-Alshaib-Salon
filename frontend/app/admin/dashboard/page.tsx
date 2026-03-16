@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { dashboardAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import BranchManager from "@/components/BranchManager";
+import BookingCalendar from "@/components/BookingCalendar";
 import StatCard from "@/components/StatCard";
 import {
     Users,
@@ -310,6 +311,18 @@ export default function DashboardPage() {
                         </div>
                     </motion.div>
                 </div>
+
+                {/* ===== Booking Calendar (Pro/Enterprise with booking feature) ===== */}
+                {salon?.features?.has_booking_page && ['professional', 'enterprise'].includes(salon?.plan_type || '') && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="chart-card mb-6"
+                    >
+                        <BookingCalendar role="admin" />
+                    </motion.div>
+                )}
 
                 {/* ===== Tables ===== */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

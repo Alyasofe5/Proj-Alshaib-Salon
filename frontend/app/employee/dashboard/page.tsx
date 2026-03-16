@@ -1,10 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { reportsAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 import StatCard from "@/components/StatCard";
+import BookingCalendar from "@/components/BookingCalendar";
 import { FaUsers, FaCoins, FaPercent, FaCalendarAlt, FaPlusCircle } from "react-icons/fa";
 import { ReceiptText } from "lucide-react";
 
@@ -27,6 +29,7 @@ export default function EmployeeDashboard() {
     const [monthCommission, setMonthCommission] = useState(0);
     const [monthCustomers, setMonthCustomers] = useState(0);
     const [loading, setLoading] = useState(true);
+    const { salon } = useAuthStore();
 
     useEffect(() => {
         Promise.all([
@@ -87,6 +90,13 @@ export default function EmployeeDashboard() {
                         </tbody>
                     </table>
                 </motion.div>
+
+                {/* Booking Calendar — Pro/Enterprise only */}
+                {salon?.features?.has_booking_page && ['professional', 'enterprise'].includes(salon?.plan_type || '') && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="chart-card mt-6">
+                        <BookingCalendar role="employee" />
+                    </motion.div>
+                )}
             </div>
         </>
     );

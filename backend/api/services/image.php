@@ -73,7 +73,5 @@ $relativePath = 'uploads/services/' . $filename;
 $stmt = $pdo->prepare("UPDATE services SET image_path = ? WHERE id = ? AND salon_id = ?");
 $stmt->execute([$relativePath, $serviceId, $salonId]);
 
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$imageUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/' . $relativePath;
-
-sendSuccess(['image' => $imageUrl, 'message' => 'تم رفع صورة الخدمة بنجاح']);
+// Return relative path — frontend's assetUrl() handles URL resolution
+sendSuccess(['image' => $relativePath, 'message' => 'تم رفع صورة الخدمة بنجاح']);

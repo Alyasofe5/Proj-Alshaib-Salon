@@ -1,5 +1,9 @@
 RewriteEngine On
 
+# ── Canonical: redirect www → non-www (301 permanent) ──
+RewriteCond %{HTTP_HOST} ^www\.maqas\.site [NC]
+RewriteRule ^(.*)$ https://maqas.site/$1 [R=301,L]
+
 # Disable LiteSpeed Cache for HTML pages
 <IfModule LiteSpeed>
     CacheLookup off

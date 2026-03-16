@@ -103,6 +103,34 @@
 .glass-card-2 { animation: glassCardIn 0.4s ease both 0.12s; }
 .glass-card-3 { animation: glassCardIn 0.4s ease both 0.19s; }
 
+/* ===== Brand Shimmer — MAQASS logo text ===== */
+@keyframes brand-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.maqass-brand {
+  background: linear-gradient(
+    90deg,
+    #C8A84B 0%,
+    #E6B31E 20%,
+    #FFE082 38%,
+    #FFF8E1 50%,
+    #FFE082 62%,
+    #E6B31E 80%,
+    #C8A84B 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: brand-shimmer 3s ease-in-out infinite;
+}
+
+.maqass-brand:hover {
+  animation-duration: 1.2s;
+}
+
 /* ===== Reset ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 

@@ -34,25 +34,11 @@ if (getMethod() === 'GET') {
     // Parse JSON settings
     $settings = !empty($salon['settings']) ? json_decode($salon['settings'], true) : [];
 
-    // Build logo URL
-    $logoUrl = null;
-    if ($salon['logo_path']) {
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'];
-        $logoUrl = $protocol . '://' . $host . '/' . $salon['logo_path'];
-    }
-
-    // Hero image URL
-    $heroImageUrl = null;
-    if (!empty($settings['hero_image'])) {
-        $protocol2 = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $heroImageUrl = $protocol2 . '://' . $_SERVER['HTTP_HOST'] . '/' . $settings['hero_image'];
-    }
-
+    // Return relative paths — frontend's assetUrl() handles URL resolution
     sendSuccess([
         'name' => $salon['name'],
         'slug' => $salon['slug'],
-        'logo' => $logoUrl,
+        'logo' => $salon['logo_path'] ?: null,
         'owner_name' => $salon['owner_name'],
         'owner_email' => $salon['owner_email'],
         'owner_phone' => $salon['owner_phone'],
@@ -65,7 +51,7 @@ if (getMethod() === 'GET') {
         'off_days' => $settings['off_days'] ?? [],
         'booking_days' => $settings['booking_days'] ?? 7,
         'booking_message' => $settings['booking_message'] ?? '',
-        'hero_image' => $heroImageUrl,
+        'hero_image' => $settings['hero_image'] ?? null,
     ]);
 }
 

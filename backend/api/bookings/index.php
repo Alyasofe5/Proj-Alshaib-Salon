@@ -245,4 +245,74 @@ if ($method === 'DELETE') {
     sendSuccess(null, 200, 'تم حذف الحجز');
 }
 
+// ===== POST: إضافة حجز يدوي من الأدمن =====
+if ($method === 'POST') {
+    $data = getRequestBody();
+
+    $customerName = trim($data['customer_name'] ?? '');
+    $customerPhone = trim($data['customer_phone'] ?? '');
+    $bookingDate = $data['booking_date'] ?? '';
+    $bookingTime = $data['booking_time'] ?? '';
+    $employeeId = !empty($data['employee_id']) ? (int)$data['employee_id'] : null;
+    $serviceIds = [];
+    if (!empty($data['service_ids']) && is_array($data['service_ids'])) {
+        $serviceIds = array_map('intval', $data['service_ids']);
+    }
+    $notes = trim($data['notes'] ?? '');
+
+    // Validation
+    if (empty($customerName)) sendError('اسم العميل مطلوب');
+    if (empty($customerPhone)) sendError('رقم الهاتف مطلوب');
+    if (empty($bookingDate)) sendError('التاريخ مطلوب');
+    if (empty($bookingTime)) sendError('الوقت مطلوب');
+    if (empty($employeeId)) sendError('يجب اختيار موظف');
+    if (empty($serviceIds)) sendError('يجب اختيار خدمة واحدة على الأقل');
+
+    // Validate employee belongs to this salon and is active
+    $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+    $empCheck->execute([$employeeId, $salonId]);
+    $emp = $empCheck->fetch();
+    if (!$emp) sendError('الموظف المختار غير موجود أو غير نشط');
+
+    // Duplicate prevention: check same employee + date + time
+    $dupCheck = $pdo->prepare("
+        SELECT id FROM bookings 
+        WHERE salon_id = ? AND employee_id = ? AND booking_date = ? AND booking_time = ?
+        AND status IN ('pending', 'confirmed')
+    ");
+    $dupCheck->execute([$salonId, $employeeId, $bookingDate, $bookingTime]);
+    if ($dupCheck->fetch()) {
+        sendError('هذا الموعد محجوز مسبقاً لهذا الموظف، يرجى اختيار وقت آخر');
+    }
+
+    // Validate services exist and belong to this salon
+    $primaryServiceId = $serviceIds[0];
+    foreach ($serviceIds as $sid) {
+        $svcCheck = $pdo->prepare("SELECT id FROM services WHERE id = ? AND salon_id = ?");
+        $svcCheck->execute([$sid, $salonId]);
+        if (!$svcCheck->fetch()) sendError("الخدمة رقم $sid غير موجودة");
+    }
+
+    // Create booking with 'confirmed' status (admin-created = auto-confirmed)
+    $stmt = $pdo->prepare("
+        INSERT INTO bookings (salon_id, service_id, employee_id, customer_name, customer_phone, booking_date, booking_time, notes, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')
+    ");
+    $stmt->execute([$salonId, $primaryServiceId, $employeeId, $customerName, $customerPhone, $bookingDate, $bookingTime, $notes]);
+    $bookingId = (int)$pdo->lastInsertId();
+
+    // Insert all booking services
+    $svcStmt = $pdo->prepare("INSERT IGNORE INTO booking_services (booking_id, service_id) VALUES (?, ?)");
+    foreach ($serviceIds as $sid) {
+        $svcStmt->execute([$bookingId, $sid]);
+    }
+
+    sendSuccess([
+        'id' => $bookingId,
+        'booking_date' => $bookingDate,
+        'booking_time' => $bookingTime,
+        'employee_name' => $emp['name'],
+    ], 201, 'تم إنشاء الحجز بنجاح');
+}
+
 sendError('Method not allowed', 405);

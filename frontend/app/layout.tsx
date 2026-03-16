@@ -7,9 +7,9 @@ import ScrollToTop from "@/components/ScrollToTop";
 //  Based on practices used by Vercel, Linear, Notion
 // ─────────────────────────────────────────────
 
-const SITE_URL = "https://www.maqas.site";
-const SITE_NAME = "مقص | Maqass";
-const DEFAULT_TITLE = "مقص — منصة إدارة الصالونات في الأردن";
+const SITE_URL = "https://maqas.site";
+const SITE_NAME = "Maqass | مقص";
+const DEFAULT_TITLE = "Maqass — مقص | منصة إدارة الصالونات في الأردن";
 const DEFAULT_DESCRIPTION =
   "منصة متكاملة لإدارة الحجوزات والموظفين والتقارير المالية لصالونات الحلاقة في الأردن. رابط حجز ذكي، تقارير يومية، وإدارة محترفة بلمسة واحدة. جرّب مجاناً.";
 
@@ -107,14 +107,14 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/logo.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/favicon.svg",
+    shortcut: "/logo.svg",
   },
 
   // ── Apple PWA ─────────────────────────────

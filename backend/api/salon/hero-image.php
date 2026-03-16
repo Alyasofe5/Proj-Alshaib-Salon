@@ -67,11 +67,8 @@ if (getMethod() === 'POST') {
     $stmt = $pdo->prepare("UPDATE salons SET settings = ? WHERE id = ?");
     $stmt->execute([$settingsJson, $salonId]);
 
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    $fullUrl = $protocol . '://' . $host . '/' . $relativePath;
-
-    sendSuccess(['hero_image' => $fullUrl, 'message' => 'تم رفع الصورة بنجاح']);
+    // Return relative path — frontend's assetUrl() handles URL resolution
+    sendSuccess(['hero_image' => $relativePath, 'message' => 'تم رفع الصورة بنجاح']);
 }
 
 if (getMethod() === 'DELETE') {

@@ -52,9 +52,15 @@ if ($role !== 'super_admin' && $salonId) {
 }
 
 // Employee filter — employee sees only their own bookings
-if ($role === 'employee' && $employeeId) {
-    $sql .= " AND b.employee_id = ?";
-    $params[] = $employeeId;
+if ($role === 'employee') {
+    if ($employeeId) {
+        $sql .= " AND b.employee_id = ?";
+        $params[] = $employeeId;
+    } else {
+        // Employee user without linked employee_id — try matching by user_id
+        $sql .= " AND b.employee_id IN (SELECT id FROM employees WHERE user_id = ?)";
+        $params[] = $user['user_id'];
+    }
 }
 
 $sql .= " GROUP BY b.id ORDER BY b.booking_date ASC, b.booking_time ASC";

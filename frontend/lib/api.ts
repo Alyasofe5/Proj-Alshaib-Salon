@@ -154,4 +154,8 @@ export const bookingsAPI = {
         api.patch(`/bookings/index.php?id=${id}`, data),
     delete: (id: number) =>
         api.delete(`/bookings/index.php?id=${id}`),
+    createBooking: (data: Record<string, unknown>) =>
+        api.post("/bookings/index.php", data),
+    getBookedSlots: (slug: string, date: string) =>
+        api.get("/booking/book.php", { params: { slug, date } }),
 };

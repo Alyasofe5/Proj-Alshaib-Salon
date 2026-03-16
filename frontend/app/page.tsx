@@ -141,10 +141,9 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col">
               <span
-                className="text-[18px] md:text-[20px] font-black tracking-wider leading-none"
-                style={{ color: "var(--gold)" }}
+                className="text-[18px] md:text-[20px] font-black tracking-wider leading-none maqass-brand"
               >MAQASS</span>
-              <span className="text-[8px] font-semibold tracking-[.2em] mt-0.5" style={{ color: "var(--text-muted)" }}>SALON PLATFORM</span>
+              <span className="text-[8px] font-semibold tracking-[.25em] mt-0.5 uppercase" style={{ color: "rgba(200,168,75,.5)" }}>Salon Platform</span>
             </div>
           </Link>
 
@@ -627,10 +626,10 @@ export default function LandingPage() {
                   <MaqassLogoIcon size={40} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[18px] font-black tracking-wider leading-none"
-                    style={{ color: "var(--gold)" }}>MAQASS</span>
-                  <span className="text-[8px] font-semibold tracking-[.2em] mt-0.5"
-                    style={{ color: "var(--text-muted)" }}>SALON PLATFORM</span>
+                  <span className="text-[18px] font-black tracking-wider leading-none maqass-brand"
+                    >MAQASS</span>
+                  <span className="text-[8px] font-semibold tracking-[.25em] mt-0.5 uppercase"
+                    style={{ color: "rgba(200,168,75,.5)" }}>Salon Platform</span>
                 </div>
               </Link>
               <p className="text-sm max-w-sm leading-relaxed" style={{ color: "var(--text-mid)" }}>

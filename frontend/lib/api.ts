@@ -28,9 +28,16 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            Cookies.remove("token");
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
+            // Don't redirect to /login if we're already ON the login endpoint
+            // (otherwise login error → 401 → redirect → page reload → error disappears)
+            const requestUrl = error.config?.url || "";
+            const isLoginRequest = requestUrl.includes("/auth/login");
+
+            if (!isLoginRequest) {
+                Cookies.remove("token");
+                if (typeof window !== "undefined") {
+                    window.location.href = "/login";
+                }
             }
         }
         return Promise.reject(error);

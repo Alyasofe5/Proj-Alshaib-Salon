@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { reportsAPI, expensesAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 import { FaPrint, FaArrowRight, FaFileAlt, FaCoins, FaMoneyBillWave, FaChartLine, FaUsers, FaCalendarAlt, FaCut, FaClipboardList, FaReceipt, FaUserTie, FaMoneyBill, FaUniversity, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 export default function AdminPrintReportPage() {
+    const { salon } = useAuthStore();
     const [data, setData] = useState<any>(null);
     const [expensesData, setExpensesData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -51,6 +53,7 @@ export default function AdminPrintReportPage() {
     const netProfit = totalRevenue - totalExpenses;
     const isProfit = netProfit >= 0;
     const dateLabel = period === "daily" ? date : month;
+    const salonName = salon?.name || "Maqass";
 
     return (
         <div style={{ direction: "rtl", fontFamily: "Tajawal, sans-serif" }}>
@@ -138,7 +141,7 @@ export default function AdminPrintReportPage() {
                         <FaCut />
                     </div>
                     <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--gold)", letterSpacing: "2px", margin: "0 0 6px" }}>
-                        AL SHAYEB
+                        {salonName}
                     </h1>
                     <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#e0e0e0", margin: "0 0 8px" }}>
                         تقرير {period === "daily" ? "يومي" : "شهري"}: {dateLabel}
@@ -437,7 +440,7 @@ export default function AdminPrintReportPage() {
                     color: "#444",
                     fontSize: "12px"
                 }}>
-                    <span style={{ color: "var(--gold)", fontWeight: 700 }}>AL SHAYEB</span> Management System
+                    <span style={{ color: "var(--gold)", fontWeight: 700 }}>{salonName}</span> — نظام إدارة
                     &nbsp;|&nbsp; تقرير آلي — {new Date().toLocaleString("ar-JO")}
                 </div>
             </div>

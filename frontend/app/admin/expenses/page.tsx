@@ -101,7 +101,7 @@ export default function ExpensesPage() {
                 {flash && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={flash.type === "success" ? "flash-success" : "flash-error"}>{flash.msg}</motion.div>}
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     <StatCard icon={<FaArrowTrendUp />} value={summary?.total_income?.toFixed(3) || "0"} label="إجمالي الدخل (د.أ)" sub={`${summary?.transactions_count || 0} عملية`} color="green" />
                     <StatCard icon={<FaArrowTrendDown />} value={summary?.total_expenses?.toFixed(3) || "0"} label="إجمالي المصاريف (د.أ)" sub={`${expenses.length} بند`} color="red" />
                     <StatCard icon={<FaCoins />} value={Math.abs(summary?.net_profit ?? 0).toFixed(3)} label={`صافي ${isProfit ? "الربح" : "الخسارة"} (د.أ)`} sub={isProfit ? "● ربح" : "● خسارة"} color={isProfit ? "gold" : "red"} />
@@ -109,8 +109,8 @@ export default function ExpensesPage() {
                 </div>
 
                 {/* Chart + By Type */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="md:col-span-2 chart-card">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="lg:col-span-2 chart-card">
                         <div className="chart-card-title"><TrendingUp size={16} className="inline ml-2" /> مقارنة <span>آخر 6 أشهر</span></div>
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>

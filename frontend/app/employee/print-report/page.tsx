@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export default function PrintReportPage() {
-    const { user } = useAuthStore();
+    const { user, salon } = useAuthStore();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState("daily");
@@ -43,6 +43,7 @@ export default function PrintReportPage() {
     const empName = data.employee?.name || user?.employee_name || user?.name || "موظف";
     const transactions = data.transactions || [];
     const dateLabel = period === "daily" ? date : month;
+    const salonName = salon?.name || "Maqass";
 
     return (
         <div style={{ direction: "rtl" }}>
@@ -122,7 +123,7 @@ export default function PrintReportPage() {
                         </div>
                     </div>
                     <h1 style={{ fontSize: "20px", color: "#E6B31E", letterSpacing: "3px", margin: "0 0 6px", fontWeight: 900 }}>
-                        AL SHAYEB SALON
+                        {salonName}
                     </h1>
                     <h2 style={{ fontSize: "14px", color: "#aaa", fontWeight: 400, margin: "0 0 14px" }}>
                         تقرير {period === "daily" ? "يومي" : "شهري"} — {dateLabel}
@@ -209,7 +210,7 @@ export default function PrintReportPage() {
 
                 {/* Report Footer */}
                 <div style={{ background: "#f9f3e3", padding: "14px 24px", textAlign: "center", fontSize: "11px", color: "#bbb", borderTop: "1px solid #e8dfc5" }}>
-                    <span style={{ color: "#E6B31E", fontWeight: 700 }}>AL SHAYEB SALON</span>
+                    <span style={{ color: "#E6B31E", fontWeight: 700 }}>{salonName}</span>
                     {" "} — تقرير {empName} — {new Date().toLocaleString("ar-JO")}
                 </div>
             </div>

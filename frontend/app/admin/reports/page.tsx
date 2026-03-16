@@ -87,7 +87,7 @@ export default function ReportsPage() {
                             <StatCard icon={<Banknote size={18} />} value={Number((data as { total_income: number }).total_income).toFixed(3)} label="دخل اليوم (د.أ)" color="green" />
                             <StatCard icon={<UserCheck size={18} />} value={((data as { employee_stats: unknown[] }).employee_stats || []).length} label="موظفون عملوا" color="blue" />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="custom-table">
                                 <div className="p-4 border-b border-white/5 flex items-center gap-2">
                                     <UserCheck size={14} color="var(--gold)" />
@@ -135,7 +135,7 @@ export default function ReportsPage() {
                 {/* ===== Monthly Report ===== */}
                 {period === "monthly" && data && (
                     <>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                             <StatCard icon={<Users size={18} />} value={(data as { total_customers: number }).total_customers} label="إجمالي الزبائن" color="blue" />
                             <StatCard icon={<Banknote size={18} />} value={Number((data as { total_sales: number }).total_sales).toFixed(3)} label="إجمالي المبيعات" color="gold" />
                             <StatCard icon={<Receipt size={18} />} value={Number((data as { total_expenses: number }).total_expenses).toFixed(3)} label="إجمالي المصاريف" color="red" />
@@ -146,8 +146,8 @@ export default function ReportsPage() {
                                 color={Number((data as { net_profit: number }).net_profit) >= 0 ? "green" : "red"}
                             />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-2 chart-card">
+                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div className="lg:col-span-2 chart-card">
                                 <div className="chart-card-title flex items-center gap-2">
                                     <BarChart3 size={15} color="var(--gold)" /> المبيعات <span>اليومية</span>
                                 </div>
@@ -209,7 +209,7 @@ export default function ReportsPage() {
                 {period === "yearly" && data && (
                     <>
                         {/* Stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                             <StatCard icon={<Users size={18} />} value={(data as { total_customers: number }).total_customers} label="إجمالي الزبائن" color="blue" />
                             <StatCard icon={<Banknote size={18} />} value={Number((data as { total_sales: number }).total_sales).toFixed(3)} label="إجمالي المبيعات (د.أ)" color="gold" />
                             <StatCard icon={<Receipt size={18} />} value={Number((data as { total_expenses: number }).total_expenses).toFixed(3)} label="إجمالي المصاريف (د.أ)" color="red" />

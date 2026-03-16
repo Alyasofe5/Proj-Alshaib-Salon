@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { assetUrl } from "@/lib/assets";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -182,8 +183,8 @@ function BookingContent() {
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 h-14 sm:h-16 md:h-20 flex items-center justify-between">
                         <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); if (step > 1) setStep(1); }} className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center overflow-hidden" style={{ background: `${gold}15`, border: `1px solid ${gold}20` }}>
-                                {salon?.logo ? (
-                                    <img src={salon.logo} alt={salon.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.innerHTML = `<span style="color:${gold};font-family:'Playfair Display',serif;font-weight:900">${salon?.name?.charAt(0) || ""}</span>`; }} />
+                                {assetUrl(salon?.logo) ? (
+                                    <img src={assetUrl(salon?.logo)!} alt={salon?.name || ""} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.innerHTML = `<span style="color:${gold};font-family:'Playfair Display',serif;font-weight:900">${salon?.name?.charAt(0) || ""}</span>`; }} />
                                 ) : (
                                     <span className="text-sm sm:text-base font-black" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>{salon?.name?.charAt(0)}</span>
                                 )}
@@ -213,10 +214,10 @@ function BookingContent() {
                             className="relative min-h-[75vh] sm:min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-14 sm:pt-16 md:pt-20">
 
                             {/* Background — Image or Gradient */}
-                            {salon?.hero_image ? (
+                            {assetUrl(salon?.hero_image) ? (
                                 <>
                                     <div className="absolute inset-0">
-                                        <img src={salon.hero_image} alt="" className="w-full h-full object-cover" />
+                                        <img src={assetUrl(salon?.hero_image)!} alt="" className="w-full h-full object-cover" />
                                     </div>
                                     <div className="absolute inset-0" style={{
                                         background: `linear-gradient(180deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.4) 40%, rgba(0,0,0,.8) 100%)`
@@ -327,10 +328,10 @@ function BookingContent() {
                                         {/* Salon Header */}
                                         <div className="flex items-center gap-3 mb-8">
                                             {/* Salon logo or fallback icon */}
-                                            {salon?.logo ? (
+                                            {assetUrl(salon?.logo) ? (
                                                 <img
-                                                    src={salon.logo.startsWith("http") ? salon.logo : `/${salon.logo}`}
-                                                    alt={salon.name}
+                                                    src={assetUrl(salon?.logo)!}
+                                                    alt={salon?.name || ""}
                                                     className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                                                     style={{ border: "1.5px solid rgba(230,179,30,.3)" }}
                                                 />
@@ -504,7 +505,7 @@ function BookingContent() {
                                                 {/* Image */}
                                                 <div className="relative h-40 sm:h-52 md:h-60 overflow-hidden">
                                                     <img
-                                                        src={s.image || fallbackImages[s.name] || defaultImg}
+                                                        src={assetUrl(s.image) || fallbackImages[s.name] || defaultImg}
                                                         alt={s.name}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                     />

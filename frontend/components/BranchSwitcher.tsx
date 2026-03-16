@@ -5,6 +5,7 @@ import { useAuthStore } from "@/lib/store";
 import api from "@/lib/api";
 import { Building2, ChevronDown, Check, Loader2, ArrowLeftRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { assetUrl } from "@/lib/assets";
 
 /**
  * BranchSwitcher — Enterprise plan branch selector
@@ -33,8 +34,8 @@ export default function BranchSwitcher() {
         setSwitching(branchId);
         try {
             const res = await api.post("/auth/switch-salon.php", { salon_id: branchId });
-            const { token, salon: newSalon } = res.data.data;
-            switchSalon(newSalon, token, branches);
+            const { token, salon: newSalon, branches: newBranches } = res.data.data;
+            switchSalon(newSalon, token, newBranches || branches);
             setOpen(false);
             window.location.reload();
         } catch {
@@ -68,14 +69,19 @@ export default function BranchSwitcher() {
                         border: "1px solid rgba(230,179,30,0.2)",
                     }}
                 >
-                    {salon?.logo ? (
+                    {assetUrl(salon?.logo) ? (
                         <img
-                            src={salon.logo.startsWith("http") ? salon.logo : `/${salon.logo}`}
-                            alt={salon.name}
+                            src={assetUrl(salon?.logo)!}
+                            alt={salon?.name || ""}
                             className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                                const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = "flex";
+                            }}
                         />
-                    ) : currentInitial}
+                    ) : null}
+                    <span style={{ display: assetUrl(salon?.logo) ? "none" : "inline" }}>{currentInitial}</span>
                 </div>
 
                 {/* Name + label */}
@@ -168,14 +174,19 @@ export default function BranchSwitcher() {
                                                 border: isActive ? "1px solid rgba(230,179,30,0.3)" : "1px solid rgba(255,255,255,0.06)",
                                             }}
                                         >
-                                            {branch.logo_path ? (
+                                            {assetUrl(branch.logo_path) ? (
                                                 <img
-                                                    src={branch.logo_path.startsWith("http") ? branch.logo_path : `/${branch.logo_path}`}
+                                                    src={assetUrl(branch.logo_path)!}
                                                     alt={branch.name}
                                                     className="w-full h-full object-cover"
-                                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).style.display = "none";
+                                                        const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                                        if (fallback) fallback.style.display = "flex";
+                                                    }}
                                                 />
-                                            ) : initial}
+                                            ) : null}
+                                            <span style={{ display: assetUrl(branch.logo_path) ? "none" : "inline" }}>{initial}</span>
                                         </div>
 
                                         {/* Info */}

@@ -9,6 +9,7 @@ import {
     FaCheckCircle, FaTimesCircle, FaSpinner, FaExchangeAlt,
     FaCrown, FaLock, FaTrash, FaExclamationTriangle,
 } from "react-icons/fa";
+import { assetUrl } from "@/lib/assets";
 
 interface Branch {
     id: number;
@@ -196,14 +197,19 @@ export default function BranchManager() {
                                 {/* Logo / Initial */}
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm overflow-hidden"
                                     style={{ background: branch.is_current ? "rgba(230,179,30,0.2)" : "#3A3A3A", color: branch.is_current ? "#E6B31E" : "#8A8A8A" }}>
-                                    {branch.logo ? (
+                                    {assetUrl(branch.logo) ? (
                                         <img
-                                            src={branch.logo.startsWith("http") ? branch.logo : `/${branch.logo}`}
+                                            src={assetUrl(branch.logo)!}
                                             alt={branch.name}
                                             className="w-full h-full object-cover"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = "none";
+                                                const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                                if (fallback) fallback.style.display = "flex";
+                                            }}
                                         />
-                                    ) : branch.name.charAt(0).toUpperCase()}
+                                    ) : null}
+                                    <span style={{ display: assetUrl(branch.logo) ? "none" : "flex" }}>{branch.name.charAt(0).toUpperCase()}</span>
                                 </div>
 
                                 {/* Info */}

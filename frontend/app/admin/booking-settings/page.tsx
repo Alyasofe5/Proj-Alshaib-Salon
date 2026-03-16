@@ -9,6 +9,7 @@ import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, Fa
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
+import { assetUrl } from "@/lib/assets";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -104,15 +105,12 @@ export default function BookingSettingsPage() {
                 },
             });
             if (res.data.success && res.data.data?.logo) {
+                // Store the raw path from the API — assetUrl() resolves it for display
                 const newLogoPath = res.data.data.logo;
-                const protocol = window.location.protocol;
-                const host = window.location.host;
-                // For production, the API returns a relative path
-                const fullLogoUrl = newLogoPath.startsWith("http") ? newLogoPath : `${protocol}//${host}/${newLogoPath}`;
-                setCurrentLogo(fullLogoUrl);
+                setCurrentLogo(newLogoPath);
                 // Update the zustand store so that the sidebar updates immediately
                 if (salon) {
-                    setSalon({ ...salon, logo: fullLogoUrl });
+                    setSalon({ ...salon, logo: newLogoPath });
                 }
                 setLogoSaved(true);
                 setTimeout(() => setLogoSaved(false), 2500);
@@ -409,8 +407,8 @@ export default function BookingSettingsPage() {
                             <div className="relative group cursor-pointer flex-shrink-0" onClick={() => logoInputRef.current?.click()}>
                                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden flex items-center justify-center transition-all"
                                     style={{ background: "#343434", border: `2px solid ${currentLogo ? `${gold}40` : "rgba(230,179,30,.15)"}` }}>
-                                    {currentLogo ? (
-                                        <img src={currentLogo.startsWith("http") ? currentLogo : `/${currentLogo}`} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                                    {assetUrl(currentLogo) ? (
+                                        <img src={assetUrl(currentLogo)!} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
                                     ) : (
                                         <div className="text-center">
                                             <span className="text-3xl font-black" style={{ color: gold }}>{settings.name?.charAt(0) || "?"}</span>
@@ -562,8 +560,8 @@ export default function BookingSettingsPage() {
                     <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(230,179,30,.12)" }}>
                         <div className="relative h-48 md:h-64 bg-[#2D2D2D] flex items-center justify-center cursor-pointer group"
                             onClick={() => heroInputRef.current?.click()}>
-                            {settings.hero_image ? (
-                                <img src={settings.hero_image} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
+                            {assetUrl(settings.hero_image) ? (
+                                <img src={assetUrl(settings.hero_image)!} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
                             ) : (
                                 <div className="text-[#FCFAF1]/15 text-center">
                                     <FaCamera className="text-4xl mx-auto mb-3" />
@@ -710,7 +708,19 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
     gold: string; baseUrl: string;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
-    const imageUrl = service.image_path ? `${baseUrl}/${service.image_path}` : null;
+
+    // Fallback images for services without custom uploads (same mapping as booking page)
+    const fallbackImages: Record<string, string> = {
+        'حلاقة': '/services/haircut.webp',
+        'قص شعر فاشن': '/services/haircut.webp',
+        'حلاقة أطفال': '/services/haircut.webp',
+        'تشذيب لحية': '/services/beard.webp',
+        'حلاقة + لحية': '/services/beard.webp',
+        'تنظيف بشرة': '/services/facial.webp',
+        'صبغة شعر': '/services/coloring.webp',
+    };
+    const defaultImg = '/services/haircut.webp';
+    const imageUrl = assetUrl(service.image_path) || fallbackImages[service.name] || defaultImg;
 
     return (
         <div className={`rounded-2xl p-3 md:p-4 flex flex-row items-center gap-3 md:gap-4 transition-all ${!service.is_active ? "opacity-40" : ""}`}
@@ -719,13 +729,18 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
             {/* Image Thumbnail */}
             <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group bg-[#343434]"
                 onClick={() => !uploading && inputRef.current?.click()}>
-                {imageUrl ? (
-                    <img src={imageUrl} alt="" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <FaCamera className="text-[#FCFAF1]/10 group-hover:text-[#FCFAF1]/30 transition-colors" size={14} />
-                    </div>
-                )}
+                <img
+                    src={imageUrl}
+                    alt={service.name}
+                    className="w-full h-full object-cover group-hover:opacity-40 transition-opacity"
+                    onError={(e) => {
+                        // If the uploaded image 404s, fall back to default
+                        const fallback = fallbackImages[service.name] || defaultImg;
+                        if ((e.target as HTMLImageElement).src !== fallback) {
+                            (e.target as HTMLImageElement).src = fallback;
+                        }
+                    }}
+                />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
                     {uploading ? (
                         <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />

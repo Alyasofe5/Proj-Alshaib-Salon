@@ -95,6 +95,16 @@ if ($logoPath && !file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $logoPath)) {
 // Get features config
 $featuresConfig = getSalonFeaturesConfig($salon);
 
+// Get branches for the response
+$responseBranches = [];
+if (!isSuperAdmin($currentUser)) {
+    // We already have $branches from above
+    $responseBranches = $branches;
+} else {
+    // For super admin, try to get branches if the salon has an owner
+    $responseBranches = [];
+}
+
 sendSuccess([
     'token' => $token,
     'user' => [
@@ -115,4 +125,5 @@ sendSuccess([
         'plan_type' => getPlanType($salon),
         'features'  => $featuresConfig,
     ],
+    'branches' => $responseBranches,
 ], 200, 'تم التبديل للصالون بنجاح');

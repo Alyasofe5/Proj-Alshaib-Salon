@@ -22,6 +22,7 @@ import {
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import BranchSwitcher from "@/components/BranchSwitcher";
+import { assetUrl } from "@/lib/assets";
 
 // Feature keys that each link requires (undefined = always visible)
 type FeatureKey = "has_booking_page" | "has_advanced_reports" | "has_whatsapp" | "has_multi_branch" | "has_custom_api" | "has_priority_support" | "has_full_customize";
@@ -73,7 +74,7 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const { user, salon, branches, logout, hasFeature, isEnterprise } = useAuthStore();
+    const { user, salon, branches, logout, hasFeature } = useAuthStore();
     const [isOpen, setIsOpen] = useState(false);
 
     // Prevent background scrolling when sidebar is open
@@ -136,19 +137,30 @@ export default function Sidebar({ role }: SidebarProps) {
             {/* Sidebar */}
             <aside className={`sidebar ${isOpen ? "open" : ""}`}>
                 <div className="sidebar-logo">
-                    {salonLogo ? (
-                        <img src={salonLogo.startsWith("http") ? salonLogo : `/${salonLogo}`} alt={salonName} width={44} height={44} style={{ borderRadius: "10px", flexShrink: 0, objectFit: "cover" }} />
-                    ) : (
-                        <div className="logo-icon">{salonName.charAt(0)}</div>
-                    )}
+                    {assetUrl(salonLogo) ? (
+                        <img
+                            src={assetUrl(salonLogo)!}
+                            alt={salonName}
+                            width={44}
+                            height={44}
+                            style={{ borderRadius: "10px", flexShrink: 0, objectFit: "cover" }}
+                            onError={(e) => {
+                                // Hide the broken img, show fallback initial
+                                (e.target as HTMLImageElement).style.display = "none";
+                                const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = "flex";
+                            }}
+                        />
+                    ) : null}
+                    <div className="logo-icon" style={{ display: assetUrl(salonLogo) ? "none" : "flex" }}>{salonName.charAt(0)}</div>
                     <div>
                         <div className="salon-name">{salonName}</div>
                         <div className="salon-sub">{panelName}</div>
                     </div>
                 </div>
 
-                {/* Branch Switcher for Enterprise plans */}
-                {isEnterprise() && branches && branches.length > 1 && (
+                {/* Branch Switcher — shown when user has multiple branches */}
+                {branches && branches.length > 1 && (
                     <div className="mt-4 px-3 mb-2">
                         <BranchSwitcher />
                     </div>

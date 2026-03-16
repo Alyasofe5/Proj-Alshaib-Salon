@@ -1,0 +1,45 @@
+RewriteEngine On
+
+# Disable LiteSpeed Cache for HTML pages
+<IfModule LiteSpeed>
+    CacheLookup off
+</IfModule>
+
+# Handle preflight OPTIONS (before any rewrite rules)
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Security Headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"
+
+# Cache Control: no-cache for HTML pages (always serve fresh)
+<FilesMatch "\.(html|htm)$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+</FilesMatch>
+
+# Cache Control: long cache for hashed static assets (JS/CSS with hash in name)
+<FilesMatch "\.(js|css|woff2|woff|ttf|svg|png|jpg|jpeg|gif|ico|webp)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+# Deny access to config files
+<FilesMatch "\.(env|ini|log|sh|sql)$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to config directory from web
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^middleware/ - [F,L]
+
+    # SPA Fallback: serve index.html for frontend routes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/uploads/
+    RewriteRule ^(.*)$ /index.html [L]
+</IfModule>

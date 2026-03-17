@@ -161,7 +161,7 @@ export default function DashboardPage() {
 
             <div className="content-area">
                 {/* ===== Stat Cards ===== */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     <StatCard
                         icon={<Users size={18} />}
                         value={data.today.customers}
@@ -215,12 +215,12 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* ===== Chart + Best Employee ===== */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                     {/* Chart */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="md:col-span-2 chart-card"
+                        className="lg:col-span-2 chart-card"
                     >
                         <div className="chart-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <BarChart3 size={16} color="#E6B31E" />
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ===== Tables ===== */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Employees Today */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

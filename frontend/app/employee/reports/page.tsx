@@ -82,7 +82,7 @@ function ReportsContent() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                     <StatCard icon={<FaUsers />} value={totalCustomers} label="عدد الزبائن" color="gold" />
                     <StatCard icon={<FaCoins />} value={Number(totalSales).toFixed(3)} label="مجموع المبيعات (د.أ)" color="green" />
                     <StatCard icon={<FaPercent />} value={Number(commission).toFixed(3)} label={`عمولتي (${commissionRate}%)`} color="blue" />

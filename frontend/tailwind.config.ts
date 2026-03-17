@@ -31,6 +31,13 @@ const config: Config = {
       fontFamily: {
         tajawal: ["Tajawal", "sans-serif"],
       },
+      screens: {
+        'sm': '480px',    // Small phone → large phone
+        'md': '768px',    // Tablet portrait (iPad Mini, iPad)
+        'lg': '1024px',   // Tablet landscape / small laptop
+        'xl': '1280px',   // Desktop
+        '2xl': '1536px',  // Large desktop
+      },
     },
   },
   plugins: [],

@@ -56,7 +56,7 @@ export default function EmployeeDashboard() {
             </div>
 
             <div className="content-area">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     <StatCard icon={<FaUsers />} value={data.stats.customers} label="زبائن اليوم" color="gold" />
                     <StatCard icon={<FaCoins />} value={data.stats.income.toFixed(3)} label="مبيعات اليوم (د.أ)" color="green" />
                     <StatCard icon={<FaPercent />} value={data.stats.commission.toFixed(3)} label="عمولتي اليوم (د.أ)" sub={`${data.employee.commission_rate}% عمولة`} color="blue" />

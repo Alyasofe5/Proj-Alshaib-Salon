@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -70,11 +70,11 @@ export default function NewCustomerPage() {
             <div className="content-area">
                 {flash && <div className="flash-error">{flash.msg}</div>}
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                     {/* Services Grid */}
-                    <div className="md:col-span-3 chart-card">
+                    <div className="lg:col-span-3 chart-card">
                         <div className="chart-card-title"><Scissors size={16} className="inline ml-2" /> اختر <span>الخدمات</span></div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {services.map(svc => {
                                 const isSelected = !!selected[svc.id];
                                 return (
@@ -101,7 +101,7 @@ export default function NewCustomerPage() {
                     </div>
 
                     {/* Summary */}
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                         <div className="chart-card sticky top-20">
                             <div className="chart-card-title"><ReceiptText size={16} className="inline ml-2" /> ملخص <span>العملية</span></div>
 

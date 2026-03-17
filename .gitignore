@@ -35,3 +35,10 @@ build-output.txt
 
 # Build artifacts
 deploy_combined/
+
+# Deployment config (contains credentials - NEVER commit!)
+deploy.config.json
+hostinger-wrapper.bat
+
+# Deployment logs
+deploy-logs/

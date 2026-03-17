@@ -1,0 +1,27 @@
+{
+  "project": {
+    "name": "Maqas Salon",
+    "domain": "maqas.site",
+    "version": "1.0.0"
+  },
+  "ftp": {
+    "host": "YOUR_FTP_HOST",
+    "user": "YOUR_FTP_USERNAME",
+    "pass": "YOUR_FTP_PASSWORD",
+    "root": "/public_html",
+    "passive": true,
+    "timeout": 30
+  },
+  "build": {
+    "frontendDir": "frontend",
+    "backendDir": "backend",
+    "outputDir": "out",
+    "backendIncludes": ["api", "config", "middleware", ".htaccess"]
+  },
+  "deploy": {
+    "skipExtensions": [".glb", ".gltf", ".mp4", ".webm", ".mov", ".avi"],
+    "skipDirectories": ["uploads", "backups"],
+    "maxFileSizeMB": 10,
+    "protectedPaths": ["/public_html/uploads", "/public_html/backups"]
+  }
+}

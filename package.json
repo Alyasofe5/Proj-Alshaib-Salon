@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@respawn-app/tool-filter-mcp": "^0.4.3"
+  }
+}

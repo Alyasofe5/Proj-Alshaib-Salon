@@ -324,12 +324,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-[#E6B31E]" />
+                    <Calendar size={16} className="text-accent-lime" />
                     <h3 className="font-bold text-sm" style={{ color: "var(--text-main)" }}>
                         {role === "employee" ? "مواعيدي المحجوزة" : "تقويم الحجوزات"}
                     </h3>
                     {total > 0 && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(230,179,30,.12)", color: "#E6B31E" }}>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "var(--border-subtle)", color: "var(--color-accent)" }}>
                             {total} حجز
                         </span>
                     )}
@@ -343,7 +343,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                 </button>
                 <div className="flex items-center gap-3">
                     <button onClick={goToday} className="text-[10px] px-2 py-1 rounded-md font-bold transition-all hover:bg-white/5"
-                        style={{ color: "#E6B31E", border: "1px solid rgba(230,179,30,.2)" }}>
+                        style={{ color: "var(--color-accent)", border: "1px solid rgba(195,216,9,.2)" }}>
                         اليوم
                     </button>
                     <span className="text-sm font-bold text-white">
@@ -384,9 +384,9 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                             onClick={() => handleDateClick(dateStr)}
                             className={`relative h-9 sm:h-12 rounded-lg sm:rounded-xl text-[11px] sm:text-sm font-bold transition-all ${
                                 isSelected
-                                    ? "ring-2 ring-[#E6B31E] bg-[#E6B31E]/15 text-white scale-[1.03]"
+                                    ? "ring-2 ring-accent-lime bg-accent-lime/15 text-white scale-[1.03]"
                                     : isToday
-                                    ? "bg-[#E6B31E]/10 text-[#E6B31E] border border-[#E6B31E]/20"
+                                    ? "bg-accent-lime/10 text-accent-lime border border-accent-lime/20"
                                     : hasBookings
                                     ? "bg-white/5 text-white hover:bg-white/10"
                                     : isPast
@@ -399,7 +399,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                 <div className="absolute bottom-0.5 sm:bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
                                     {dayBookings.slice(0, 3).map((b, j) => (
                                         <div key={j} className="w-1 h-1 rounded-full" style={{
-                                            background: b.status === "confirmed" ? "#4CAF50" : "#2196F3"
+                                            background: b.status === "confirmed" ? "#C3D809" : "#2196F3"
                                         }} />
                                     ))}
                                     {dayBookings.length > 3 && (
@@ -414,7 +414,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
 
             {/* Legend */}
             <div className="flex items-center justify-center gap-3 sm:gap-4 mt-3 text-[9px] sm:text-[10px] text-gray-500">
-                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#4CAF50]" /> مؤكد</span>
+                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#C3D809]" /> مؤكد</span>
                 <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#2196F3]" /> مكتمل</span>
             </div>
 
@@ -430,18 +430,18 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                     >
                         {/* Day Header Card */}
                         <div className="rounded-2xl overflow-hidden" style={{
-                            background: "linear-gradient(135deg, rgba(230,179,30,.08) 0%, rgba(230,179,30,.02) 100%)",
-                            border: "1px solid rgba(230,179,30,.12)",
+                            background: "linear-gradient(135deg, var(--border-subtle) 0%, rgba(195,216,9,.02) 100%)",
+                            border: "1px solid var(--border-subtle)",
                         }}>
                             <div className="flex items-center justify-between px-4 sm:px-5 py-3.5">
                                 <div className="flex items-center gap-3">
                                     {/* Date badge */}
                                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex flex-col items-center justify-center flex-shrink-0" style={{
-                                        background: "rgba(230,179,30,.1)",
-                                        border: "1px solid rgba(230,179,30,.15)",
+                                        background: "rgba(195,216,9,.1)",
+                                        border: "1px solid rgba(195,216,9,.15)",
                                     }}>
-                                        <span className="text-[10px] text-[#E6B31E]/60 font-bold leading-none">{dayNameFull(selectedDate).slice(0, 3)}</span>
-                                        <span className="text-lg sm:text-xl font-black text-[#E6B31E] leading-none mt-0.5">{selectedDate.split("-")[2]}</span>
+                                        <span className="text-[10px] text-accent-lime/60 font-bold leading-none">{dayNameFull(selectedDate).slice(0, 3)}</span>
+                                        <span className="text-lg sm:text-xl font-black text-accent-lime leading-none mt-0.5">{selectedDate.split("-")[2]}</span>
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-bold text-white">{dayNameFull(selectedDate)}</h4>
@@ -452,9 +452,9 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg font-bold" style={{
-                                        background: "rgba(230,179,30,.1)",
-                                        color: "#E6B31E",
-                                        border: "1px solid rgba(230,179,30,.12)",
+                                        background: "rgba(195,216,9,.1)",
+                                        color: "var(--color-accent)",
+                                        border: "1px solid var(--border-subtle)",
                                     }}>
                                         {selectedBookings.length} حجز
                                     </span>
@@ -463,7 +463,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                             onClick={() => openBookingModal(selectedDate)}
                                             className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl transition-all hover:scale-105 active:scale-95"
                                             style={{
-                                                background: "linear-gradient(135deg, #E6B31E, #D4A41A)",
+                                                background: "linear-gradient(135deg, #C3D809, #C3D809)",
                                                 color: "#000",
                                             }}
                                         >
@@ -487,8 +487,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                     className="py-8 sm:py-10 text-center rounded-2xl"
                                     style={{ background: "rgba(255,255,255,.02)", border: "1px dashed rgba(255,255,255,.08)" }}
                                 >
-                                    <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: "rgba(230,179,30,.06)" }}>
-                                        <Calendar size={20} className="text-[#E6B31E]/40" />
+                                    <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: "rgba(195,216,9,.06)" }}>
+                                        <Calendar size={20} className="text-accent-lime/40" />
                                     </div>
                                     <p className="text-gray-500 text-sm">لا توجد حجوزات لهذا اليوم</p>
                                     {role === "admin" && selectedDate >= todayStr && (
@@ -496,9 +496,9 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                             onClick={() => openBookingModal(selectedDate)}
                                             className="mt-4 text-xs font-bold px-5 py-2.5 rounded-xl transition-all hover:scale-105"
                                             style={{
-                                                background: "linear-gradient(135deg, rgba(230,179,30,.15), rgba(230,179,30,.07))",
-                                                color: "#E6B31E",
-                                                border: "1px solid rgba(230,179,30,.15)",
+                                                background: "linear-gradient(135deg, rgba(195,216,9,.15), rgba(195,216,9,.07))",
+                                                color: "var(--color-accent)",
+                                                border: "1px solid rgba(195,216,9,.15)",
                                             }}
                                         >
                                             <Plus size={13} className="inline ml-1.5" strokeWidth={2.5} />
@@ -522,7 +522,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         {/* Gold accent strip */}
                                         <div className="absolute top-0 right-0 w-1 h-full rounded-l-full" style={{
                                             background: b.status === "confirmed"
-                                                ? "linear-gradient(to bottom, #4CAF50, #2E7D32)"
+                                                ? "linear-gradient(to bottom, #C3D809, #2E7D32)"
                                                 : "linear-gradient(to bottom, #2196F3, #1565C0)",
                                         }} />
 
@@ -531,11 +531,11 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 {/* Time badge */}
                                                 <div className="flex-shrink-0 w-14 sm:w-16 text-center">
                                                     <div className="px-2 py-1.5 rounded-lg" style={{
-                                                        background: "rgba(230,179,30,.08)",
-                                                        border: "1px solid rgba(230,179,30,.1)",
+                                                        background: "var(--border-subtle)",
+                                                        border: "1px solid rgba(195,216,9,.1)",
                                                     }}>
-                                                        <Clock size={10} className="text-[#E6B31E]/60 mx-auto mb-0.5" />
-                                                        <span className="text-[11px] sm:text-xs font-bold text-[#E6B31E]">{formatTime(b.time)}</span>
+                                                        <Clock size={10} className="text-accent-lime/60 mx-auto mb-0.5" />
+                                                        <span className="text-[11px] sm:text-xs font-bold text-accent-lime">{formatTime(b.time)}</span>
                                                     </div>
                                                 </div>
 
@@ -554,8 +554,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
 
                                                     {/* Services */}
                                                     <div className="flex items-center gap-1.5 mb-1.5">
-                                                        <Scissors size={10} className="text-[#E6B31E]/50 flex-shrink-0" />
-                                                        <span className="text-[10px] sm:text-[11px] text-[#E6B31E]/80 font-semibold truncate">{b.services}</span>
+                                                        <Scissors size={10} className="text-accent-lime/50 flex-shrink-0" />
+                                                        <span className="text-[10px] sm:text-[11px] text-accent-lime/80 font-semibold truncate">{b.services}</span>
                                                     </div>
 
                                                     {/* Employee + Phone row */}
@@ -563,16 +563,16 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                         {b.employee_name && role === "admin" && (
                                                             <span className="flex items-center gap-1.5 text-[10px] text-gray-400">
                                                                 <span className="w-5 h-5 rounded-md flex items-center justify-center text-[8px] font-bold" style={{
-                                                                    background: "rgba(230,179,30,.08)",
-                                                                    color: "#E6B31E",
-                                                                    border: "1px solid rgba(230,179,30,.1)",
+                                                                    background: "var(--border-subtle)",
+                                                                    color: "var(--color-accent)",
+                                                                    border: "1px solid rgba(195,216,9,.1)",
                                                                 }}>
                                                                     {b.employee_name.charAt(0).toUpperCase()}
                                                                 </span>
                                                                 {b.employee_name}
                                                             </span>
                                                         )}
-                                                        <a href={`tel:${b.customer_phone}`} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-[#E6B31E] transition-colors">
+                                                        <a href={`tel:${b.customer_phone}`} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-accent-lime transition-colors">
                                                             <Phone size={9} />
                                                             <span dir="ltr">{b.customer_phone}</span>
                                                         </a>
@@ -589,10 +589,10 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 {/* Price + Actions */}
                                                 <div className="flex-shrink-0 flex flex-col items-end gap-2">
                                                     <div className="px-2.5 py-1.5 rounded-lg" style={{
-                                                        background: "rgba(230,179,30,.06)",
+                                                        background: "rgba(195,216,9,.06)",
                                                     }}>
-                                                        <p className="text-[#E6B31E] font-black text-xs sm:text-sm">{b.price.toFixed(2)}</p>
-                                                        <p className="text-[8px] text-[#E6B31E]/50 text-center font-bold">د.أ</p>
+                                                        <p className="text-accent-lime font-black text-xs sm:text-sm">{b.price.toFixed(2)}</p>
+                                                        <p className="text-[8px] text-accent-lime/50 text-center font-bold">د.أ</p>
                                                     </div>
                                                     {role === "admin" && (
                                                         <div className="flex items-center gap-1">
@@ -600,7 +600,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                                 onClick={(e) => { e.stopPropagation(); openEditModal(b); }}
                                                                 title="تعديل الحجز"
                                                                 className="p-1.5 rounded-lg transition-all hover:scale-110"
-                                                                style={{ background: "rgba(230,179,30,.1)", color: "#E6B31E", border: "1px solid rgba(230,179,30,.15)" }}
+                                                                style={{ background: "rgba(195,216,9,.1)", color: "var(--color-accent)", border: "1px solid rgba(195,216,9,.15)" }}
                                                             >
                                                                 <Pencil size={11} />
                                                             </button>
@@ -666,14 +666,14 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
                             className="relative w-full sm:w-[480px] sm:max-w-[90vw] max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl"
-                            style={{ background: "#1E1E1E", border: "1px solid rgba(230,179,30,.15)" }}
+                            style={{ background: "#1E1E1E", border: "1px solid rgba(195,216,9,.15)" }}
                         >
                             {/* Modal Header */}
                             <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 rounded-t-3xl sm:rounded-t-2xl"
                                 style={{ background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,179,30,.12)" }}>
-                                        <Plus size={16} color="#E6B31E" />
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--border-subtle)" }}>
+                                        <Plus size={16} color="var(--color-accent)" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-sm text-white">إضافة حجز يدوي</h3>
@@ -694,8 +694,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         value={formData.customer_name}
                                         onChange={e => setFormData(p => ({ ...p, customer_name: e.target.value }))}
                                         placeholder="أدخل اسم العميل"
-                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-accent-lime/40"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)" }}
                                         dir="rtl"
                                     />
                                 </div>
@@ -713,8 +713,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                             setFormData(p => ({ ...p, customer_phone: val }));
                                         }}
                                         placeholder="07XXXXXXXX"
-                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40 text-right"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)", direction: "ltr", textAlign: "right" }}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-accent-lime/40 text-right"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)", direction: "ltr", textAlign: "right" }}
                                     />
                                     <p className="text-[9px] text-gray-600 mt-1">يجب أن يبدأ بـ 07 ويتكون من 10 أرقام</p>
                                 </div>
@@ -731,12 +731,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 }}
                                                 className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                                                     formData.employee_id === String(emp.id)
-                                                        ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.02]"
+                                                        ? "ring-2 ring-accent-lime text-accent-lime scale-[1.02]"
                                                         : "text-gray-400 hover:text-white hover:bg-white/5"
                                                 }`}
                                                 style={{
-                                                    background: formData.employee_id === String(emp.id) ? "rgba(230,179,30,.12)" : "#2A2A2A",
-                                                    border: `1px solid ${formData.employee_id === String(emp.id) ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.06)"}`,
+                                                    background: formData.employee_id === String(emp.id) ? "var(--border-subtle)" : "var(--color-surface)",
+                                                    border: `1px solid ${formData.employee_id === String(emp.id) ? "rgba(195,216,9,.3)" : "rgba(255,255,255,.06)"}`,
                                                 }}
                                             >
                                                 <User size={12} className="inline ml-1" />
@@ -756,12 +756,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 onClick={() => toggleService(svc.id)}
                                                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                                                     formData.service_ids.includes(svc.id)
-                                                        ? "text-[#E6B31E]"
+                                                        ? "text-accent-lime"
                                                         : "text-gray-400 hover:text-white"
                                                 }`}
                                                 style={{
-                                                    background: formData.service_ids.includes(svc.id) ? "rgba(230,179,30,.12)" : "#2A2A2A",
-                                                    border: `1px solid ${formData.service_ids.includes(svc.id) ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.06)"}`,
+                                                    background: formData.service_ids.includes(svc.id) ? "var(--border-subtle)" : "var(--color-surface)",
+                                                    border: `1px solid ${formData.service_ids.includes(svc.id) ? "rgba(195,216,9,.3)" : "rgba(255,255,255,.06)"}`,
                                                 }}
                                             >
                                                 <span className="flex items-center gap-1.5">
@@ -796,12 +796,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                             booked
                                                                 ? "opacity-30 cursor-not-allowed line-through text-gray-600"
                                                                 : selected
-                                                                ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.03]"
+                                                                ? "ring-2 ring-accent-lime text-accent-lime scale-[1.03]"
                                                                 : "text-gray-400 hover:text-white hover:bg-white/5"
                                                         }`}
                                                         style={{
-                                                            background: selected ? "rgba(230,179,30,.12)" : booked ? "#1A1A1A" : "#2A2A2A",
-                                                            border: `1px solid ${selected ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.04)"}`,
+                                                            background: selected ? "var(--border-subtle)" : booked ? "var(--color-background)" : "var(--color-surface)",
+                                                            border: `1px solid ${selected ? "rgba(195,216,9,.3)" : "rgba(255,255,255,.04)"}`,
                                                         }}
                                                     >
                                                         {formatTime(time)}
@@ -820,17 +820,17 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
                                         rows={2}
                                         placeholder="أي ملاحظات إضافية..."
-                                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none resize-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none resize-none transition-all focus:ring-1 focus:ring-accent-lime/40"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)" }}
                                         dir="rtl"
                                     />
                                 </div>
 
                                 {/* Total Price */}
                                 {formData.service_ids.length > 0 && (
-                                    <div className="flex items-center justify-between px-3 py-2 rounded-xl" style={{ background: "rgba(230,179,30,.06)", border: "1px solid rgba(230,179,30,.1)" }}>
+                                    <div className="flex items-center justify-between px-3 py-2 rounded-xl" style={{ background: "rgba(195,216,9,.06)", border: "1px solid rgba(195,216,9,.1)" }}>
                                         <span className="text-xs text-gray-400">المبلغ الإجمالي</span>
-                                        <span className="text-sm font-bold text-[#E6B31E]">
+                                        <span className="text-sm font-bold text-accent-lime">
                                             {services.filter(s => formData.service_ids.includes(s.id)).reduce((sum, s) => sum + Number(s.price), 0).toFixed(2)} د.أ
                                         </span>
                                     </div>
@@ -856,7 +856,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                     disabled={saving}
                                     className="w-full h-12 rounded-xl font-bold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     style={{
-                                        background: "linear-gradient(135deg, #E6B31E, #D4A41A)",
+                                        background: "linear-gradient(135deg, #C3D809, #C3D809)",
                                         color: "#000",
                                     }}
                                 >
@@ -897,14 +897,14 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
                             className="relative w-full sm:w-[480px] sm:max-w-[90vw] max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl"
-                            style={{ background: "#1E1E1E", border: "1px solid rgba(230,179,30,.15)" }}
+                            style={{ background: "#1E1E1E", border: "1px solid rgba(195,216,9,.15)" }}
                         >
                             {/* Header */}
                             <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 rounded-t-3xl sm:rounded-t-2xl"
                                 style={{ background: "#1E1E1E", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,179,30,.12)" }}>
-                                        <Pencil size={14} color="#E6B31E" />
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--border-subtle)" }}>
+                                        <Pencil size={14} color="var(--color-accent)" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-sm text-white">تعديل الحجز</h3>
@@ -924,8 +924,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         type="text"
                                         value={editForm.customer_name}
                                         onChange={e => setEditForm(p => ({ ...p, customer_name: e.target.value }))}
-                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-accent-lime/40"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)" }}
                                         dir="rtl"
                                     />
                                 </div>
@@ -942,8 +942,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                             const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
                                             setEditForm(p => ({ ...p, customer_phone: val }));
                                         }}
-                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)", direction: "rtl" }}
+                                        className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none transition-all focus:ring-1 focus:ring-accent-lime/40"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)", direction: "rtl" }}
                                     />
                                 </div>
 
@@ -957,12 +957,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 onClick={() => setEditForm(p => ({ ...p, employee_id: String(emp.id) }))}
                                                 className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                                                     editForm.employee_id === String(emp.id)
-                                                        ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.02]"
+                                                        ? "ring-2 ring-accent-lime text-accent-lime scale-[1.02]"
                                                         : "text-gray-400 hover:text-white hover:bg-white/5"
                                                 }`}
                                                 style={{
-                                                    background: editForm.employee_id === String(emp.id) ? "rgba(230,179,30,.12)" : "#2A2A2A",
-                                                    border: `1px solid ${editForm.employee_id === String(emp.id) ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.06)"}`,
+                                                    background: editForm.employee_id === String(emp.id) ? "var(--border-subtle)" : "var(--color-surface)",
+                                                    border: `1px solid ${editForm.employee_id === String(emp.id) ? "rgba(195,216,9,.3)" : "rgba(255,255,255,.06)"}`,
                                                 }}
                                             >
                                                 <User size={12} className="inline ml-1" />
@@ -984,12 +984,12 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                     onClick={() => setEditForm(p => ({ ...p, booking_time: time }))}
                                                     className={`py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all ${
                                                         selected
-                                                            ? "ring-2 ring-[#E6B31E] text-[#E6B31E] scale-[1.03]"
+                                                            ? "ring-2 ring-accent-lime text-accent-lime scale-[1.03]"
                                                             : "text-gray-400 hover:text-white hover:bg-white/5"
                                                     }`}
                                                     style={{
-                                                        background: selected ? "rgba(230,179,30,.12)" : "#2A2A2A",
-                                                        border: `1px solid ${selected ? "rgba(230,179,30,.3)" : "rgba(255,255,255,.04)"}`,
+                                                        background: selected ? "var(--border-subtle)" : "var(--color-surface)",
+                                                        border: `1px solid ${selected ? "rgba(195,216,9,.3)" : "rgba(255,255,255,.04)"}`,
                                                     }}
                                                 >
                                                     {formatTime(time)}
@@ -1006,8 +1006,8 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                         value={editForm.notes}
                                         onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))}
                                         rows={2}
-                                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none resize-none transition-all focus:ring-1 focus:ring-[#E6B31E]/40"
-                                        style={{ background: "#2A2A2A", border: "1px solid rgba(255,255,255,.08)" }}
+                                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none resize-none transition-all focus:ring-1 focus:ring-accent-lime/40"
+                                        style={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,.08)" }}
                                         dir="rtl"
                                     />
                                 </div>
@@ -1032,7 +1032,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                     disabled={editSaving}
                                     className="w-full h-12 rounded-xl font-bold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     style={{
-                                        background: "linear-gradient(135deg, #E6B31E, #D4A41A)",
+                                        background: "linear-gradient(135deg, #C3D809, #C3D809)",
                                         color: "#000",
                                     }}
                                 >

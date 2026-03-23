@@ -19,6 +19,7 @@ import {
     FaCalendarAlt,
     FaPrint,
     FaLock,
+    FaSlidersH,
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import BranchSwitcher from "@/components/BranchSwitcher";
@@ -48,7 +49,7 @@ const adminLinks: NavLink[] = [
     { href: "/admin/reports", label: "التقارير الشاملة", icon: FaChartBar },
     { href: "/admin/print-report", label: "طباعة التقارير", icon: FaPrint },
     { label: "الإعدادات", section: true },
-    { href: "/admin/booking-settings", label: "إعدادات الحجز", icon: FaCut, requiredFeature: "has_booking_page" },
+    { href: "/admin/booking-settings", label: "إعدادات الحجز", icon: FaSlidersH, requiredFeature: "has_booking_page" },
     { href: "/admin/users", label: "المستخدمون", icon: FaUserCog },
 ];
 
@@ -63,10 +64,10 @@ const employeeLinks: NavLink[] = [
 ];
 
 const planBadges: Record<string, { label: string; color: string }> = {
-    free: { label: "مجاني", color: "bg-gray-500/20 text-gray-400" },
-    basic: { label: "أساسي", color: "bg-blue-500/20 text-blue-400" },
-    professional: { label: "احترافي", color: "bg-purple-500/20 text-purple-400" },
-    enterprise: { label: "مؤسسات", color: "bg-[#E6B31E]/20 text-[#E6B31E]" },
+    free: { label: "مجاني", color: "bg-zinc-800/50 text-zinc-500 border border-zinc-500/10" },
+    basic: { label: "أساسي", color: "bg-zinc-100/10 text-zinc-300 border border-zinc-100/10" },
+    professional: { label: "احترافي", color: "bg-white/10 text-white border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]" },
+    enterprise: { label: "مؤسسات", color: "bg-accent-lime/20 text-accent-lime border border-accent-lime/30 shadow-[0_0_15px_rgba(195,216,9,0.1)]" },
 };
 
 interface SidebarProps {
@@ -143,9 +144,9 @@ export default function Sidebar({ role }: SidebarProps) {
                         <img
                             src={assetUrl(salonLogo)!}
                             alt={salonName}
-                            width={44}
-                            height={44}
-                            style={{ borderRadius: "10px", flexShrink: 0, objectFit: "cover" }}
+                            width={42}
+                            height={42}
+                            style={{ borderRadius: "100%", flexShrink: 0, objectFit: "cover", border: "1px solid var(--border-subtle)" }}
                             onError={(e) => {
                                 // Hide the broken img, show fallback initial
                                 (e.target as HTMLImageElement).style.display = "none";

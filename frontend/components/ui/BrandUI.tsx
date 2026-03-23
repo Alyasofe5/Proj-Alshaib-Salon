@@ -46,8 +46,8 @@ function toastColors(type: ToastType) {
     return {
         success: { bar: "#10b981", icon: "bg-emerald-500/20 text-emerald-400", border: "border-emerald-500/20" },
         error:   { bar: "#ef4444", icon: "bg-red-500/20 text-red-400",         border: "border-red-500/20" },
-        warning: { bar: "#f59e0b", icon: "bg-yellow-500/20 text-yellow-400",   border: "border-yellow-500/20" },
-        info:    { bar: "#E6B31E", icon: "bg-[#E6B31E]/20 text-[#E6B31E]",     border: "border-[#E6B31E]/20" },
+        warning: { bar: "#C3D809", icon: "bg-accent-lime/20 text-accent-lime",   border: "border-accent-lime/20" },
+        info:    { bar: "var(--color-accent)", icon: "bg-accent-lime/20 text-accent-lime",     border: "border-accent-lime/20" },
     }[type];
 }
 
@@ -124,8 +124,8 @@ function ConfirmDialog({
 
     const colors = {
         danger:  { btn: "bg-red-500 hover:bg-red-600 text-white", icon: <FaTrash size={14} />, iconBg: "bg-red-500/15 text-red-400" },
-        warning: { btn: "bg-yellow-500 hover:bg-yellow-600 text-black", icon: <FaExclamationTriangle size={14} />, iconBg: "bg-yellow-500/15 text-yellow-400" },
-        gold:    { btn: "bg-[#E6B31E] hover:bg-[#b8973f] text-black", icon: <FaCheck size={14} />, iconBg: "bg-[#E6B31E]/15 text-[#E6B31E]" },
+        warning: { btn: "bg-accent-lime hover:bg-yellow-600 text-black", icon: <FaExclamationTriangle size={14} />, iconBg: "bg-accent-lime/15 text-accent-lime" },
+        gold:    { btn: "bg-accent-lime hover:bg-[#C3D809] text-black", icon: <FaCheck size={14} />, iconBg: "bg-accent-lime/15 text-accent-lime" },
     }[variant];
 
     const resolve = (val: boolean) => {
@@ -156,7 +156,7 @@ function ConfirmDialog({
                 onClick={e => e.stopPropagation()}
             >
                 {/* Gold top accent */}
-                <div className="h-px w-full" style={{ background: "linear-gradient(90deg,transparent,#E6B31E,transparent)" }} />
+                <div className="h-px w-full" style={{ background: "linear-gradient(90deg,transparent,#C3D809,transparent)" }} />
 
                 <div className="p-6" dir="rtl">
                     {/* Icon + Title */}

@@ -2,6 +2,8 @@
 /**
  * Service Image Upload API
  * POST /api/services/image.php?id=1 → Upload service image
+ *
+ * Files stored in: maqas.site/user_uploads/services/ (ABOVE public_html — deploy-safe)
  */
 
 require_once __DIR__ . '/../../config/cors.php';
@@ -43,24 +45,24 @@ if ($file['size'] > 5 * 1024 * 1024) {
     sendError('حجم الملف أكبر من 5 ميجابايت');
 }
 
-// Create upload directory (use document root for public access)
-$docRoot = $_SERVER['DOCUMENT_ROOT'];
-$uploadDir = $docRoot . '/uploads/services/';
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0755, true);
-}
+// Persistent storage root (above public_html — survives deploys)
+$storageRoot = dirname($_SERVER['DOCUMENT_ROOT']) . '/user_uploads';
+if (!is_dir($storageRoot)) mkdir($storageRoot, 0755, true);
+
+$uploadDir = $storageRoot . '/services/';
+if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
 // Delete old image if exists
 $oldStmt = $pdo->prepare("SELECT image_path FROM services WHERE id = ?");
 $oldStmt->execute([$serviceId]);
 $old = $oldStmt->fetch();
 if (!empty($old['image_path'])) {
-    $oldFile = $docRoot . '/' . $old['image_path'];
-    if (file_exists($oldFile)) unlink($oldFile);
+    $oldFile = $storageRoot . '/services/' . basename($old['image_path']);
+    if (file_exists($oldFile)) @unlink($oldFile);
 }
 
 // Save new image
-$ext = pathinfo($file['name'], PATHINFO_EXTENSION) ?: 'jpg';
+$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) ?: 'jpg';
 $filename = 'service_' . $salonId . '_' . $serviceId . '_' . time() . '.' . $ext;
 $filePath = $uploadDir . $filename;
 
@@ -68,10 +70,16 @@ if (!move_uploaded_file($file['tmp_name'], $filePath)) {
     sendError('فشل رفع الصورة', 500);
 }
 
+// Optimize image if GD available
+if (in_array($ext, ['jpg', 'jpeg']) && function_exists('imagecreatefromjpeg')) {
+    $img = @imagecreatefromjpeg($filePath);
+    if ($img) { imagejpeg($img, $filePath, 85); imagedestroy($img); }
+}
+
 $relativePath = 'uploads/services/' . $filename;
 
 $stmt = $pdo->prepare("UPDATE services SET image_path = ? WHERE id = ? AND salon_id = ?");
 $stmt->execute([$relativePath, $serviceId, $salonId]);
 
-// Return relative path — frontend's assetUrl() handles URL resolution
+// Return relative path — served via /api/file-server.php → persistent storage
 sendSuccess(['image' => $relativePath, 'message' => 'تم رفع صورة الخدمة بنجاح']);

@@ -77,8 +77,8 @@ export default function ServicesPage() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><FaCut className="inline ml-2 text-gold" /> إدارة <span>الخدمات</span></div>
-                <button className="btn-gold flex items-center gap-2" onClick={openAdd}><FaPlus /> إضافة خدمة</button>
+                <div className="topbar-title"><FaCut className="inline ml-2 text-accent-lime" /> إدارة <span>الخدمات</span></div>
+                <button className="btn-lime flex items-center gap-2" onClick={openAdd}><FaPlus /> إضافة خدمة</button>
             </div>
 
             <div className="content-area">
@@ -92,7 +92,7 @@ export default function ServicesPage() {
                                 <tr key={svc.id}>
                                     <td className="text-gray-600">{i + 1}</td>
                                     <td className="text-white font-semibold">{svc.name}</td>
-                                    <td className="text-gold font-bold">{Number(svc.price).toFixed(3)} د.أ</td>
+                                    <td className="text-accent-lime font-bold">{Number(svc.price).toFixed(3)} د.أ</td>
                                     <td>
                                         <span className={`badge ${svc.is_active ? "badge-green" : "badge-red"}`}>
                                             {svc.is_active ? "نشطة" : "متوقفة"}
@@ -100,10 +100,10 @@ export default function ServicesPage() {
                                     </td>
                                     <td>
                                         <div className="flex gap-1">
-                                            <button onClick={() => handleToggle(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "#888" }}>
+                                            <button onClick={() => handleToggle(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "var(--color-text-muted)" }}>
                                                 {svc.is_active ? <FaToggleOn className="text-green-500" size={14} /> : <FaToggleOff size={14} />}
                                             </button>
-                                            <button onClick={() => openEdit(svc)} className="p-2 rounded-lg" style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}>
+                                            <button onClick={() => openEdit(svc)} className="p-2 rounded-lg" style={{ background: "rgba(195,216,9,0.1)", border: "1px solid rgba(195,216,9,0.3)", color: "var(--color-accent)" }}>
                                                 <FaEdit size={12} />
                                             </button>
                                             <button onClick={() => handleDelete(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(231,76,60,0.1)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}>
@@ -119,7 +119,7 @@ export default function ServicesPage() {
             </div>
 
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingSvc ? "تعديل خدمة" : "إضافة خدمة"} icon={<FaCut />}
-                footer={<><button className="btn-gold" onClick={handleSubmit}>{editingSvc ? "حفظ" : "إضافة"}</button><button className="btn-outline-gold" onClick={() => setShowModal(false)}>إلغاء</button></>}>
+                footer={<><button className="btn-lime" onClick={handleSubmit}>{editingSvc ? "حفظ" : "إضافة"}</button><button className="btn-outline-lime" onClick={() => setShowModal(false)}>إلغاء</button></>}>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4"><label className="form-label">اسم الخدمة *</label><input className="form-input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
                     <div className="mb-4"><label className="form-label">السعر (د.أ) *</label><input type="number" className="form-input" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} min={0} step={0.001} required /></div>

@@ -53,10 +53,10 @@ export default function BranchSwitcher() {
                 className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200"
                 style={{
                     background: open
-                        ? "linear-gradient(135deg, rgba(230,179,30,0.12), rgba(230,179,30,0.06))"
+                        ? "linear-gradient(135deg, var(--border-subtle), rgba(195,216,9,0.06))"
                         : "rgba(255,255,255,0.03)",
                     border: open
-                        ? "1px solid rgba(230,179,30,0.35)"
+                        ? "1px solid rgba(195,216,9,0.35)"
                         : "1px solid rgba(255,255,255,0.07)",
                 }}
             >
@@ -64,9 +64,9 @@ export default function BranchSwitcher() {
                 <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden transition-all"
                     style={{
-                        background: "linear-gradient(135deg, rgba(230,179,30,0.25), rgba(230,179,30,0.1))",
-                        color: "#E6B31E",
-                        border: "1px solid rgba(230,179,30,0.2)",
+                        background: "linear-gradient(135deg, rgba(195,216,9,0.25), rgba(195,216,9,0.1))",
+                        color: "var(--color-accent)",
+                        border: "1px solid rgba(195,216,9,0.15)",
                     }}
                 >
                     {assetUrl(salon?.logo) ? (
@@ -86,7 +86,7 @@ export default function BranchSwitcher() {
 
                 {/* Name + label */}
                 <div className="flex-1 text-right min-w-0">
-                    <p className="text-[11px] text-[#E6B31E]/60 font-medium leading-none mb-0.5">الفرع الحالي</p>
+                    <p className="text-[11px] text-accent-lime/60 font-medium leading-none mb-0.5">الفرع الحالي</p>
                     <p className="text-xs font-bold text-white truncate leading-none">{salon?.name || "اختر الفرع"}</p>
                 </div>
 
@@ -94,7 +94,7 @@ export default function BranchSwitcher() {
                 <motion.div
                     animate={{ rotate: open ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="flex-shrink-0 text-[#E6B31E]/50 group-hover:text-[#E6B31E] transition-colors"
+                    className="flex-shrink-0 text-accent-lime/50 group-hover:text-accent-lime transition-colors"
                 >
                     <ChevronDown size={13} />
                 </motion.div>
@@ -111,22 +111,22 @@ export default function BranchSwitcher() {
                         className="absolute top-full left-0 right-0 mt-2 z-50 overflow-hidden"
                         style={{
                             background: "#1E1E1E",
-                            border: "1px solid rgba(230,179,30,0.2)",
+                            border: "1px solid rgba(195,216,9,0.15)",
                             borderRadius: "14px",
-                            boxShadow: "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(230,179,30,0.05)",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(195,216,9,0.05)",
                             minWidth: "220px",
                         }}
                     >
                         {/* Header */}
                         <div className="px-3 pt-3 pb-2 flex items-center gap-2">
-                            <ArrowLeftRight size={11} className="text-[#E6B31E]" />
-                            <span className="text-[10px] font-bold text-[#E6B31E]/70 uppercase tracking-wider">
+                            <ArrowLeftRight size={11} className="text-accent-lime" />
+                            <span className="text-[10px] font-bold text-accent-lime/70 uppercase tracking-wider">
                                 التبديل بين الفروع
                             </span>
                         </div>
 
                         {/* Divider */}
-                        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(230,179,30,0.15), transparent)", margin: "0 12px 8px" }} />
+                        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, var(--border-subtle), transparent)", margin: "0 12px 8px" }} />
 
                         {/* Branch list */}
                         <div className="px-1.5 pb-1.5 space-y-0.5 max-h-[260px] overflow-y-auto">
@@ -143,10 +143,10 @@ export default function BranchSwitcher() {
                                         className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-150 disabled:cursor-not-allowed group"
                                         style={{
                                             background: isActive
-                                                ? "linear-gradient(135deg, rgba(230,179,30,0.12), rgba(230,179,30,0.06))"
+                                                ? "linear-gradient(135deg, var(--border-subtle), rgba(195,216,9,0.06))"
                                                 : "transparent",
                                             border: isActive
-                                                ? "1px solid rgba(230,179,30,0.2)"
+                                                ? "1px solid rgba(195,216,9,0.15)"
                                                 : "1px solid transparent",
                                             opacity: switching && !isActive ? 0.5 : 1,
                                         }}
@@ -168,10 +168,10 @@ export default function BranchSwitcher() {
                                             className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden"
                                             style={{
                                                 background: isActive
-                                                    ? "linear-gradient(135deg, rgba(230,179,30,0.3), rgba(230,179,30,0.15))"
+                                                    ? "linear-gradient(135deg, rgba(195,216,9,0.3), var(--border-subtle))"
                                                     : "rgba(255,255,255,0.05)",
-                                                color: isActive ? "#E6B31E" : "#8A8A8A",
-                                                border: isActive ? "1px solid rgba(230,179,30,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                                                color: isActive ? "var(--color-accent)" : "var(--color-text-muted)",
+                                                border: isActive ? "1px solid rgba(195,216,9,0.3)" : "1px solid rgba(255,255,255,0.06)",
                                             }}
                                         >
                                             {assetUrl(branch.logo_path) ? (
@@ -191,21 +191,21 @@ export default function BranchSwitcher() {
 
                                         {/* Info */}
                                         <div className="flex-1 text-right min-w-0">
-                                            <p className={`text-xs font-bold truncate ${isActive ? "text-[#E6B31E]" : "text-[#CACACA]"}`}>
+                                            <p className={`text-xs font-bold truncate ${isActive ? "text-accent-lime" : "text-[var(--color-text-secondary)]"}`}>
                                                 {branch.name}
                                             </p>
-                                            <p className="text-[10px] text-[#5A5A5A] truncate">/{branch.slug}</p>
+                                            <p className="text-[10px] text-[var(--color-text-muted)] truncate">/{branch.slug}</p>
                                         </div>
 
                                         {/* Status indicator */}
                                         {isActive && (
                                             <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                                                style={{ background: "rgba(230,179,30,0.15)" }}>
-                                                <Check size={10} className="text-[#E6B31E]" />
+                                                style={{ background: "var(--border-subtle)" }}>
+                                                <Check size={10} className="text-accent-lime" />
                                             </div>
                                         )}
                                         {isLoading && (
-                                            <Loader2 size={13} className="animate-spin text-[#E6B31E] flex-shrink-0" />
+                                            <Loader2 size={13} className="animate-spin text-accent-lime flex-shrink-0" />
                                         )}
                                     </button>
                                 );

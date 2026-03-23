@@ -91,7 +91,7 @@ function ContactPageInner() {
     const inputBase = { background: "var(--off-white)", border: "1px solid var(--border)", color: "var(--text-main)", transition: "border-color .2s, box-shadow .2s" };
     const inputErr  = (field: FormFields) => errors[field] && touched[field] ? { ...inputBase, border: "1px solid rgba(231,76,60,.5)" } : inputBase;
     const onFocusInput = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.target.style.borderColor = "var(--gold)";
+        e.target.style.borderColor = "#C3D809";
         e.target.style.boxShadow   = "0 0 0 3px rgba(200,168,75,.12)";
     };
     const onBlurInput = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>, field: FormFields) => {
@@ -105,19 +105,28 @@ function ContactPageInner() {
     };
 
     return (
-        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Cairo', 'Tajawal', sans-serif" }} dir="rtl">
+        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Noto Sans Arabic', 'Noto Sans Arabic', sans-serif" }} dir="rtl">
 
             {/* Navbar */}
             <nav style={{ background: "var(--white)", borderBottom: "1px solid var(--border)" }} className="px-6 py-4 sticky top-0 z-50">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="transition-transform group-hover:scale-110">
-                            <MaqassLogoIcon size={36} />
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="relative flex-shrink-0 transition-all duration-700 group-hover:scale-110 group-hover:rotate-[5deg]">
+                            <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
+                            <div className="relative w-11 h-11 rounded-full flex items-center justify-center p-[2px] overflow-hidden" 
+                                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
+                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
+                                    <MaqassLogoIcon size={32} />
+                                </div>
+                            </div>
                         </div>
-                        <span className="text-[18px] font-black tracking-wider" style={{ color: "var(--gold-dark)" }}>MAQASS</span>
+                        <div className="flex flex-col">
+                            <span className="text-[16px] font-black tracking-wider leading-none maqass-brand">MAQASS</span>
+                            <span className="text-[7px] font-semibold tracking-[.2em] mt-0.5 uppercase" style={{ color: "rgba(195,216,9,0.6)" }}>Salon Platform</span>
+                        </div>
                     </Link>
                     <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-70"
-                        style={{ color: "var(--gold)" }}>
+                        style={{ color: "#C3D809" }}>
                         العودة للرئيسية
                         <ArrowLeft size={14} />
                     </Link>
@@ -129,11 +138,11 @@ function ContactPageInner() {
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6"
-                        style={{ background: "var(--gold-bg)", border: "1px solid var(--gold-light)", color: "var(--gold-dark)" }}>
+                        style={{ background: "var(--gold-bg)", border: "1px solid #D4EC0A", color: "var(--color-background)" }}>
                         {badge}
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: "var(--text-main)" }}>
-                        أخبرنا عن <span style={{ color: "var(--gold)" }}>صالونك</span>
+                        أخبرنا عن <span style={{ color: "#C3D809" }}>صالونك</span>
                     </h1>
                     <p className="text-lg max-w-xl mx-auto" style={{ color: "var(--text-mid)" }}>
                         {subtitle}
@@ -155,7 +164,7 @@ function ContactPageInner() {
                             </p>
                             <Link href="/"
                                 className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all hover:scale-105"
-                                style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "var(--gold-dark)", boxShadow: "0 8px 24px rgba(200,168,75,.25)" }}>
+                                style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)", color: "var(--color-background)", boxShadow: "0 8px 24px rgba(195,216,9,0.25)" }}>
                                 العودة للرئيسية
                                 <ArrowRight size={16} />
                             </Link>
@@ -175,7 +184,7 @@ function ContactPageInner() {
                                     {/* Salon Name */}
                                     <div data-field="salon_name">
                                         <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                            <Building2 size={14} style={{ color: "var(--gold)" }} /> اسم الصالون <span style={{ color: "var(--error)" }}>*</span>
+                                            <Building2 size={14} style={{ color: "#C3D809" }} /> اسم الصالون <span style={{ color: "var(--error)" }}>*</span>
                                         </label>
                                         <input type="text" value={form.salon_name}
                                             onChange={e => handleChange("salon_name", e.target.value)}
@@ -197,7 +206,7 @@ function ContactPageInner() {
                                     {/* Owner Name */}
                                     <div data-field="owner_name">
                                         <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                            <User size={14} style={{ color: "var(--gold)" }} /> اسم صاحب الصالون <span style={{ color: "var(--error)" }}>*</span>
+                                            <User size={14} style={{ color: "#C3D809" }} /> اسم صاحب الصالون <span style={{ color: "var(--error)" }}>*</span>
                                         </label>
                                         <input type="text" value={form.owner_name}
                                             onChange={e => handleChange("owner_name", e.target.value)}
@@ -220,7 +229,7 @@ function ContactPageInner() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div data-field="phone">
                                             <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                                <Phone size={14} style={{ color: "var(--gold)" }} /> رقم الجوال <span style={{ color: "var(--error)" }}>*</span>
+                                                <Phone size={14} style={{ color: "#C3D809" }} /> رقم الجوال <span style={{ color: "var(--error)" }}>*</span>
                                             </label>
                                             <input type="tel" value={form.phone}
                                                 onChange={e => handleChange("phone", e.target.value)}
@@ -240,7 +249,7 @@ function ContactPageInner() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                                <MapPin size={14} style={{ color: "var(--gold)" }} /> المدينة
+                                                <MapPin size={14} style={{ color: "#C3D809" }} /> المدينة
                                             </label>
                                             <input type="text" value={form.city}
                                                 onChange={e => setForm({ ...form, city: e.target.value })}
@@ -255,7 +264,7 @@ function ContactPageInner() {
                                     {/* Employees Count */}
                                     <div>
                                         <label className="block text-sm font-semibold mb-3 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                            <Users size={14} style={{ color: "var(--gold)" }} /> عدد الموظفين
+                                            <Users size={14} style={{ color: "#C3D809" }} /> عدد الموظفين
                                         </label>
                                         <div className="grid grid-cols-4 gap-2">
                                             {["1", "2-3", "4-6", "7+"].map((opt) => (
@@ -263,8 +272,8 @@ function ContactPageInner() {
                                                     className="py-2.5 rounded-xl text-sm font-bold transition-all"
                                                     style={{
                                                         background: form.employees === opt ? "var(--gold-bg)" : "var(--off-white)",
-                                                        border: `1px solid ${form.employees === opt ? "var(--gold)" : "var(--border)"}`,
-                                                        color: form.employees === opt ? "var(--gold-dark)" : "var(--text-muted)",
+                                                        border: `1px solid ${form.employees === opt ? "#C3D809" : "var(--border)"}`,
+                                                        color: form.employees === opt ? "var(--color-background)" : "var(--text-muted)",
                                                     }}>
                                                     {opt}
                                                 </button>
@@ -275,7 +284,7 @@ function ContactPageInner() {
                                     {/* Message */}
                                     <div>
                                         <label className="block text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--text-mid)" }}>
-                                            <MessageSquare size={14} style={{ color: "var(--gold)" }} /> ملاحظات إضافية (اختياري)
+                                            <MessageSquare size={14} style={{ color: "#C3D809" }} /> ملاحظات إضافية (اختياري)
                                         </label>
                                         <textarea value={form.message}
                                             onChange={e => setForm({ ...form, message: e.target.value })}
@@ -302,7 +311,7 @@ function ContactPageInner() {
 
                                 <button type="submit" disabled={loading}
                                     className="w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-base transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2 group overflow-hidden relative"
-                                    style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))", color: "#FFFFFF", boxShadow: "0 8px 30px rgba(200,168,75,.25)" }}>
+                                    style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)", color: "#FFFFFF", boxShadow: "0 8px 30px rgba(195,216,9,0.25)" }}>
                                     {loading ? <Loader2 size={18} className="animate-spin relative z-10" /> : null}
                                     {loading ? <span className="relative z-10">جاري الإرسال...</span> : (
                                         <>
@@ -321,12 +330,12 @@ function ContactPageInner() {
                             {/* Side Info */}
                             <div className="lg:col-span-2 space-y-5">
                                 {/* Why Maqass */}
-                                <div className="rounded-2xl p-6" style={{ background: "var(--gold-bg)", border: "1px solid var(--gold-light)" }}>
-                                    <h3 className="font-bold mb-4" style={{ color: "var(--gold-dark)" }}>لماذا Maqass؟</h3>
+                                <div className="rounded-2xl p-6" style={{ background: "var(--gold-bg)", border: "1px solid #D4EC0A" }}>
+                                    <h3 className="font-bold mb-4" style={{ color: "var(--color-background)" }}>لماذا Maqass؟</h3>
                                     <ul className="space-y-3 text-sm" style={{ color: "var(--text-mid)" }}>
                                         {["إعداد الحساب مجاناً", "رابط حجز فوري لزبائنك", "تقارير يومية وشهرية وسنوية", "إدارة الموظفين والعمولات", "دعم فني متواصل"].map((item, i) => (
                                             <li key={i} className="flex items-center gap-2">
-                                                <span className="text-xs font-bold" style={{ color: "var(--gold)" }}>✓</span>
+                                                <span className="text-xs font-bold" style={{ color: "#C3D809" }}>✓</span>
                                                 {item}
                                             </li>
                                         ))}
@@ -354,7 +363,7 @@ function ContactPageInner() {
                                 <div className="rounded-2xl p-5 flex flex-col items-center gap-1 text-center"
                                     style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                                     <p className="text-4xl font-black" style={{ color: "var(--text-main)" }}>24h</p>
-                                    <p className="text-xs font-bold" style={{ color: "var(--gold)" }}>الاستجابة المضمونة</p>
+                                    <p className="text-xs font-bold" style={{ color: "#C3D809" }}>الاستجابة المضمونة</p>
                                     <p className="text-sm" style={{ color: "var(--text-muted)" }}>وقت الرد خلال 24 ساعة</p>
                                 </div>
                             </div>

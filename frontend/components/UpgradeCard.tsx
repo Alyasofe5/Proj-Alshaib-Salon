@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { FaWhatsapp, FaRocket, FaCheck, FaStar, FaShieldAlt, FaBuilding } from "react-icons/fa";
 
-const gold = "#E6B31E";
+const gold = "var(--color-accent)";
 
 // ─── Plan config ──────────────────────────────────────────
 interface PlanFeature {
@@ -30,9 +30,9 @@ const PLANS: Record<"professional" | "enterprise", PlanConfig> = {
         titleAr: "الباقة الاحترافية",
         description: "الحل المتكامل للنمو المتسارع وزيادة المبيعات",
         icon: <FaRocket size={24} />,
-        gradient: "linear-gradient(145deg, rgba(230,179,30,0.1) 0%, rgba(26,26,26,0) 100%)",
-        borderColor: "rgba(230,179,30,0.2)",
-        glowColor: "rgba(230,179,30,0.1)",
+        gradient: "linear-gradient(145deg, rgba(195,216,9,0.1) 0%, rgba(26,26,26,0) 100%)",
+        borderColor: "rgba(195,216,9,0.15)",
+        glowColor: "rgba(195,216,9,0.1)",
         features: [
             { text: "صفحة حجز حصرية بهوية صالونك", included: true },
             { text: "نظام إشعارات واتساب آلي", included: true },
@@ -48,9 +48,9 @@ const PLANS: Record<"professional" | "enterprise", PlanConfig> = {
         titleAr: "باقة المؤسسات",
         description: "إدارة مركزية متطورة لشبكات الصالونات والفروع",
         icon: <FaBuilding size={24} />,
-        gradient: "linear-gradient(145deg, rgba(230,179,30,0.15) 0%, rgba(26,26,26,0) 100%)",
-        borderColor: "rgba(230,179,30,0.3)",
-        glowColor: "rgba(230,179,30,0.15)",
+        gradient: "linear-gradient(145deg, var(--border-subtle) 0%, rgba(26,26,26,0) 100%)",
+        borderColor: "rgba(195,216,9,0.3)",
+        glowColor: "var(--border-subtle)",
         features: [
             { text: "إدارة غير محدودة للفروع", included: true },
             { text: "لوحة تحكم موحدة (Centralized)", included: true },
@@ -96,7 +96,7 @@ export default function UpgradeCard({
                 }}
             >
                 <div className="relative flex flex-col items-center text-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#E6B31E]/10 text-[#E6B31E] border border-[#E6B31E]/20">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-accent-lime/10 text-accent-lime border border-accent-lime/20">
                         {config.icon}
                     </div>
                     <div>
@@ -105,7 +105,7 @@ export default function UpgradeCard({
                     </div>
                     {featureName && (
                         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/5">
-                            <FaShieldAlt size={8} className="text-[#E6B31E]/60" />
+                            <FaShieldAlt size={8} className="text-accent-lime/60" />
                             <span className="text-[10px] text-gray-400 font-bold">لفتح {featureName}</span>
                         </div>
                     )}
@@ -113,8 +113,8 @@ export default function UpgradeCard({
                         href={waLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black transition-all bg-[#E6B31E] text-black hover:scale-[1.02]"
-                        style={{ boxShadow: "0 4px 15px rgba(230, 179, 30, 0.3)" }}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black transition-all bg-accent-lime text-black hover:scale-[1.02]"
+                        style={{ boxShadow: "0 4px 15px rgba(195,216,9,0.3)" }}
                     >
                         <FaWhatsapp size={14} /> ترقية الآن
                     </a>
@@ -159,11 +159,11 @@ export default function UpgradeCard({
                     <div 
                         className="relative w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ 
-                            background: "rgba(230, 179, 30, 0.08)",
-                            border: "1px solid rgba(230, 179, 30, 0.18)",
+                            background: "rgba(195,216,9,0.08)",
+                            border: "1px solid rgba(195,216,9,0.18)",
                         }}
                     >
-                        <div className="text-[#E6B31E]">{config.icon}</div>
+                        <div className="text-accent-lime">{config.icon}</div>
                         <motion.div 
                             animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 3, repeat: Infinity }}
@@ -176,7 +176,7 @@ export default function UpgradeCard({
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-0.5">
                             <h3 className="text-base font-black text-white">{config.titleAr}</h3>
-                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-[#E6B31E]/10 text-[#E6B31E] border border-[#E6B31E]/25 flex-shrink-0">
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-accent-lime/10 text-accent-lime border border-accent-lime/25 flex-shrink-0">
                                 {config.badge}
                             </span>
                         </div>
@@ -188,7 +188,7 @@ export default function UpgradeCard({
                 <div className="grid grid-cols-2 gap-y-2.5 gap-x-6 mb-5">
                     {config.features.map((feature, i) => (
                         <div key={i} className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-[#E6B31E]/12 border border-[#E6B31E]/25 flex items-center justify-center flex-shrink-0">
+                            <div className="w-4 h-4 rounded-full bg-accent-lime/12 border border-accent-lime/25 flex items-center justify-center flex-shrink-0">
                                 <FaCheck size={6} color={gold} />
                             </div>
                             <span className="text-xs text-gray-300 font-semibold">{feature.text}</span>
@@ -203,9 +203,9 @@ export default function UpgradeCard({
                     rel="noopener noreferrer"
                     className="group/btn relative flex items-center justify-center gap-2.5 w-full py-3 rounded-xl text-sm font-black transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                     style={{ 
-                        background: `linear-gradient(135deg, ${gold}, #D4A017)`,
-                        color: "#1A1A1A",
-                        boxShadow: "0 6px 20px rgba(230, 179, 30, 0.35)",
+                        background: `linear-gradient(135deg, ${gold}, #C3D809)`,
+                        color: "var(--color-background)",
+                        boxShadow: "0 6px 20px rgba(195,216,9,0.35)",
                     }}
                 >
                     <FaWhatsapp size={16} />

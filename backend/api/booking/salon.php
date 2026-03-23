@@ -63,10 +63,13 @@ $services = $pdo->prepare("
 $services->execute([$salonId]);
 $servicesList = $services->fetchAll();
 
-// Add missing fields with defaults
+// Map image_path → image to match frontend Service type
 foreach ($servicesList as &$svc) {
     if (!isset($svc['image_path'])) $svc['image_path'] = null;
     if (!isset($svc['duration_minutes'])) $svc['duration_minutes'] = null;
+    // Frontend expects 'image' field, not 'image_path'
+    $svc['image'] = !empty($svc['image_path']) ? $baseUrl . $svc['image_path'] : null;
+    unset($svc['image_path']);
 }
 unset($svc);
 
@@ -99,38 +102,85 @@ if ($salon['logo_path']) {
     $logoUrl = $baseUrl . $salon['logo_path'];
 }
 
-// بناء رابط صورة الخلفية
+// بناء رابط الصورة الرئيسية (hero image)
 $heroImageUrl = null;
 if (!empty($settingsData['hero_image'])) {
     $heroImageUrl = $baseUrl . $settingsData['hero_image'];
 }
 
-// Build full URLs for service images
-foreach ($servicesList as &$svc) {
-    if (!empty($svc['image_path'])) {
-        $svc['image'] = $baseUrl . $svc['image_path'];
-    } else {
-        $svc['image'] = null;
-    }
-    unset($svc['image_path']);
+// بناء رابط الفيديو الرئيسي (hero video)
+$heroVideoUrl = null;
+if (!empty($settingsData['hero_video'])) {
+    $heroVideoUrl = $baseUrl . $settingsData['hero_video'];
 }
-unset($svc);
+
+// FAQs من الإعدادات
+$faqs = $settingsData['faqs'] ?? [];
+
+// الموظفين مع الصورة (auto-add photo_path if missing)
+try { $pdo->query("SELECT photo_path FROM employees LIMIT 1"); }
+catch (Exception $e) { $pdo->exec("ALTER TABLE employees ADD COLUMN photo_path VARCHAR(500) DEFAULT NULL"); }
+
+try { $pdo->query("SELECT specialty FROM employees LIMIT 1"); }
+catch (Exception $e) { $pdo->exec("ALTER TABLE employees ADD COLUMN specialty VARCHAR(200) DEFAULT NULL"); }
+
+$empStmt = $pdo->prepare("SELECT id, name, photo_path, specialty FROM employees WHERE salon_id = ? AND is_active = 1 ORDER BY name");
+$empStmt->execute([$salonId]);
+$employeesList = $empStmt->fetchAll();
+
+// Build full URLs for employee photos — return as 'avatar' to match frontend Employee type
+foreach ($employeesList as &$emp) {
+    $emp['avatar'] = !empty($emp['photo_path']) ? $baseUrl . $emp['photo_path'] : null;
+    $emp['role'] = $emp['specialty'] ?? null;
+    unset($emp['photo_path'], $emp['specialty']);
+}
+unset($emp);
+
+// ── Gallery items (public — shown on booking page) ──
+$galleryItems = [];
+try {
+    $galStmt = $pdo->prepare("
+        SELECT id, file_path, file_type
+        FROM salon_gallery
+        WHERE salon_id = ?
+        ORDER BY order_num ASC, created_at DESC
+        LIMIT 30
+    ");
+    $galStmt->execute([$salonId]);
+    $galleryItems = $galStmt->fetchAll();
+    foreach ($galleryItems as &$gi) {
+        $gi['url'] = $baseUrl . $gi['file_path'];
+    }
+    unset($gi);
+} catch (Exception $e) { /* table may not exist yet */ }
 
 sendSuccess([
     'salon' => [
-        'name' => $salon['name'],
-        'slug' => $salon['slug'],
-        'logo' => $logoUrl,
-        'phone' => $salon['owner_phone'],
-        'description' => $settingsData['description'] ?? '',
-        'address' => $settingsData['address'] ?? '',
-        'instagram' => $settingsData['instagram'] ?? '',
+        'name'            => $salon['name'],
+        'slug'            => $salon['slug'],
+        'logo'            => $logoUrl,
+        'phone'           => $salon['owner_phone'],
+        'description'     => $settingsData['description'] ?? '',
+        'address'         => $settingsData['address'] ?? '',
+        'instagram'       => $settingsData['instagram'] ?? '',
         'booking_message' => $settingsData['booking_message'] ?? '',
-        'hero_image' => $heroImageUrl,
+        'hero_image'      => $heroImageUrl,
+        'hero_video'      => $heroVideoUrl,
+        'hero_type'       => $settingsData['hero_type'] ?? '',
+        'services_title'  => $settingsData['services_title'] ?? 'خدمات نخبوية',
+        'services_subtitle' => $settingsData['services_subtitle'] ?? 'نقدم مجموعة واسعة من الخدمات لتظهر بأفضل صورة',
+        'team_title'      => $settingsData['team_title'] ?? 'فريقنا',
+        'team_subtitle'   => $settingsData['team_subtitle'] ?? 'خبراء محترفون يجمعون بين المهارة والإبداع',
+        'gallery_title'   => $settingsData['gallery_title'] ?? 'معرض أعمالنا',
+        'gallery_subtitle' => $settingsData['gallery_subtitle'] ?? 'لمحة عن إبداعاتنا وأعمالنا المميزة',
+        'faqs'            => $faqs,
     ],
-    'services' => $servicesList,
-    'employees' => $employees->fetchAll(),
-    'work_hours' => $workHours,
-    'off_days' => $settingsData['off_days'] ?? [],
+    'services'     => $servicesList,
+    'employees'    => $employeesList,
+    'gallery'      => $galleryItems,
+    'work_hours'   => $workHours,
+    'off_days'     => $settingsData['off_days'] ?? [],
     'booking_days' => (int)($settingsData['booking_days'] ?? 7),
 ]);
+
+

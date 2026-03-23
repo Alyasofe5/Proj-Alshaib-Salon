@@ -105,17 +105,17 @@ export default function DashboardPage() {
                     exit={{ opacity: 0, y: -20 }}
                     className="mx-4 mt-3 mb-4 rounded-2xl px-4 md:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                     style={{
-                        background: isUrgent ? "rgba(231,76,60,.12)" : "rgba(251,191,36,.08)",
-                        border: `1px solid ${isUrgent ? "rgba(231,76,60,.3)" : "rgba(251,191,36,.25)"}`,
+                        background: isUrgent ? "rgba(231,76,60,.12)" : "var(--border-subtle)",
+                        border: `1px solid ${isUrgent ? "rgba(231,76,60,.3)" : "rgba(195,216,9,.25)"}`,
                     }}
                 >
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: isUrgent ? "rgba(231,76,60,.15)" : "rgba(251,191,36,.12)" }}>
-                            <AlarmClock size={20} color={isUrgent ? "#e74c3c" : "#fbbf24"} />
+                            style={{ background: isUrgent ? "rgba(220,38,38,.1)" : "var(--border-subtle)" }}>
+                            <AlarmClock size={20} color={isUrgent ? "#DC2626" : "#C3D809"} />
                         </div>
                         <div className="flex-1">
-                            <p className="font-bold text-sm" style={{ color: isUrgent ? "#e74c3c" : "#fbbf24" }}>
+                            <p className="font-bold text-sm" style={{ color: isUrgent ? "#DC2626" : "#C3D809" }}>
                                 {daysLeft === 0 ? "اشتراكك ينتهي اليوم!" : `متبقي على انتهاء اشتراكك ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"}`}
                             </p>
                             <p className="text-xs text-gray-500 mt-0.5">
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 flex-1 sm:flex-none"
-                            style={{ background: isUrgent ? "rgba(231,76,60,.2)" : "rgba(251,191,36,.15)", color: isUrgent ? "#e74c3c" : "#fbbf24" }}
+                            style={{ background: isUrgent ? "rgba(220,38,38,.12)" : "rgba(195,216,9,.10)", color: isUrgent ? "#DC2626" : "#C3D809" }}
                         >
                             <Bell size={13} />
                             جدد الاشتراك
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                         icon={<Users size={18} />}
                         value={data.today.customers}
                         label="زبائن اليوم"
-                        color="gold"
+                        color="lime"
                     />
                     <StatCard
                         icon={<Banknote size={18} />}
@@ -197,20 +197,20 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="chart-card mb-6 cursor-pointer hover:border-[var(--gold-light)] transition-all"
+                    className="chart-card mb-6 cursor-pointer hover:border-[#D4EC0A] transition-all"
                     onClick={() => window.location.href = "/admin/booking-settings"}
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(230,179,30,.15)" }}>
-                                <Palette size={18} color="#E6B31E" />
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--border-subtle)" }}>
+                                <Palette size={18} color="var(--color-accent)" />
                             </div>
                             <div>
                                 <p className="font-bold text-sm" style={{ color: "var(--text-main)" }}>تخصيص صفحة الحجز</p>
                             <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>تعديل معلومات الصالون، صور الخدمات، وصورة الخلفية</p>
                             </div>
                         </div>
-                        <ChevronLeft size={16} color="#E6B31E" />
+                        <ChevronLeft size={16} color="var(--color-accent)" />
                     </div>
                 </motion.div>
 
@@ -223,14 +223,14 @@ export default function DashboardPage() {
                         className="lg:col-span-2 chart-card"
                     >
                         <div className="chart-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <BarChart3 size={16} color="#E6B31E" />
+                            <BarChart3 size={16} color="var(--color-accent)" />
                             مبيعات <span>آخر 7 أيام</span>
                         </div>
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                                <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 10 }} />
-                                <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
+                                <XAxis dataKey="day" tick={{ fill: "var(--color-text-muted)", fontSize: 10 }} />
+                                <YAxis orientation="right" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} width={30} />
                                 <Tooltip
                                     contentStyle={{
                                         background: "var(--white)",
@@ -246,7 +246,7 @@ export default function DashboardPage() {
                                 />
                                 <Bar
                                     dataKey="income"
-                                    fill="#E6B31E"
+                                    fill="var(--color-accent)"
                                     radius={[6, 6, 0, 0]}
                                     name="المبيعات"
                                     cursor={false as unknown as undefined}
@@ -263,20 +263,20 @@ export default function DashboardPage() {
                         className="chart-card flex flex-col justify-center items-center text-center"
                     >
                         <div className="chart-card-title w-full" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Trophy size={16} color="#E6B31E" />
+                            <Trophy size={16} color="var(--color-accent)" />
                             أفضل <span>موظف اليوم</span>
                         </div>
 
                         {data.best_employee ? (
                             <>
                                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
-                                    style={{ background: "linear-gradient(135deg, var(--gold), var(--gold-light))" }}>
+                                    style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)" }}>
                                     <Trophy size={28} color="#000" />
                                 </div>
                                 <div className="text-lg font-bold" style={{ color: "var(--text-main)" }}>
                                     {data.best_employee.name}
                                 </div>
-                                <div className="text-gold font-bold text-xl mt-1">
+                                <div className="text-accent-lime font-bold text-xl mt-1">
                                     {Number(data.best_employee.total).toFixed(3)} د.أ
                                 </div>
                                 <div className="text-gray-500 text-sm">
@@ -323,7 +323,7 @@ export default function DashboardPage() {
                         className="custom-table"
                     >
                         <div className="p-4" style={{ borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <UserCheck size={15} color="#E6B31E" />
+                            <UserCheck size={15} color="var(--color-accent)" />
                             <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>أداء الموظفين اليوم</span>
                         </div>
                         <table>
@@ -342,7 +342,7 @@ export default function DashboardPage() {
                                         <td>
                                             <span className="badge badge-blue">{emp.cnt}</span>
                                         </td>
-                                        <td className="text-gold font-bold">
+                                        <td className="text-accent-lime font-bold">
                                             {Number(emp.total).toFixed(3)} د.أ
                                         </td>
                                         <td className="text-green-400">
@@ -372,7 +372,7 @@ export default function DashboardPage() {
                         className="custom-table"
                     >
                         <div className="p-4" style={{ borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Receipt size={15} color="#E6B31E" />
+                            <Receipt size={15} color="var(--color-accent)" />
                             <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>آخر العمليات</span>
                         </div>
                         <table>
@@ -389,7 +389,7 @@ export default function DashboardPage() {
                                     <tr key={tx.id}>
                                         <td className="text-gray-600">#{i + 1}</td>
                                         <td>{tx.emp_name}</td>
-                                        <td className="text-gold font-bold">
+                                        <td className="text-accent-lime font-bold">
                                             {Number(tx.total_amount).toFixed(3)} د.أ
                                         </td>
                                         <td>
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="mt-2 bg-[#252525] rounded-2xl border border-[#3A3A3A] p-4"
+                    className="mt-2 bg-[#252525] rounded-2xl border border-[var(--color-surface)] p-4"
                 >
                     <BranchManager />
                 </motion.div>

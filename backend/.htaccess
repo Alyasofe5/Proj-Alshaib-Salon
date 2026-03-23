@@ -4,46 +4,68 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^www\.maqas\.site [NC]
 RewriteRule ^(.*)$ https://maqas.site/$1 [R=301,L]
 
-# Disable LiteSpeed Cache for HTML pages
-<IfModule LiteSpeed>
-    CacheLookup off
+# ── DirectoryIndex: prevent Apache redirect on bare directory API URLs ──
+# Without this, GET/OPTIONS /api/employees (no slash) triggers a 301 redirect
+# which browsers block for CORS preflight requests.
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    # Internally rewrite /api/<name> (no trailing slash, no extension) → /api/<name>/index.php
+    # This prevents Apache's "directory" 301 redirect from stripping CORS headers.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^(api/.+[^/])$ /$1/index.php [L]
 </IfModule>
 
-# Handle preflight OPTIONS (before any rewrite rules)
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
+# ── Deny access to sensitive directories and config files ──
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^middleware/ - [F,L]
+</IfModule>
 
-# Security Headers
-Header always set X-Content-Type-Options "nosniff"
-Header always set X-Frame-Options "DENY"
-Header always set X-XSS-Protection "1; mode=block"
-
-# Cache Control: no-cache for HTML pages (always serve fresh)
-<FilesMatch "\.(html|htm)$">
-    Header always set Cache-Control "no-cache, no-store, must-revalidate"
-    Header always set Pragma "no-cache"
-    Header always set Expires "0"
-</FilesMatch>
-
-# Cache Control: long cache for hashed static assets (JS/CSS with hash in name)
-<FilesMatch "\.(js|css|woff2|woff|ttf|svg|png|jpg|jpeg|gif|ico|webp)$">
-    Header always set Cache-Control "public, max-age=31536000, immutable"
-</FilesMatch>
-
-# Deny access to config files
 <FilesMatch "\.(env|ini|log|sh|sql)$">
     Require all denied
 </FilesMatch>
 
-# Deny access to config directory from web
-<IfModule mod_rewrite.c>
-    RewriteRule ^config/ - [F,L]
-    RewriteRule ^middleware/ - [F,L]
+# ── Security Headers ──
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
 
-    # SPA Fallback: serve index.html for frontend routes
+# ── Cache Control: no-cache for HTML pages (always serve fresh) ──
+<FilesMatch "\.(html|htm)$">
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "no-cache, no-store, must-revalidate"
+        Header always set Expires "0"
+    </IfModule>
+</FilesMatch>
+
+# ── Long-term cache for hashed static assets (JS/CSS with hash in name) ──
+<FilesMatch "\.(js|css|png|jpg|jpeg|gif|ico|woff|woff2|svg|webp)$">
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "public, max-age=31536000, immutable"
+    </IfModule>
+</FilesMatch>
+
+# ── Persistent File Server: route /uploads/ → PHP file server ──
+# Files are stored ABOVE public_html in user_uploads/ (survives deploys)
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^uploads/(.+)$ /api/file-server.php?path=$1 [QSA,L]
+</IfModule>
+
+# ── SPA Fallback: serve index.html for frontend routes ──
+<IfModule mod_rewrite.c>
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} !^/api/
     RewriteCond %{REQUEST_URI} !^/uploads/
     RewriteRule ^(.*)$ /index.html [L]
+</IfModule>
+
+# ── Disable LiteSpeed Cache for API responses ──
+<IfModule LiteSpeed>
+    CacheLookup off
 </IfModule>

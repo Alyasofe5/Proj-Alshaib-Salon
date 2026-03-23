@@ -25,6 +25,13 @@ if (!$id) {
     sendError('معرف الموظف مطلوب');
 }
 
+// Auto-add photo_path column if it doesn't exist
+try {
+    $pdo->query("SELECT photo_path FROM employees LIMIT 1");
+} catch (Exception $e) {
+    $pdo->exec("ALTER TABLE employees ADD COLUMN photo_path VARCHAR(500) DEFAULT NULL");
+}
+
 // ===== GET: موظف واحد =====
 if ($method === 'GET') {
     $stmt = $pdo->prepare("SELECT * FROM employees WHERE id = ? AND salon_id = ?");
@@ -38,6 +45,13 @@ if ($method === 'GET') {
     sendSuccess($employee);
 }
 
+
+// Auto-add columns if they don't exist
+try { $pdo->query("SELECT photo_path FROM employees LIMIT 1"); }
+catch (Exception $e) { $pdo->exec("ALTER TABLE employees ADD COLUMN photo_path VARCHAR(500) DEFAULT NULL"); }
+try { $pdo->query("SELECT specialty FROM employees LIMIT 1"); }
+catch (Exception $e) { $pdo->exec("ALTER TABLE employees ADD COLUMN specialty VARCHAR(200) DEFAULT NULL"); }
+
 // ===== PUT: تعديل موظف =====
 if ($method === 'PUT') {
     $data = getRequestBody();
@@ -47,13 +61,14 @@ if ($method === 'PUT') {
         sendError('اسم الموظف مطلوب');
     }
 
-    $stmt = $pdo->prepare("UPDATE employees SET name=?, phone=?, salary_type=?, commission_rate=?, base_salary=? WHERE id=? AND salon_id=?");
+    $stmt = $pdo->prepare("UPDATE employees SET name=?, phone=?, salary_type=?, commission_rate=?, base_salary=?, specialty=? WHERE id=? AND salon_id=?");
     $stmt->execute([
         $name,
         trim($data['phone'] ?? ''),
         $data['salary_type'] ?? 'commission',
         (float) ($data['commission_rate'] ?? 0),
         (float) ($data['base_salary'] ?? 0),
+        trim($data['specialty'] ?? ''),
         $id,
         $salonId
     ]);

@@ -67,21 +67,21 @@ export default function BarberChair3D() {
     return (
         <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] flex items-center justify-center">
 
-            {/* ── Gold ambient glow — pure CSS, instant ── */}
+            {/* ── Platinum ambient glow — pure CSS, instant ── */}
             <div
-                className="absolute inset-0 blur-[80px] opacity-20"
-                style={{ background: "radial-gradient(circle, #E6B31E, transparent 60%)" }}
+                className="absolute inset-0 blur-[80px] opacity-10"
+                style={{ background: "radial-gradient(circle, #FFFFFF, transparent 60%)" }}
             />
 
             {/* ── Ring decorations — pure CSS, instant ── */}
             <div
                 className="absolute inset-[10%] rounded-full border opacity-10"
-                style={{ borderColor: "#E6B31E" }}
+                style={{ borderColor: "#C3D809" }}
             />
             <div
                 className="absolute inset-[5%] rounded-full border opacity-5 animate-spin"
                 style={{
-                    borderColor: "#e8c96a",
+                    borderColor: "#C3D809",
                     animationDuration: "30s",
                     animationTimingFunction: "linear",
                 }}
@@ -91,8 +91,8 @@ export default function BarberChair3D() {
             {SPARKLE_POSITIONS.map((pos, i) => (
                 <div
                     key={i}
-                    className="absolute w-1.5 h-1.5 rounded-full bg-[#e8c96a] animate-ping"
-                    style={{ ...pos, opacity: 0.5 }}
+                    className="absolute w-1.5 h-1.5 rounded-full bg-white animate-ping"
+                    style={{ ...pos, opacity: 0.3 }}
                 />
             ))}
 
@@ -102,7 +102,7 @@ export default function BarberChair3D() {
                 style={{ opacity: isVisible ? 0 : 1 }}
             >
                 <div className="relative">
-                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#E6B31E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C3D809" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40">
                         <circle cx="6" cy="6" r="3" />
                         <path d="M8.12 8.12 12 12" />
                         <path d="M20 4 8.12 15.88" />
@@ -111,10 +111,10 @@ export default function BarberChair3D() {
                     </svg>
                     <div
                         className="absolute -inset-4 rounded-full border animate-ping"
-                        style={{ borderColor: "rgba(230,179,30,.15)", animationDuration: "2s" }}
+                        style={{ borderColor: "rgba(195,216,9,.15)", animationDuration: "2s" }}
                     />
                 </div>
-                <span className="text-[10px] font-semibold mt-3" style={{ color: "rgba(230,179,30,.35)" }}>
+                <span className="text-[10px] font-semibold mt-3" style={{ color: "rgba(195,216,9,.35)" }}>
                     جارٍ التحميل...
                 </span>
             </div>
@@ -140,10 +140,10 @@ export default function BarberChair3D() {
                 >
                     {/* Simplified lighting — 3 instead of 5 */}
                     <ambientLight intensity={0.8} />
-                    <directionalLight position={[5, 5, 5]} intensity={2} color="#E6B31E" />
-                    <directionalLight position={[-3, 3, -2]} intensity={0.8} color="#ffffff" />
+                    <directionalLight position={[5, 5, 5]} intensity={2.5} color="#ffffff" />
+                    <directionalLight position={[-3, 3, -2]} intensity={1.2} color="#C3D809" />
                     {!isLowEnd.current && (
-                        <pointLight position={[0, 4, 0]} intensity={1.5} color="#e8c96a" />
+                        <pointLight position={[0, 4, 0]} intensity={1.5} color="#ffffff" />
                     )}
                     <Suspense fallback={null}>
                         <ChairModel onLoaded={handleModelLoaded} />

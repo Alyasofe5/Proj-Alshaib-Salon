@@ -1,34 +1,43 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import axios from "axios";
 import { assetUrl } from "@/lib/assets";
+import {
+    Scissors, Calendar, Clock, UserCircle, X, ArrowRight, Plus, Sparkles,
+    ChevronDown, MapPin, Phone, Instagram, AlertCircle, Check, CheckCircle2,
+} from "lucide-react";
+import { Service, Employee, SalonInfo, BookingSel, dayNames, monthNames, fmt12, API } from "./types";
+import BookingModal from "./BookingModal";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "/api";
+/* ═══════════════════════════════════════
+   ANIMATION VARIANTS
+   ═══════════════════════════════════════ */
+const spring = { type: "spring" as const, stiffness: 100, damping: 20 };
+const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } };
+const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
-interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; }
-interface Employee { id: number; name: string; }
-interface SalonInfo {
-    name: string; slug: string; logo: string | null; phone: string | null;
-    description: string; address: string; instagram: string; booking_message: string;
-    hero_image: string | null;
+/* Counter Component */
+function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+    const ref = useRef<HTMLSpanElement>(null);
+    const isInView = useInView(ref, { once: true });
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        if (!isInView) return;
+        let start = 0;
+        const dur = 2000;
+        const step = (ts: number) => {
+            start = start || ts;
+            const p = Math.min((ts - start) / dur, 1);
+            setCount(Math.floor(p * target));
+            if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }, [isInView, target]);
+    return <span ref={ref}>+{count}{suffix}</span>;
 }
-
-/* ======= HELPERS ======= */
-const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-const fmt12 = (t: string) => { const [h, m] = t.split(":").map(Number); return `${h > 12 ? h - 12 : h === 0 ? 12 : h}:${String(m).padStart(2, "0")} ${h >= 12 ? "م" : "ص"}`; };
-
-/* ======= ICONS (SVG components) ======= */
-const IconScissors = () => (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg>);
-const IconUser = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>);
-const IconCalendar = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>);
-const IconCheck = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m9 12 2 2 4-4" /><circle cx="12" cy="12" r="10" /></svg>);
-const IconPhone = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>);
-const IconInstagram = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect width="20" height="20" x="2" y="2" rx="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>);
-const IconMap = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>);
 
 function BookingContent() {
     const searchParams = useSearchParams();
@@ -40,14 +49,18 @@ function BookingContent() {
     const [workHours, setWorkHours] = useState({ start: "09:00", end: "22:00", interval: 30 });
     const [offDays, setOffDays] = useState<number[]>([]);
     const [bookingDays, setBookingDays] = useState(7);
-    const [step, setStep] = useState(0);
-    const [sel, setSel] = useState({ service_ids: [] as number[], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
+
+    const [isBookingOpen, setIsBookingOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const [notFound, setNotFound] = useState(false);
+    const [noBookingPage, setNoBookingPage] = useState(false);
+
+    const [step, setStep] = useState(1);
+    const [sel, setSel] = useState<BookingSel>({ service_ids: [], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
-    const [notFound, setNotFound] = useState(false);
-    const [noBookingPage, setNoBookingPage] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
         if (!slug) { setNotFound(true); return; }
@@ -56,946 +69,576 @@ function BookingContent() {
                 const res = await axios.get(`${API}/booking/salon.php?slug=${slug}`);
                 const d = res.data.data;
                 setSalon(d.salon); setServices(d.services || []); setEmployees(d.employees || []);
-                setWorkHours(d.work_hours || { start: "09:00", end: "22:00", interval: 30 });
-                setOffDays(d.off_days || []); setBookingDays(d.booking_days || 7); setStep(1);
+                if (d.settings) {
+                    setWorkHours({ start: d.settings.work_start || "09:00", end: d.settings.work_end || "22:00", interval: parseInt(d.settings.slot_interval) || 30 });
+                    setOffDays(JSON.parse(d.settings.off_days || "[]").map(Number));
+                    setBookingDays(parseInt(d.settings.booking_days_ahead) || 7);
+                    if (d.settings.is_booking_active === 0 || d.settings.is_booking_active === "0") setNoBookingPage(true);
+                }
             } catch (err: unknown) {
                 const axiosErr = err as { response?: { status?: number } };
-                if (axiosErr.response?.status === 403) {
-                    setNoBookingPage(true);
-                } else {
-                    setNotFound(true);
-                }
+                if (axiosErr.response?.status === 404) setNotFound(true);
             }
         })();
     }, [slug]);
 
     useEffect(() => {
-        const h = () => setScrolled(window.scrollY > 60);
-        window.addEventListener("scroll", h, { passive: true }); return () => window.removeEventListener("scroll", h);
+        const h = () => setScrolled(window.scrollY > 50);
+        window.addEventListener("scroll", h);
+        return () => window.removeEventListener("scroll", h);
     }, []);
 
-    const loadBooked = async (date: string) => {
-        try { const r = await axios.get(`${API}/booking/book.php?slug=${slug}&date=${date}`); setBookedSlots(r.data.data.booked_slots || []); } catch { }
-    };
+    const fetchBooked = useCallback(async (empId: number, date: string) => {
+        try {
+            const res = await axios.get(`${API}/booking/book.php?salon_slug=${slug}&employee_id=${empId}&date=${date}`);
+            setBookedSlots(res.data.data.booked_slots || []);
+        } catch { /* silent */ }
+    }, [slug]);
 
-    const handleSubmit = async () => {
+    const selSrvs = services.filter(s => sel.service_ids.includes(s.id));
+    const totalPrice = selSrvs.reduce((sum, s) => sum + parseFloat(s.price || "0"), 0);
+    const totalDur = selSrvs.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+
+    const submitBooking = useCallback(async () => {
         setError(""); setSubmitting(true);
-        try { await axios.post(`${API}/booking/book.php`, { ...sel, salon_slug: slug }); setStep(6); }
-        catch (e: unknown) { setError((e as { response?: { data?: { message?: string } } }).response?.data?.message || "حدث خطأ"); }
-        finally { setSubmitting(false); }
-    };
-
-    const timeSlots: string[] = [];
-    const [sH, sM] = workHours.start.split(":").map(Number);
-    const [eH, eM] = workHours.end.split(":").map(Number);
-    const startMin = sH * 60 + (sM || 0);
-    let endMin = eH * 60 + (eM || 0);
-    if (endMin <= startMin) endMin = 24 * 60; // منتصف الليل أو أقل من البداية = 24:00
-    for (let m = startMin; m < endMin; m += workHours.interval)
-        timeSlots.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
-
-    const isBooked = (t: string) => {
-        const slotsAtTime = bookedSlots.filter((s: any) => s.booking_time.startsWith(t));
-        if (slotsAtTime.length === 0) return false;
-        if (sel.employee_id) {
-            // حلاق محدد — محجوز إذا نفس الحلاق عنده حجز بهالوقت
-            return slotsAtTime.some((s: any) => Number(s.employee_id) === sel.employee_id);
-        } else {
-            // أي حلاق — محجوز فقط إذا كل الحلاقين محجوزين بهالوقت
-            return employees.length > 0 && employees.every((emp: any) => slotsAtTime.some((s: any) => Number(s.employee_id) === emp.id));
+        try {
+            if (!sel.customer_name || !sel.customer_phone || !sel.booking_date || !sel.booking_time || sel.service_ids.length === 0)
+                throw new Error("يرجى إكمال جميع البيانات المطلوبة");
+            if (sel.customer_name.length < 3) throw new Error("الاسم يجب أن يكون 3 أحرف على الأقل");
+            if (!/^05\d{8}$/.test(sel.customer_phone)) throw new Error("رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام");
+            await axios.post(`${API}/booking/book.php`, { salon_slug: slug, ...sel, total_price: totalPrice, total_duration: totalDur });
+            setStep(5);
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+            setError(axiosErr.response?.data?.message || axiosErr.message || "حدث خطأ");
         }
-    };
-    const selServices = services.filter((s: any) => sel.service_ids.includes(s.id));
-    const selEmployee = employees.find((e: any) => e.id === sel.employee_id);
+        setSubmitting(false);
+    }, [sel, slug, totalPrice, totalDur]);
 
     const dates: string[] = [];
-    for (let i = 0; i < 60 && dates.length < bookingDays; i++) {
+    for (let i = 0; i < bookingDays; i++) {
         const d = new Date(); d.setDate(d.getDate() + i);
         if (!offDays.includes(d.getDay())) dates.push(d.toISOString().split("T")[0]);
     }
 
-    /* ---- STYLES ---- */
-    const gold = "#E6B31E";
+    const genTimes = useCallback(() => {
+        const tr: string[] = [];
+        let [ch, cm] = workHours.start.split(":").map(Number);
+        const [eh, em] = workHours.end.split(":").map(Number);
+        const no = new Date(); const isToday = sel.booking_date === no.toISOString().split("T")[0];
+        while (ch < eh || (ch === eh && cm < em)) {
+            const t = `${String(ch).padStart(2, "0")}:${String(cm).padStart(2, "0")}`;
+            let passed = false;
+            if (isToday) { if (ch < no.getHours() || (ch === no.getHours() && cm <= no.getMinutes() + 30)) passed = true; }
+            if (!passed) tr.push(t);
+            cm += workHours.interval; if (cm >= 60) { ch++; cm -= 60; }
+        }
+        return tr;
+    }, [workHours, sel.booking_date]);
 
-    if (noBookingPage) return (
-        <div className="min-h-screen flex items-center justify-center" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif" }}>
-            <div className="text-center px-6 max-w-md">
-                <div className="w-24 h-24 mx-auto mb-8 rounded-3xl flex items-center justify-center"
-                    style={{ background: `${gold}10`, border: `2px solid ${gold}20` }}>
-                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.5">
-                        <rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-                    </svg>
-                </div>
-                <h1 className="text-3xl font-black mb-3 text-white" style={{ fontFamily: "'Playfair Display',serif" }}>
-                    الحجز غير متاح
-                </h1>
-                <p className="text-base leading-relaxed mb-8" style={{ color: "rgba(255,255,255,.4)" }}>
-                    صفحة الحجز غير متوفرة لهذا الصالون حالياً. يرجى التواصل مع الصالون مباشرة لحجز موعد.
-                </p>
-                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold"
-                    style={{ background: `${gold}10`, border: `1px solid ${gold}20`, color: gold }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                    يتطلب ترقية الباقة
-                </div>
+    const toggleSrv = useCallback((id: number) => {
+        setSel(p => ({ ...p, service_ids: p.service_ids.includes(id) ? p.service_ids.filter(x => x !== id) : [...p.service_ids, id] }));
+    }, []);
+
+    /* ─── Error States ─── */
+    if (notFound) return (
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A", color: "#F5F2EC", direction: "rtl" }}>
+            <div className="text-center">
+                <p style={{ fontSize: "6rem", fontFamily: "'Playfair Display', serif", fontWeight: 900, color: "#C3D809" }}>404</p>
+                <p style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "1.25rem" }}>الصالون غير موجود</p>
             </div>
         </div>
     );
 
-    if (notFound) return (
-        <div className="min-h-screen flex items-center justify-center" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif" }}>
-            <div className="text-center"><p className="text-8xl mb-6" style={{ fontFamily: "'Playfair Display',serif" }}>404</p><p className="text-gray-500 text-lg">الصالون غير موجود</p></div>
+    if (noBookingPage) return (
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A", color: "#F5F2EC", direction: "rtl" }}>
+            <div className="text-center px-6 max-w-md">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: "rgba(195,216,9,0.1)" }}>
+                    <Calendar size={36} color="#C3D809" />
+                </div>
+                <h1 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "1.75rem", marginBottom: 12 }}>الحجز غير متاح</h1>
+                <p style={{ color: "rgba(245,242,236,0.5)", lineHeight: 1.8 }}>نظام الحجز الإلكتروني غير مفعل لهذا الصالون حالياً.</p>
+            </div>
         </div>
     );
 
-    if (step === 0) return (
-        <div className="min-h-screen flex items-center justify-center" style={{ background: "#000" }}>
-            <div className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+    if (!salon) return (
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A" }}>
+            <div className="w-10 h-10 rounded-full animate-spin" style={{ border: "3px solid rgba(195,216,9,0.15)", borderTopColor: "#C3D809" }} />
         </div>
     );
+
+    const mockGallery = salon.gallery?.length ? salon.gallery : [
+        "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1200",
+        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1200",
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200",
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1200",
+    ];
+    const mockReviews = salon.reviews?.length ? salon.reviews : [
+        { id: 1, customer_name: "أحمد العبدالله", rating: 5, comment: "خدمة احترافية جداً، الحلاق فهم قصة الشعر اللي أريدها بالضبط." },
+        { id: 2, customer_name: "محمد خالد", rating: 5, comment: "المكان راقي جداً والتعامل ممتاز. أنصح بتجربة قسم العناية بالبشرة." },
+        { id: 3, customer_name: "سالم المري", rating: 5, comment: "تجربة رائعة وتطبيق الحجز سهل جداً. السعر مناسب مقابل الجودة." },
+    ];
+    const mockFaqs = salon.faqs?.length ? salon.faqs : [
+        { id: 1, question: "هل يتوفر مواقف سيارات؟", answer: "نعم، نوفر مواقف مجانية لعملائنا أمام الصالون مباشرة." },
+        { id: 2, question: "هل يمكن إلغاء أو تعديل الموعد؟", answer: "بالطبع، تواصل معنا قبل ساعتين على الأقل من موعدك." },
+        { id: 3, question: "ما هي طرق الدفع المتاحة؟", answer: "نوفر الدفع نقداً وعبر البطاقات الائتمانية وبطاقات مدى." },
+    ];
+
+    const serviceCards = [
+        { name: "حلاقة الشعر", en: "HAIR", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600" },
+        { name: "تلوين الشعر", en: "COLOR", img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?q=80&w=600" },
+        { name: "العناية الكيميائية", en: "CHEMICAL", img: "https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?q=80&w=600" },
+        { name: "علاجات الشعر", en: "TREATMENT", img: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=600" },
+        { name: "خدمات التجميل", en: "AESTHETICS", img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600" },
+    ];
 
     return (
-        <>
-            {/* Google Fonts */}
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap');
-                * { box-sizing: border-box; }
-                body { margin: 0; overflow-x: hidden; }
-                ::-webkit-scrollbar { width: 6px; }
-                ::-webkit-scrollbar-track { background: #000; }
-                ::-webkit-scrollbar-thumb { background: ${gold}40; border-radius: 3px; }
-                ::selection { background: ${gold}30; }
-                .hide-scrollbar::-webkit-scrollbar { display: none; }
-                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            `}</style>
+        <div className="min-h-screen overflow-x-hidden" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", background: "#0A0A0A", color: "#F5F2EC", direction: "rtl" }}>
 
-            <div className="min-h-screen" dir="rtl" style={{ background: "#000", fontFamily: "'Tajawal',sans-serif", color: "#fff" }}>
+            {/* GOOGLE FONTS */}
+            {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Tajawal:wght@400;500;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-                {/* ═══════════ STICKY HEADER ═══════════ */}
-                <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500" style={{
-                    background: scrolled ? "rgba(0,0,0,.85)" : "transparent",
-                    backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-                }}>
-                    {/* Separator — opacity avoids color interpolation flash */}
-                    <div className="absolute bottom-0 inset-x-0 h-px pointer-events-none transition-opacity duration-500"
-                        style={{ background: "rgba(255,255,255,0.06)", opacity: scrolled ? 1 : 0 }} />
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 h-14 sm:h-16 md:h-20 flex items-center justify-between">
-                        <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); if (step > 1) setStep(1); }} className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center overflow-hidden" style={{ background: `${gold}15`, border: `1px solid ${gold}20` }}>
-                                {assetUrl(salon?.logo) ? (
-                                    <img src={assetUrl(salon?.logo)!} alt={salon?.name || ""} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.innerHTML = `<span style="color:${gold};font-family:'Playfair Display',serif;font-weight:900">${salon?.name?.charAt(0) || ""}</span>`; }} />
-                                ) : (
-                                    <span className="text-sm sm:text-base font-black" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>{salon?.name?.charAt(0)}</span>
-                                )}
+            {/* ═══ HEADER ═══ */}
+            <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500" style={{
+                padding: scrolled ? "10px 16px" : "18px 16px",
+                background: scrolled ? "rgba(10,10,10,0.96)" : "transparent",
+                backdropFilter: scrolled ? "blur(20px)" : "none",
+                borderBottom: "none",
+                boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.15)" : "none",
+            }}>
+                <div className="max-w-[1400px] mx-auto flex justify-between items-center">
+                    <a href="/" className="transition-opacity hover:opacity-80">
+                        {salon.logo ? (
+                            <img
+                                src={assetUrl(salon.logo)!}
+                                alt={salon.name}
+                                className="object-cover rounded-full"
+                                style={{
+                                    width: 44, height: 44,
+                                    mixBlendMode: "screen",
+                                    filter: "brightness(1.1) contrast(1.1)",
+                                    border: "1px solid rgba(245,242,236,0.1)"
+                                }}
+                            />
+                        ) : (
+                            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.2rem, 4vw, 1.75rem)", fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.03em" }}>
+                                {salon.name}<span style={{ color: "#C3D809" }}>.</span>
                             </div>
-                            <span className="text-[10px] sm:text-xs font-bold tracking-[.15em] sm:tracking-[.2em] uppercase text-white/80 max-w-[120px] sm:max-w-none truncate">{salon?.name}</span>
-                        </button>
-                        <div className="flex items-center gap-2 sm:gap-3">
-                            {salon?.instagram && (
-                                <a href={`https://instagram.com/${salon.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconInstagram /></a>
-                            )}
-                            {salon?.phone && (
-                                <a href={`tel:${salon.phone}`}
-                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors"><IconPhone /></a>
-                            )}
-                            <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                className="hidden sm:flex h-9 px-5 rounded-full items-center text-xs font-bold tracking-wider uppercase transition-all hover:scale-105"
-                                style={{ background: gold, color: "#000" }}>احجز الآن</button>
-                        </div>
+                        )}
+                    </a>
+                    <nav className="hidden lg:flex items-center gap-10" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.85rem", fontWeight: 500, letterSpacing: "0.05em" }}>
+                        {[{ name: "الخدمات", id: "services" }, { name: "عن الصالون", id: "about" }, { name: "الفريق", id: "team" }, { name: "تواصل", id: "contact" }].map(item => (
+                            <a key={item.id} href={`#${item.id}`} className="transition-colors" style={{ color: "rgba(245,242,236,0.5)" }}
+                                onMouseEnter={e => (e.target as HTMLElement).style.color = "#C3D809"}
+                                onMouseLeave={e => (e.target as HTMLElement).style.color = "rgba(245,242,236,0.5)"}>{item.name}</a>
+                        ))}
+                    </nav>
+                    {/* Desktop CTA */}
+                    <button onClick={() => setIsBookingOpen(true)}
+                        className="hidden md:block px-6 py-2.5 rounded-full text-sm font-bold transition-all"
+                        style={{ border: "1px solid rgba(245,242,236,0.15)", color: "#F5F2EC", background: "transparent", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.9rem" }}
+                        onMouseEnter={e => { (e.target as HTMLElement).style.background = "#C3D809"; (e.target as HTMLElement).style.borderColor = "#C3D809"; (e.target as HTMLElement).style.color = "#0A0A0A"; }}
+                        onMouseLeave={e => { (e.target as HTMLElement).style.background = "transparent"; (e.target as HTMLElement).style.borderColor = "rgba(245,242,236,0.15)"; (e.target as HTMLElement).style.color = "#F5F2EC"; }}>
+                        احجز الآن
+                    </button>
+                    {/* Mobile menu icon → opens booking */}
+                    <button onClick={() => setIsBookingOpen(true)}
+                        className="flex md:hidden items-center gap-1.5 px-4 py-2 rounded-full"
+                        style={{ background: "var(--border-subtle)", border: "1px solid rgba(195,216,9,0.3)", color: "#C3D809", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.85rem", fontWeight: 700 }}>
+                        احجز
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                {/* ═══ HERO ═══ */}
+                <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
+                    <div className="absolute inset-0 z-0">
+                        <video className="w-full h-full object-cover" autoPlay loop muted playsInline>
+                            <source src="/hero.mp4" type="video/mp4" />
+                        </video>
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(10,10,10,0.7) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)" }} />
+                        {/* Grain texture overlay */}
+                        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
                     </div>
-                </header>
-
-                {/* ═══════════ HERO — FULL VIEWPORT ═══════════ */}
-                <AnimatePresence>
-                    {step === 1 && (
-                        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
-                            className="relative min-h-[75vh] sm:min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-14 sm:pt-16 md:pt-20">
-
-                            {/* Background — Image or Gradient */}
-                            {assetUrl(salon?.hero_image) ? (
-                                <>
-                                    <div className="absolute inset-0">
-                                        <img src={assetUrl(salon?.hero_image)!} alt="" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="absolute inset-0" style={{
-                                        background: `linear-gradient(180deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.4) 40%, rgba(0,0,0,.8) 100%)`
-                                    }} />
-                                </>
-                            ) : (
-                                <>
-                                    <div className="absolute inset-0" style={{
-                                        background: `
-                                            radial-gradient(ellipse 100% 80% at 50% 20%, ${gold}08 0%, transparent 50%),
-                                            radial-gradient(ellipse 60% 50% at 80% 60%, ${gold}05 0%, transparent 50%),
-                                            radial-gradient(ellipse 50% 40% at 20% 80%, ${gold}04 0%, transparent 50%),
-                                            linear-gradient(180deg, #000 0%, #080604 50%, #000 100%)
-                                        `
-                                    }} />
-                                    <div className="absolute inset-0 opacity-[.03]" style={{
-                                        backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,.5) 80px, rgba(255,255,255,.5) 81px)`,
-                                    }} />
-                                </>
-                            )}
-
-                            {/* Content */}
-                            <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
-                                <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
-                                    <p className="text-[10px] sm:text-xs md:text-sm tracking-[.25em] sm:tracking-[.35em] uppercase mb-4 sm:mb-6 md:mb-8" style={{ color: gold }}>
-                                        — مرحباً بك في —
-                                    </p>
-                                </motion.div>
-
-                                <motion.h1 initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }}
-                                    className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] mb-4 sm:mb-6 md:mb-8"
-                                    style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}>
-                                    {salon?.name}
-                                </motion.h1>
-
-                                {salon?.description && (
-                                    <motion.p initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6, duration: 0.8 }}
-                                        className="text-sm sm:text-base md:text-lg text-white/50 max-w-md sm:max-w-lg mx-auto leading-relaxed mb-6 sm:mb-8 md:mb-12">
-                                        {salon.description}
-                                    </motion.p>
-                                )}
-
-                                <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8, duration: 0.8 }}
-                                    className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                                    <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                        className="w-full sm:w-auto h-12 sm:h-14 px-8 sm:px-10 rounded-full text-sm font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg"
-                                        style={{ background: gold, color: "#000", boxShadow: `0 20px 60px ${gold}20` }}>
-                                        احجز موعدك الآن
-                                    </button>
-                                    {salon?.phone && (
-                                        <a href={`https://wa.me/${salon.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
-                                            className="w-full sm:w-auto h-12 sm:h-14 px-8 rounded-full text-sm font-bold tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105"
-                                            style={{ border: `1px solid rgba(255,255,255,.15)`, color: "#fff" }}>
-                                            <span>تواصل معنا</span>
-                                        </a>
-                                    )}
-                                </motion.div>
-
-                                {/* Info badges */}
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }}
-                                    className="mt-8 sm:mt-12 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 md:gap-10 text-[11px] sm:text-xs text-white/40">
-                                    {salon?.address && <span className="flex items-center gap-1.5"><IconMap /> {salon.address}</span>}
-                                    <span className="flex items-center gap-1.5">🕐 {fmt12(workHours.start)} — {fmt12(workHours.end)}</span>
-                                </motion.div>
-                            </div>
-
-                            {/* Scroll indicator */}
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-                                className="absolute bottom-8 left-1/2 -translate-x-1/2">
-                                <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }}
-                                    className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center pt-1.5">
-                                    <div className="w-1 h-1.5 rounded-full bg-white/30" />
-                                </motion.div>
-                            </motion.div>
-                        </motion.section>
-                    )}
-                </AnimatePresence>
-
-                {/* ═══════════ ABOUT SALON SECTION ═══════════ */}
-                {step === 1 && (
-                    <section style={{ background: "linear-gradient(180deg, #000 0%, #060606 50%, #000 100%)" }}>
-                        <div className="text-center py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                                <div className="flex items-center justify-center gap-4 mb-5">
-                                    <div className="h-px w-16" style={{ background: `linear-gradient(90deg, transparent, ${gold}40)` }} />
-                                    <p className="text-xs tracking-[.4em] uppercase font-semibold" style={{ color: gold }}>من نحن</p>
-                                    <div className="h-px w-16" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
-                                </div>
-                                <h2 className="text-2xl sm:text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>تعرّف علينا</h2>
-                            </motion.div>
-                        </div>
-
-                        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 pb-12 sm:pb-16 md:pb-24">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                                {/* ─── About Card ─── */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }} transition={{ duration: 0.7 }}
-                                    className="relative rounded-3xl overflow-hidden"
-                                    style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}
-                                >
-                                    {/* Decorative gold glow top-right */}
-                                    <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
-                                        style={{ background: `radial-gradient(circle, ${gold}18 0%, transparent 70%)` }} />
-
-                                    <div className="relative p-5 sm:p-8 md:p-10">
-                                        {/* Salon Header */}
-                                        <div className="flex items-center gap-3 mb-8">
-                                            {/* Salon logo or fallback icon */}
-                                            {assetUrl(salon?.logo) ? (
-                                                <img
-                                                    src={assetUrl(salon?.logo)!}
-                                                    alt={salon?.name || ""}
-                                                    className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
-                                                    style={{ border: "1.5px solid rgba(230,179,30,.3)" }}
-                                                />
-                                            ) : (
-                                                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl font-black"
-                                                    style={{ background: "linear-gradient(135deg, #E6B31E, #e8c96a)", color: "#343434", boxShadow: "0 6px 24px rgba(230,179,30,.35)" }}>
-                                                    {salon?.name?.charAt(0) || "S"}
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col">
-                                                <span className="text-xl font-black leading-tight text-white">
-                                                    {salon?.name || "الصالون"}
-                                                </span>
-                                                <span className="text-[10px] font-semibold tracking-[.2em] mt-0.5" style={{ color: "rgba(255,255,255,.3)" }}>BARBER SHOP</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Description */}
-                                        {salon?.description && (
-                                            <p className="text-sm leading-[2] text-white/50 mb-8">{salon.description}</p>
-                                        )}
-
-                                        {/* Divider */}
-                                        <div className="h-px mb-8" style={{ background: "linear-gradient(90deg, transparent, rgba(230,179,30,.2), transparent)" }} />
-
-                                        {/* Info Grid */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
-                                            {/* Working Hours */}
-                                            <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.05)" }}>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2">
-                                                        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                                                    </svg>
-                                                    <p className="text-[9px] text-white/25 uppercase tracking-[.2em]">ساعات العمل</p>
-                                                </div>
-                                                <p className="text-sm font-bold text-white/80">{fmt12(workHours.start)} — {fmt12(workHours.end)}</p>
-                                            </div>
-
-                                            {/* Location */}
-                                            {salon?.address && (
-                                                <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.05)" }}>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8">
-                                                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
-                                                        </svg>
-                                                        <p className="text-[9px] text-white/25 uppercase tracking-[.2em]">الموقع</p>
-                                                    </div>
-                                                    <p className="text-sm font-bold text-white/80">{salon.address}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
-
-                                {/* ─── Stats Column ─── */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }}
-                                    className="flex flex-col gap-4"
-                                >
-                                    {/* Stat — Services */}
-                                    <div className="relative rounded-3xl p-6 overflow-hidden flex-1"
-                                        style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}>
-                                        <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full pointer-events-none"
-                                            style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-[10px] text-white/25 uppercase tracking-[.25em] mb-2">الخدمات المتاحة</p>
-                                                <p className="text-5xl font-black leading-none" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>
-                                                    {services.length}
-                                                </p>
-                                                <p className="text-xs text-white/30 mt-2">خدمة احترافية</p>
-                                            </div>
-                                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                                                style={{ background: `${gold}12`, border: `1px solid ${gold}20` }}>
-                                                <IconScissors />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Stat — Barbers */}
-                                    <div className="relative rounded-3xl p-6 overflow-hidden flex-1"
-                                        style={{ background: "linear-gradient(145deg, #2D2D2D, #343434)", border: "1px solid rgba(255,255,255,.06)" }}>
-                                        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full pointer-events-none"
-                                            style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-[10px] text-white/25 uppercase tracking-[.25em] mb-2">الحلاقون</p>
-                                                <p className="text-5xl font-black leading-none" style={{ color: gold, fontFamily: "'Playfair Display',serif" }}>
-                                                    {employees.length}
-                                                </p>
-                                                <p className="text-xs text-white/30 mt-2">حلاق محترف</p>
-                                            </div>
-                                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                                                style={{ background: `${gold}12`, border: `1px solid ${gold}20` }}>
-                                                <IconUser />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* WhatsApp CTA */}
-                                    {salon?.phone && (
-                                        <a href={`https://wa.me/${salon.phone.replace(/[^0-9]/g, "")}`}
-                                            target="_blank" rel="noopener noreferrer"
-                                            className="group relative rounded-3xl p-6 flex items-center gap-4 overflow-hidden transition-all duration-300 hover:scale-[1.02]"
-                                            style={{ background: "linear-gradient(145deg, rgba(37,211,102,.08), rgba(37,211,102,.04))", border: "1px solid rgba(37,211,102,.2)" }}>
-                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                                style={{ background: "linear-gradient(135deg, rgba(37,211,102,.12), transparent)" }} />
-                                            <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                                                style={{ background: "rgba(37,211,102,.15)", border: "1px solid rgba(37,211,102,.3)" }}>
-                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="#25D366">
-                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                                                    <path d="M11.992 0C5.374 0 0 5.373 0 11.99c0 2.117.554 4.099 1.522 5.819L.057 24l6.304-1.654A11.945 11.945 0 0011.992 24c6.618 0 11.992-5.373 11.992-11.99C23.984 5.373 18.61 0 11.992 0z" />
-                                                </svg>
-                                            </div>
-                                            <div className="relative flex-1">
-                                                <p className="text-[10px] text-white/25 uppercase tracking-[.2em] mb-0.5">تواصل معنا عبر</p>
-                                                <p className="text-lg font-black" style={{ color: "#25D366" }}>واتساب</p>
-                                                <p className="text-sm font-bold text-white/40" dir="ltr">{salon.phone}</p>
-                                            </div>
-                                            <svg className="relative opacity-30 group-hover:opacity-60 transition-opacity flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                                <path d="M19 12H5M12 19l-7-7 7-7" />
-                                            </svg>
-                                        </a>
-                                    )}
-                                </motion.div>
-
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* ═══════════ SERVICES SHOWCASE (Display Only) ═══════════ */}
-                {step === 1 && (
-                    <section style={{ background: "linear-gradient(180deg, #000 0%, #050505 50%, #000 100%)" }}>
-                        <div className="text-center py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                                <div className="flex items-center justify-center gap-4 mb-5">
-                                    <div className="h-px w-16" style={{ background: `linear-gradient(90deg, transparent, ${gold}40)` }} />
-                                    <p className="text-xs tracking-[.4em] uppercase font-semibold" style={{ color: gold }}>خدماتنا</p>
-                                    <div className="h-px w-16" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
-                                </div>
-                                <h2 className="text-2xl sm:text-4xl md:text-6xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>ما نقدمه لك</h2>
-                                <p className="text-xs sm:text-sm text-white/25 mt-3 sm:mt-4 max-w-md mx-auto">مجموعة من الخدمات المميزة لتجربة حلاقة لا تُنسى</p>
-                            </motion.div>
-                        </div>
-
-                        {/* Services Grid — Premium Showcase */}
-                        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 pb-16 sm:pb-20 md:pb-32">
-                            {(() => {
-                                const fallbackImages: Record<string, string> = {
-                                    'حلاقة': '/services/haircut.webp',
-                                    'قص شعر فاشن': '/services/haircut.webp',
-                                    'حلاقة أطفال': '/services/haircut.webp',
-                                    'تشذيب لحية': '/services/beard.webp',
-                                    'حلاقة + لحية': '/services/beard.webp',
-                                    'تنظيف بشرة': '/services/facial.webp',
-                                    'صبغة شعر': '/services/coloring.webp',
-                                };
-                                const defaultImg = '/services/haircut.webp';
-                                return (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                        {services.map((s, i) => (
-                                            <motion.div key={s.id}
-                                                initial={{ opacity: 0, y: 50 }}
-                                                whileInView={{ opacity: 1, y: 0 }}
-                                                viewport={{ once: true, margin: "-50px" }}
-                                                transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
-                                                className="group relative rounded-3xl overflow-hidden cursor-default"
-                                                style={{ background: "#343434" }}>
-                                                {/* Image */}
-                                                <div className="relative h-40 sm:h-52 md:h-60 overflow-hidden">
-                                                    <img
-                                                        src={assetUrl(s.image) || fallbackImages[s.name] || defaultImg}
-                                                        alt={s.name}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                    />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#343434] via-transparent to-transparent" />
-                                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                                        style={{ background: `linear-gradient(135deg, ${gold}15, transparent)` }} />
-                                                    {/* Price badge */}
-                                                    <div className="absolute top-4 left-4 px-4 py-2 rounded-full backdrop-blur-md text-sm font-black"
-                                                        style={{ background: "rgba(0,0,0,.6)", color: gold, border: `1px solid ${gold}20` }}>
-                                                        {Number(s.price).toFixed(2)} <span className="text-[9px] text-white/30">د.أ</span>
-                                                    </div>
-                                                </div>
-                                                {/* Content */}
-                                                <div className="p-4 sm:p-6 relative">
-                                                    <div className="flex items-center gap-3 mb-3">
-                                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                                                            style={{ background: `${gold}10`, color: gold }}>
-                                                            <IconScissors />
-                                                        </div>
-                                                        <h3 className="text-lg font-bold text-white group-hover:text-[#E6B31E] transition-colors duration-300">
-                                                            {s.name}
-                                                        </h3>
-                                                    </div>
-                                                    {s.duration_minutes && (
-                                                        <p className="text-xs text-white/20 flex items-center gap-1.5 mr-12">
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                                                            {s.duration_minutes} دقيقة
-                                                        </p>
-                                                    )}
-                                                    {/* Bottom accent */}
-                                                    <div className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                                        style={{ background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                );
-                            })()}
-
-                            {/* CTA after showcase */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6 }}
-                                className="text-center mt-10 sm:mt-16 md:mt-20">
-                                <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                    className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full text-sm sm:text-base font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg group"
-                                    style={{ background: gold, color: "#000", boxShadow: `0 20px 60px ${gold}25` }}>
-                                    <span className="flex items-center gap-3">
-                                        احجز موعدك الآن
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-                                    </span>
-                                </button>
-                                <p className="text-xs text-white/15 mt-4">اختر خدمتك وحدد موعدك في دقائق</p>
-                            </motion.div>
-                        </div>
-                    </section>
-                )}
-                
-                {/* ═══════════ BOOKING SECTION ═══════════ */}
-                <section id="booking-section" style={{ background: "transparent" }}>
-
-                    {/* Progress bar (steps 2-5) */}
-                    {step > 1 && step < 6 && (
-                        <div className="pt-20 sm:pt-40 pb-4 sm:pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                            <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                                <div className="flex items-center">
-                                    {["الخدمة", "الحلاق", "الموعد", "البيانات"].map((l: string, i: number) => {
-                                        const stepNum = i + 2;
-                                        return (
-                                            <div key={i} className="flex items-center flex-1">
-                                                <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
-                                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-bold transition-all duration-500"
-                                                        style={{ background: step >= stepNum ? gold : "transparent", color: step >= stepNum ? "#000" : "#444", border: step < stepNum ? "1px solid #222" : "none", boxShadow: step === stepNum ? `0 0 25px ${gold}30` : "none" }}>
-                                                        {step > stepNum ? "✓" : i + 1}
-                                                    </div>
-                                                    <span className={`text-[9px] sm:text-xs font-semibold ${step >= stepNum ? "text-white" : "text-gray-700"}`}>{l}</span>
-                                                </div>
-                                                {i < 3 && <div className="flex-1 h-px mx-1.5 sm:mx-3 hidden sm:block" style={{ background: step > stepNum ? gold : "#3A3A3A" }} />}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Content area */}
-                    <div className={`max-w-5xl mx-auto px-4 sm:px-6 md:px-10 py-8 sm:py-12 md:py-20 ${step > 1 && step < 6 ? 'pb-24 sm:pb-12' : ''}`}>
-                        <AnimatePresence mode="wait">
-
-                            {/* S2: Services (first booking step) */}
-                            {step === 2 && (
-                                <motion.div key="s2" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }}>
-                                    <div className="text-center mb-10 md:mb-14">
-                                        <div className="flex items-center justify-center gap-4 mb-4">
-                                            <div className="h-px w-10" style={{ background: `linear-gradient(90deg, transparent, ${gold}40)` }} />
-                                            <p className="text-xs tracking-[.35em] uppercase font-semibold" style={{ color: gold }}>الخطوة الأولى</p>
-                                            <div className="h-px w-10" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
-                                        </div>
-                                        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر خدمتك</h2>
-                                        <p className="text-sm text-white/25 mt-3">اختر من قائمة خدماتنا لبدء الحجز</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                        {services.map((s, i) => {
-                                            const isSelected = sel.service_ids.includes(s.id);
-                                            return (
-                                                <motion.button key={s.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                                                    onClick={() => {
-                                                        const newIds = isSelected 
-                                                            ? sel.service_ids.filter(id => id !== s.id)
-                                                            : [...sel.service_ids, s.id];
-                                                        setSel({ ...sel, service_ids: newIds });
-                                                    }}
-                                                    className="group relative text-right rounded-2xl transition-all duration-500 overflow-hidden"
-                                                    style={{ 
-                                                        background: isSelected ? `${gold}15` : "linear-gradient(135deg, #343434 0%, #343434 100%)", 
-                                                        border: isSelected ? `2px solid ${gold}` : "1px solid rgba(255,255,255,.06)",
-                                                        transform: isSelected ? "scale(1.02)" : "none",
-                                                        boxShadow: isSelected ? `0 20px 40px ${gold}15` : "none"
-                                                    }}>
-                                                    <div className="p-4 sm:p-6 md:p-7">
-                                                        <div className="flex justify-between items-start mb-5">
-                                                            <div className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500" 
-                                                                style={{ background: isSelected ? gold : `${gold}08`, color: isSelected ? "#000" : gold }}>
-                                                                <IconScissors />
-                                                            </div>
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} 
-                                                                style={{ background: isSelected ? gold : `${gold}15`, color: isSelected ? "#000" : gold }}>
-                                                                {isSelected ? <IconCheck /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>}
-                                                            </div>
-                                                        </div>
-                                                        <h3 className={`text-lg font-bold mb-1 transition-colors ${isSelected ? "text-white" : "text-white group-hover:text-[#E6B31E]"}`}>{s.name}</h3>
-                                                        {s.duration_minutes && <p className={`text-xs mb-5 ${isSelected ? "text-white/60" : "text-white/20"}`}>{s.duration_minutes} دقيقة</p>}
-                                                        {!s.duration_minutes && <div className="mb-5" />}
-                                                        <div className="flex items-end justify-between pt-4" style={{ borderTop: `1px solid ${isSelected ? gold + '20' : 'rgba(255,255,255,.04)'}` }}>
-                                                            <div>
-                                                                <span className="text-3xl font-black" style={{ color: gold }}>{Number(s.price).toFixed(2)}</span>
-                                                                <span className={`text-[10px] mr-1 ${isSelected ? "text-white/40" : "text-white/20"}`}>د.أ</span>
-                                                            </div>
-                                                            <span className={`text-[10px] tracking-[.2em] uppercase transition-colors ${isSelected ? "text-white" : "text-white/15"}`}>
-                                                                {isSelected ? "محدد" : "إضافة"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </motion.button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Next Button for Step 2 */}
-                                    <div className="flex flex-col items-center mt-12 gap-6">
-                                        <button 
-                                            onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                                            disabled={sel.service_ids.length === 0}
-                                            className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full text-sm sm:text-base font-bold tracking-[.1em] sm:tracking-[.15em] uppercase transition-all hover:scale-105 hover:shadow-lg disabled:opacity-20 disabled:scale-100 group"
-                                            style={{ background: gold, color: "#000", boxShadow: sel.service_ids.length > 0 ? `0 20px 60px ${gold}25` : "none" }}>
-                                            <span className="flex items-center gap-3">
-                                                التالي: اختيار الحلاق
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-                                            </span>
-                                        </button>
-                                        
-                                        <button onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); }} 
-                                            className="flex items-center gap-2 text-sm text-white/25 hover:text-white/60 transition-colors tracking-wider group">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="group-hover:-translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                                            رجوع
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* S3: Employees */}
-                            {step === 3 && (
-                                <motion.div key="s3" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }}>
-                                    <div className="text-center mb-10 md:mb-14">
-                                        <div className="flex items-center justify-center gap-4 mb-4">
-                                            <div className="h-px w-10" style={{ background: `linear-gradient(90deg, transparent, ${gold}40)` }} />
-                                            <p className="text-xs tracking-[.35em] uppercase font-semibold" style={{ color: gold }}>الخطوة الثانية</p>
-                                            <div className="h-px w-10" style={{ background: `linear-gradient(270deg, transparent, ${gold}40)` }} />
-                                        </div>
-                                        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر الحلاق</h2>
-                                        <p className="text-sm text-white/25 mt-3">اختر الحلاق المفضل لديك أو اترك الاختيار لنا</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-3xl mx-auto">
-                                        <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                                            onClick={() => { setSel({ ...sel, employee_id: 0 }); setStep(4); }}
-                                            className="group relative p-7 rounded-2xl text-center transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                                            style={{ background: `linear-gradient(135deg, ${gold}08, transparent)`, border: `1px solid ${gold}15` }}
-                                            onMouseEnter={e => { e.currentTarget.style.borderColor = `${gold}40`; e.currentTarget.style.boxShadow = `0 20px 50px ${gold}10`; }}
-                                            onMouseLeave={e => { e.currentTarget.style.borderColor = `${gold}15`; e.currentTarget.style.boxShadow = "none"; }}>
-                                            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: `${gold}10`, border: `1px solid ${gold}20` }}>
-                                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: gold }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                                            </div>
-                                            <span className="font-bold text-base group-hover:text-white transition-colors" style={{ color: gold }}>أي حلاق متاح</span>
-                                            <p className="text-[11px] text-white/20 mt-1">سيتم اختيار حلاق تلقائياً</p>
-                                        </motion.button>
-                                        {employees.map((emp, i) => (
-                                            <motion.button key={emp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.08 }}
-                                                onClick={() => { setSel({ ...sel, employee_id: emp.id }); setStep(4); }}
-                                                className="group relative p-7 rounded-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                                                style={{ background: "linear-gradient(135deg, #343434, #343434)", border: "1px solid rgba(255,255,255,.06)" }}
-                                                onMouseEnter={e => { e.currentTarget.style.borderColor = `${gold}30`; e.currentTarget.style.boxShadow = `0 20px 50px ${gold}08`; }}
-                                                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}>
-                                                <div className="h-[2px] w-full absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
-                                                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-black"
-                                                    style={{ background: `${gold}08`, color: gold, border: `1px solid ${gold}15` }}>{emp.name.charAt(0).toUpperCase()}</div>
-                                                <span className="font-bold text-base text-white group-hover:text-[#E6B31E] transition-colors">{emp.name}</span>
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                    <button onClick={() => setStep(2)} className="flex items-center gap-2 mx-auto mt-12 text-sm text-white/25 hover:text-white/60 transition-colors tracking-wider group">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="group-hover:-translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                                        رجوع للخدمات
-                                    </button>
-                                </motion.div>
-                            )}
-
-                            {/* S4: Date & Time */}
-                            {step === 4 && (
-                                <motion.div key="s4" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }}>
-                                    <div className="text-center mb-10 md:mb-14">
-                                        <p className="text-xs tracking-[.3em] uppercase mb-3" style={{ color: gold }}>الخطوة الثالثة</p>
-                                        <h2 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>اختر الموعد</h2>
-                                    </div>
-
-                                    <div className="max-w-2xl mx-auto">
-                                        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto hide-scrollbar pb-4 sm:pb-6 px-1 sm:flex-wrap sm:justify-center">
-                                            {dates.map(d => (
-                                                <button key={d} onClick={() => { setSel({ ...sel, booking_date: d, booking_time: "" }); loadBooked(d); }}
-                                                    className="flex-shrink-0 w-[66px] sm:w-[76px] py-3 sm:py-4 rounded-xl sm:rounded-2xl text-center transition-all duration-300"
-                                                    style={{
-                                                        background: sel.booking_date === d ? gold : "#343434",
-                                                        color: sel.booking_date === d ? "#000" : "#666",
-                                                        border: `1px solid ${sel.booking_date === d ? gold : "rgba(255,255,255,.05)"}`,
-                                                        boxShadow: sel.booking_date === d ? `0 10px 40px ${gold}30` : "none",
-                                                        fontWeight: sel.booking_date === d ? 900 : 500,
-                                                    }}>
-                                                    <p className="text-[10px]">{dayNames[new Date(d).getDay()]}</p>
-                                                    <p className="text-2xl font-black my-1">{new Date(d).getDate()}</p>
-                                                    <p className="text-[10px]">{monthNames[new Date(d).getMonth()]}</p>
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {sel.booking_date && (
-                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-                                                <p className="text-xs text-white/30 mb-4 tracking-wider uppercase">الأوقات المتاحة</p>
-                                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                                                    {timeSlots.map(t => {
-                                                        const bk = isBooked(t);
-                                                        const isPast = sel.booking_date === new Date().toISOString().split("T")[0] && t < new Date().toTimeString().slice(0, 5);
-                                                        const disabled = bk || isPast;
-                                                        const s = sel.booking_time === t;
-                                                        return (<button key={t} onClick={() => !disabled && setSel({ ...sel, booking_time: t })} disabled={disabled}
-                                                            className="py-3 rounded-xl text-xs font-bold transition-all duration-300"
-                                                            style={{
-                                                                background: s ? gold : "#343434", color: s ? "#000" : disabled ? "#222" : "#888",
-                                                                border: `1px solid ${s ? gold : "rgba(255,255,255,.04)"}`, opacity: disabled ? 0.25 : 1,
-                                                                cursor: disabled ? "not-allowed" : "pointer", boxShadow: s ? `0 6px 20px ${gold}25` : "none",
-                                                                textDecoration: isPast ? "line-through" : "none",
-                                                            }}>{fmt12(t)}</button>);
-                                                    })}
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        <div className="flex gap-3 mt-10">
-                                            <button onClick={() => setStep(3)} className="flex-1 py-4 rounded-full text-sm font-bold text-white/40 hover:text-white transition-all"
-                                                style={{ border: "1px solid rgba(255,255,255,.08)" }}>رجوع</button>
-                                            <button onClick={() => sel.booking_date && sel.booking_time && setStep(5)}
-                                                disabled={!sel.booking_date || !sel.booking_time}
-                                                className="flex-1 py-4 rounded-full text-sm font-bold tracking-wider transition-all duration-300 disabled:opacity-20 hover:scale-[1.02]"
-                                                style={{ background: gold, color: "#000" }}>التالي</button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* S5: Customer Info */}
-                            {step === 5 && (
-                                <motion.div key="s5" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }}>
-                                    <div className="text-center mb-10 md:mb-14">
-                                        <p className="text-xs tracking-[.3em] uppercase mb-3" style={{ color: gold }}>الخطوة الأخيرة</p>
-                                        <h2 className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Playfair Display',serif" }}>تأكيد الحجز</h2>
-                                    </div>
-
-                                    <div className="max-w-lg mx-auto">
-                                        {/* Summary */}
-                                        <div className="p-6 rounded-2xl mb-8" style={{ background: `${gold}05`, border: `1px solid ${gold}10` }}>
-                                            <div className="space-y-3 text-sm">
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-white/40">الخدمات</span>
-                                                    <div className="text-left flex flex-col items-end">
-                                                        {selServices.map(s => (
-                                                            <span key={s.id} className="font-bold">{s.name} ({Number(s.price).toFixed(2)})</span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                {selEmployee && <div className="flex justify-between"><span className="text-white/40">الحلاق</span><span className="font-bold">{selEmployee.name}</span></div>}
-                                                <div className="flex justify-between"><span className="text-white/40">الموعد</span><span className="font-bold" style={{ color: gold }}>{sel.booking_date} — {fmt12(sel.booking_time)}</span></div>
-                                                <div className="flex justify-between pt-3" style={{ borderTop: `1px solid ${gold}10` }}>
-                                                    <span className="text-white/40">المبلغ الإجمالي</span>
-                                                    <span className="text-xl font-black" style={{ color: gold }}>
-                                                        {selServices.reduce((sum, s) => sum + Number(s.price), 0).toFixed(2)} د.أ
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {error && <div className="p-4 rounded-xl mb-5 text-sm text-red-400" style={{ background: "rgba(239,68,68,.05)", border: "1px solid rgba(239,68,68,.1)" }}>⚠️ {error}</div>}
-
-                                        <div className="space-y-5">
-                                            {/* الاسم الكامل */}
-                                            <div>
-                                                <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">الاسم الكامل <span style={{ color: "#e74c3c" }}>*</span></label>
-                                                <input value={sel.customer_name} onChange={e => setSel({ ...sel, customer_name: e.target.value })}
-                                                    className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
-                                                    style={{ background: "#343434", border: `1.5px solid ${sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
-                                                    onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
-                                                    onBlur={e => { e.currentTarget.style.borderColor = sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
-                                                    placeholder="أدخل اسمك الكامل" dir="rtl" />
-                                                {sel.customer_name.length > 0 && sel.customer_name.trim().length < 3 && (
-                                                    <p className="text-xs mt-1.5" style={{ color: "#e74c3c" }}>الاسم يجب أن يكون 3 أحرف على الأقل</p>
-                                                )}
-                                            </div>
-
-                                            {/* رقم الهاتف — أردني فقط */}
-                                            <div>
-                                                <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">رقم الهاتف <span style={{ color: "#e74c3c" }}>*</span></label>
-                                                <input value={sel.customer_phone}
-                                                    onChange={e => {
-                                                        const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
-                                                        setSel({ ...sel, customer_phone: v });
-                                                    }}
-                                                    type="tel" inputMode="numeric" maxLength={10}
-                                                    className="w-full py-4 px-5 rounded-xl text-white outline-none transition-all text-sm"
-                                                    style={{ background: "#343434", border: `1.5px solid ${sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"}`, fontFamily: "'Tajawal',sans-serif" }}
-                                                    onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
-                                                    onBlur={e => { e.currentTarget.style.borderColor = sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) ? "rgba(231,76,60,.5)" : "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
-                                                    placeholder="07XXXXXXXX" dir="rtl" />
-                                                {sel.customer_phone.length > 0 && !/^07\d{8}$/.test(sel.customer_phone) && (
-                                                    <p className="text-xs mt-1.5" style={{ color: "#e74c3c" }}>
-                                                        {!sel.customer_phone.startsWith("07") ? "الرقم يجب أن يبدأ بـ 07" : `الرقم يجب أن يكون 10 أرقام (${sel.customer_phone.length}/10)`}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label className="text-xs font-bold text-white/30 mb-2 block tracking-wider uppercase">ملاحظات (اختياري)</label>
-                                                <textarea value={sel.notes} onChange={e => setSel({ ...sel, notes: e.target.value })} rows={2}
-                                                    className="w-full py-4 px-5 rounded-xl text-white outline-none resize-none transition-all text-sm"
-                                                    style={{ background: "#343434", border: "1.5px solid rgba(255,255,255,.06)", fontFamily: "'Tajawal',sans-serif" }}
-                                                    onFocus={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 0 0 4px ${gold}08`; }}
-                                                    onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }} />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-3 mt-10">
-                                            <button onClick={() => setStep(4)} className="flex-1 py-4 rounded-full text-sm font-bold text-white/40 hover:text-white transition-all"
-                                                style={{ border: "1px solid rgba(255,255,255,.08)" }}>رجوع</button>
-                                            <button onClick={handleSubmit} disabled={submitting || sel.customer_name.trim().length < 3 || !/^07\d{8}$/.test(sel.customer_phone)}
-                                                className="flex-1 py-4 rounded-full text-sm font-bold tracking-wider transition-all duration-300 disabled:opacity-20 hover:scale-[1.02]"
-                                                style={{ background: gold, color: "#000", boxShadow: `0 15px 50px ${gold}25` }}>
-                                                {submitting ? "جاري الحجز..." : "تأكيد الحجز"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* S6: Success */}
-                            {step === 6 && (
-                                <motion.div key="s6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16 max-w-lg mx-auto">
-                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
-                                        className="w-28 h-28 mx-auto mb-10 rounded-full flex items-center justify-center"
-                                        style={{ background: `${gold}08`, border: `2px solid ${gold}20`, boxShadow: `0 0 60px ${gold}10`, color: gold }}>
-                                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m9 12 2 2 4-4" /><circle cx="12" cy="12" r="10" /></svg>
-                                    </motion.div>
-                                    <h2 className="text-4xl md:text-5xl font-black mb-4" style={{ fontFamily: "'Playfair Display',serif" }}>تم الحجز</h2>
-                                    <p className="text-white/40 mb-10 text-lg">سيتم تأكيد موعدك قريباً</p>
-
-                                    {salon?.booking_message && (
-                                        <div className="p-6 rounded-2xl mb-8 text-sm text-white/40" style={{ background: `${gold}04`, border: `1px solid ${gold}08` }}>{salon.booking_message}</div>
-                                    )}
-
-                                    <div className="p-6 rounded-2xl mb-10" style={{ background: "#343434", border: "1px solid rgba(255,255,255,.05)" }}>
-                                        <div className="space-y-3 text-sm text-right">
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-white/30">الخدمات</span>
-                                                <div className="text-left flex flex-col items-end">
-                                                    {selServices.map(s => (
-                                                        <span key={s.id} className="font-bold">{s.name}</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {selEmployee && <div className="flex justify-between"><span className="text-white/30">الحلاق</span><span className="font-bold">{selEmployee.name}</span></div>}
-                                            <div className="flex justify-between"><span className="text-white/30">الموعد</span><span className="font-bold" style={{ color: gold }}>{sel.booking_date} — {fmt12(sel.booking_time)}</span></div>
-                                            <div className="flex justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                                                <span className="text-white/30">المبلغ الإجمالي</span>
-                                                <span className="font-bold">{selServices.reduce((sum, s) => sum + Number(s.price), 0).toFixed(2)} د.أ</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-4 justify-center">
-                                        {salon?.phone && (
-                                            <a href={`https://wa.me/${salon.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
-                                                className="h-12 px-8 rounded-full text-sm font-bold flex items-center gap-2 transition-all hover:scale-105" style={{ background: "#25D366", color: "#fff" }}>واتساب</a>
-                                        )}
-                                        <button onClick={() => { setStep(1); setSel({ service_ids: [], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" }); }}
-                                            className="h-12 px-8 rounded-full text-sm font-bold transition-all hover:scale-105"
-                                            style={{ border: "1px solid rgba(255,255,255,.1)", color: "#fff" }}>حجز جديد</button>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                    <div className="relative z-10 w-full px-5 sm:px-8 text-center">
+                        <motion.div initial="hidden" animate="visible" variants={stagger}>
+                            <motion.h1 variants={fadeUp} transition={spring} style={{
+                                fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900,
+                                fontSize: "clamp(2.8rem, 12vw, 8rem)", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 20,
+                            }}>
+                                نلتزم
+                                <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, display: "block" }}>بالتميز</span>
+                            </motion.h1>
+                            <motion.p variants={fadeUp} transition={{ ...spring, delay: 0.2 }} style={{
+                                fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", color: "rgba(245,242,236,0.5)", maxWidth: 400, margin: "0 auto 32px",
+                                lineHeight: 1.9, fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 400,
+                            }}>
+                                {salon.description || "نحن ملتزمون بتزويد عملائنا بتجربة صالون لا مثيل لها."}
+                            </motion.p>
+                            <motion.button variants={fadeUp} transition={{ ...spring, delay: 0.4 }}
+                                onClick={() => setIsBookingOpen(true)}
+                                className="inline-flex items-center gap-2 rounded-full font-bold transition-all"
+                                style={{ border: "1px solid #C3D809", color: "#C3D809", background: "transparent", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.9rem, 3vw, 1rem)", padding: "12px 28px" }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#C3D809"; (e.currentTarget as HTMLElement).style.color = "#0A0A0A"; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#C3D809"; }}>
+                                احجز موعدك الآن
+                                <ArrowRight size={14} className="-rotate-180" />
+                            </motion.button>
+                        </motion.div>
+                    </div>
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+                        <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ opacity: 0.3 }}>
+                            <ChevronDown size={24} />
+                        </motion.div>
                     </div>
                 </section>
 
-                {/* ═══════════ STICKY MOBILE BOOK BUTTON ═══════════ */}
-                {step === 1 && (
-                    <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden p-3" style={{ background: "linear-gradient(0deg, rgba(0,0,0,.95) 60%, transparent)", backdropFilter: "blur(10px)" }}>
-                        <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                            className="w-full h-12 rounded-full text-sm font-bold tracking-[.1em] uppercase"
-                            style={{ background: gold, color: "#000", boxShadow: `0 -4px 30px ${gold}30` }}>
-                            احجز موعدك الآن
-                        </button>
+                {/* ═══ MARQUEE ═══ */}
+                <div className="overflow-hidden" style={{ height: 56, background: "#0A0A0A", borderTop: "1px solid rgba(245,242,236,0.04)", borderBottom: "1px solid rgba(245,242,236,0.04)" }}>
+                    <div className="flex items-center h-full animate-marquee whitespace-nowrap">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <span key={i} className="flex items-center gap-6 mx-6" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.15em", color: "rgba(245,242,236,0.2)" }}>
+                                <span style={{ color: "#C3D809" }}>✦</span> PREMIUM QUALITY <span style={{ color: "#C3D809" }}>✦</span> احجز الآن <span style={{ color: "#C3D809" }}>✦</span> EXCELLENCE <span style={{ color: "#C3D809" }}>✦</span> تميز
+                            </span>
+                        ))}
                     </div>
-                )}
+                </div>
 
-                {/* ═══════════ FOOTER ═══════════ */}
-                <footer style={{ borderTop: "1px solid rgba(255,255,255,.04)" }} className={step === 1 ? 'pb-16 sm:pb-0' : ''}>
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-10 sm:py-16 md:py-20">
-                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 md:gap-8 mb-10 sm:mb-14">
-                            {/* Brand */}
-                            <div className="col-span-2 sm:col-span-2 md:col-span-2">
-                                <h3 className="text-xl sm:text-2xl md:text-3xl font-black mb-3 sm:mb-4" style={{ fontFamily: "'Playfair Display',serif" }}>{salon?.name}</h3>
-                                {salon?.description && <p className="text-xs sm:text-sm text-white/25 leading-relaxed max-w-sm line-clamp-2 sm:line-clamp-none">{salon.description}</p>}
-                                <div className="flex items-center gap-3 mt-4 sm:mt-6">
-                                    {salon?.instagram && (
-                                        <a href={`https://instagram.com/${salon.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-                                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconInstagram /></a>
-                                    )}
-                                    {salon?.phone && (
-                                        <a href={`tel:${salon.phone}`}
-                                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white transition-all" style={{ border: "1px solid rgba(255,255,255,.08)" }}><IconPhone /></a>
-                                    )}
-                                </div>
+                {/* ═══ ABOUT ═══ */}
+                <section id="about" className="py-16 sm:py-24 lg:py-40 px-5 sm:px-8 lg:px-12" style={{ background: "#F5F2EC", color: "#0A0A0A" }}>
+                    <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-24">
+                        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring} className="w-full lg:w-1/2 relative">
+                            <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "4/3", maxHeight: 420 }}>
+                                <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800" alt="About" className="w-full h-full object-cover" loading="lazy" />
                             </div>
-                            {/* Contact */}
-                            <div>
-                                <p className="text-[10px] font-bold tracking-[.2em] sm:tracking-[.3em] uppercase mb-3 sm:mb-4" style={{ color: gold }}>تواصل</p>
-                                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-white/30">
-                                    {salon?.phone && <p dir="ltr" className="text-right">{salon.phone}</p>}
-                                    {salon?.address && <p>{salon.address}</p>}
-                                    {salon?.instagram && <p>{salon.instagram}</p>}
-                                </div>
+
+                        </motion.div>
+                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring} className="w-full lg:w-1/2 space-y-5 sm:space-y-7">
+                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#C3D809" }}>قصتنا وتاريخنا</span>
+                            <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 6vw, 4rem)", lineHeight: 1.05, letterSpacing: "-0.02em" }}>
+                                نخلق <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>الجمال</span><br />بدقة وإبداع
+                            </h2>
+                            <p style={{ fontSize: "clamp(0.9rem, 3vw, 1.05rem)", color: "rgba(10,10,10,0.5)", lineHeight: 1.9 }}>
+                                نحن في {salon.name} نؤمن بأن الحلاقة ليست مجرد خدمة، بل هي فن يتطلب الدقة والشغف.
+                            </p>
+                            <div className="flex gap-8 sm:gap-12 pt-4 sm:pt-8">
+                                {[{ n: 20, label: "خبير مظهر" }, { n: 15, label: "سنة خبرة" }].map((stat, i) => (
+                                    <div key={i} className="flex flex-col gap-2 relative">
+                                        <div className="absolute -right-3 sm:-right-4 top-1 bottom-1 w-[1px] bg-[#C3D809]/30" />
+                                        <h4 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 3rem)", color: "#0A0A0A", fontStyle: "italic", lineHeight: 1 }}>
+                                            <AnimatedCounter target={stat.n} />
+                                        </h4>
+                                        <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", color: "#C3D809", letterSpacing: "0.12em", fontWeight: 700, textTransform: "uppercase" }}>
+                                            {stat.label}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
-                            {/* Hours */}
-                            <div>
-                                <p className="text-[10px] font-bold tracking-[.2em] sm:tracking-[.3em] uppercase mb-3 sm:mb-4" style={{ color: gold }}>أوقات العمل</p>
-                                <p className="text-xs sm:text-sm text-white/30 mb-2">{fmt12(workHours.start)} — {fmt12(workHours.end)}</p>
-                                {offDays.length > 0 && <p className="text-[10px] sm:text-xs text-white/15">إجازة: {offDays.map(d => dayNames[d]).join("، ")}</p>}
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* ═══ SERVICES ═══ */}
+                <section id="services" className="py-16 sm:py-24 lg:py-40 px-4 sm:px-5 lg:px-6" style={{ background: "#0A0A0A" }}>
+                    <div className="max-w-[1600px] mx-auto">
+                        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-10 sm:mb-16">
+                            <motion.h2 variants={fadeUp} style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 5rem)", lineHeight: 1, marginBottom: 12 }}>
+                                خدمات <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>نخبوية</span>
+                            </motion.h2>
+                            <motion.p variants={fadeUp} style={{ color: "rgba(245,242,236,0.3)", fontSize: "clamp(0.85rem, 3vw, 1rem)", maxWidth: 400, margin: "0 auto" }}>
+                                نقدم مجموعة واسعة من الخدمات لتظهر بأفضل صورة
+                            </motion.p>
+                        </motion.div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
+                            {serviceCards.map((s, i) => (
+                                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
+                                    className="group relative overflow-hidden cursor-pointer" style={{ aspectRatio: "4/5", borderRadius: 12, background: "var(--color-background)" }}
+                                    onClick={() => setIsBookingOpen(true)}>
+                                    <img src={s.img} alt={s.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.15) 60%)" }} />
+                                    <div className="relative h-full flex flex-col justify-end p-3 sm:p-5">
+                                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.15em", color: "#C3D809", display: "block", marginBottom: 3 }}>{s.en}</span>
+                                        <h3 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "clamp(0.85rem, 3vw, 1.1rem)" }}>{s.name}</h3>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ═══ TEAM ═══ */}
+                {employees.length > 0 && (
+                    <section id="team" className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6" style={{ background: "var(--color-background)" }}>
+                        <div className="max-w-[1400px] mx-auto">
+                            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring}
+                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 7vw, 4.5rem)", lineHeight: 1.05, marginBottom: 32 }}>
+                                فريقنا من<br /><span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>مبدعين حقيقيين</span>
+                            </motion.h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-8">
+                                {employees.map((emp, i) => (
+                                    <motion.div key={emp.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                                        className="group relative overflow-hidden" style={{ aspectRatio: "3/4", borderRadius: 12 }}>
+                                        <img src={emp.avatar ? assetUrl(emp.avatar)! : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
+                                            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 grayscale group-hover:grayscale-0 group-hover:scale-105" alt={emp.name} loading="lazy" />
+                                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 55%)" }} />
+                                        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
+                                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.12em", color: "#C3D809" }}>{emp.role || "خبير مظهر"}</span>
+                                            <h3 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1rem, 4vw, 1.6rem)", marginTop: 2 }}>{emp.name}</h3>
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 sm:pt-8" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-                            <p className="text-[10px] text-white/15">&copy; {new Date().getFullYear()} {salon?.name}</p>
-                            <div className="flex items-center gap-3">
-                                <a href="https://wr-technologies.net/" target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-[10px] opacity-30 hover:opacity-60 transition-opacity"
-                                    style={{ color: "#E6B31E" }}>
-                                    WR Technologies
-                                </a>
-                                <span className="text-white/10 text-[10px]">|</span>
-                                <span className="text-xs font-black" style={{ color: gold }}>MAQASS</span>
+                    </section>
+                )}
+
+                {/* ═══ GALLERY ═══ */}
+                <section className="py-16 sm:py-24 lg:py-40 overflow-hidden" style={{ background: "#0A0A0A" }}>
+                    <div className="max-w-[1700px] mx-auto px-5 sm:px-6 mb-8 sm:mb-10">
+                        <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.6rem, 6vw, 3.5rem)", marginBottom: 6 }}>
+                            فلسفة <span style={{ color: "rgba(245,242,236,0.15)", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>المظهر</span>
+                        </h2>
+                    </div>
+                    <div className="relative">
+                        {/* Shadow over edges for cinematic fade */}
+                        <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none" style={{ background: "linear-gradient(to right, #0A0A0A, transparent)" }} />
+                        <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none" style={{ background: "linear-gradient(to left, #0A0A0A, transparent)" }} />
+
+                        {/* Track 1: Move Left */}
+                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused] mb-6">
+                            {[...mockGallery, ...mockGallery].map((img, i) => (
+                                <div key={`t1-${i}`} className="inline-block shrink-0 w-[60vw] lg:w-[30vw] mx-3 lg:mx-4 overflow-hidden group" style={{ aspectRatio: i % 2 === 0 ? "16/9" : "4/5", borderRadius: 8 }}>
+                                    <img src={img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" loading="lazy" />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Track 2: Move Right */}
+                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused] direction-ltr" style={{ animationDirection: "reverse" }}>
+                            {[...mockGallery.reverse(), ...mockGallery].map((img, i) => (
+                                <div key={`t2-${i}`} className="inline-block shrink-0 w-[50vw] lg:w-[25vw] mx-3 lg:mx-4 overflow-hidden group" style={{ aspectRatio: i % 3 === 0 ? "1/1" : "3/2", borderRadius: 8 }}>
+                                    <img src={img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" loading="lazy" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6 relative overflow-hidden" style={{ background: "#111111" }}>
+                    <div className="max-w-4xl mx-auto relative z-10">
+                        <div className="flex flex-col items-center text-center">
+                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.3em", color: "#C3D809", display: "block", marginBottom: 24 }}>آراء عملائنا</span>
+                            
+                            <div className="relative">
+                                {/* Large Quote Mark Decoration */}
+                                <div className="absolute -top-12 -right-8 opacity-10 select-none" style={{ fontFamily: "'Playfair Display', serif", fontSize: "10rem", color: "#C3D809", lineHeight: 1 }}>"</div>
+                                
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={step % mockReviews.length}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={spring}
+                                        className="relative"
+                                    >
+                                        <p style={{ 
+                                            fontFamily: "'Playfair Display', serif", 
+                                            fontSize: "clamp(1.1rem, 4.5vw, 2.2rem)", 
+                                            fontStyle: "italic", 
+                                            lineHeight: 1.65, 
+                                            color: "#F5F2EC",
+                                            marginBottom: 28
+                                        }}>
+                                            "{mockReviews[step % mockReviews.length].comment}"
+                                        </p>
+                                        
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-12 h-[1px] bg-[#C3D809]/40 mb-2" />
+                                            <span style={{ 
+                                                fontFamily: "'Space Mono', monospace", 
+                                                fontSize: "0.75rem", 
+                                                letterSpacing: "0.2em", 
+                                                color: "#C3D809",
+                                                fontWeight: 700
+                                            }}>
+                                                {mockReviews[step % mockReviews.length].customer_name}
+                                            </span>
+                                            <span style={{ fontSize: "0.6rem", color: "rgba(245,242,236,0.3)", fontWeight: 500 }}>عميل دائم</span>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
                             </div>
+
+                            {/* Indicators */}
+                            <div className="flex gap-2 mt-16">
+                                {mockReviews.map((_, i) => (
+                                    <div key={i} className="h-[2px] transition-all duration-500" style={{ 
+                                        width: (step % mockReviews.length) === i ? 32 : 12,
+                                        background: (step % mockReviews.length) === i ? "#C3D809" : "rgba(245,242,236,0.1)"
+                                    }} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ═══ FAQ ═══ */}
+                <section className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6" style={{ background: "#F5F2EC", color: "#0A0A0A" }}>
+                    <div className="max-w-3xl mx-auto">
+                        <div className="text-center mb-8 sm:mb-12">
+                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#C3D809", display: "block", marginBottom: 10 }}>لديك استفسار؟</span>
+                            <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 6vw, 3rem)" }}>
+                                الأسئلة <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>الشائعة</span>
+                            </h2>
+                        </div>
+                        <div style={{ borderTop: "1px solid rgba(10,10,10,0.07)" }}>
+                            {mockFaqs.map(faq => (
+                                <div key={faq.id} style={{ borderBottom: "1px solid rgba(10,10,10,0.07)" }}>
+                                    <button onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)} className="w-full py-5 sm:py-7 flex justify-between items-center text-right gap-4">
+                                        <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, fontSize: "clamp(0.95rem, 3.5vw, 1.2rem)", color: openFaq === faq.id ? "#C3D809" : "#0A0A0A", transition: "color 0.3s" }}>{faq.question}</span>
+                                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all" style={{
+                                            background: openFaq === faq.id ? "#0A0A0A" : "transparent",
+                                            border: openFaq === faq.id ? "none" : "1px solid rgba(10,10,10,0.12)",
+                                            color: openFaq === faq.id ? "#F5F2EC" : "#0A0A0A",
+                                        }}>
+                                            <Plus size={15} style={{ transition: "transform 0.5s", transform: openFaq === faq.id ? "rotate(45deg)" : "none" }} />
+                                        </div>
+                                    </button>
+                                    <AnimatePresence>
+                                        {openFaq === faq.id && (
+                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={spring} className="overflow-hidden">
+                                                <p style={{ paddingBottom: 20, color: "rgba(10,10,10,0.5)", lineHeight: 1.9, fontSize: "clamp(0.85rem, 3vw, 0.95rem)" }}>{faq.answer}</p>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ═══ CTA ═══ */}
+                <section className="relative py-20 sm:py-32 lg:py-48 overflow-hidden" style={{ background: "#0A0A0A" }}>
+                    <div className="absolute inset-0 opacity-[0.04]" style={{ background: "radial-gradient(circle at center, #C3D809 0%, transparent 70%)" }} />
+                    <div className="relative z-10 text-center px-5 sm:px-6">
+                        <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 5rem)", lineHeight: 1.1, marginBottom: 28 }}>
+                            استعد<br /><span style={{ color: "#C3D809" }}>لمظهرك</span><br />القادم
+                        </h2>
+                        <button onClick={() => setIsBookingOpen(true)}
+                            className="inline-block rounded-full font-bold transition-all"
+                            style={{ background: "#F5F2EC", color: "#0A0A0A", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.9rem, 3vw, 1.05rem)", padding: "14px 36px" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#C3D809"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#F5F2EC"; }}>
+                            ابدأ الحجز الآن
+                        </button>
+                    </div>
+                </section>
+
+                <footer id="contact" className="py-12 sm:py-16 px-5 sm:px-8 lg:px-12" style={{ background: "#050505", borderTop: "1px solid rgba(245,242,236,0.05)" }}>
+                    <div className="max-w-[1400px] mx-auto">
+                        {/* Top Row */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12 text-right">
+                            {/* Brand */}
+                            <div>
+                                <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontStyle: "italic", lineHeight: 1.1, marginBottom: 16, letterSpacing: "-0.02em" }}>
+                                    {salon.name}<span style={{ color: "#C3D809" }}>.</span>
+                                </h3>
+                                <p style={{ color: "rgba(245,242,236,0.45)", lineHeight: 1.8, fontSize: "0.9rem" }}>
+                                    تجربة استثنائية تجمع بين الفن العريق والأسلوب المعاصر.
+                                </p>
+                            </div>
+
+                            {/* Contact */}
+                            <div>
+                                <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.35em", color: "#C3D809", marginBottom: 24, textTransform: "uppercase" }}>تواصل معنا</h4>
+                                <div className="space-y-5" style={{ color: "rgba(245,242,236,0.7)", fontSize: "0.9rem" }}>
+                                    <a href={`tel:${salon.phone}`} className="flex items-center gap-3 hover:text-[#C3D809] transition-colors duration-400">
+                                        <Phone size={13} className="opacity-50 shrink-0" />
+                                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}>{salon.phone || "0785295125"}</span>
+                                    </a>
+                                    <div className="flex items-center gap-3 hover:text-[#C3D809] transition-colors duration-400 cursor-pointer">
+                                        <MapPin size={13} className="opacity-50 shrink-0" />
+                                        <span>{salon.address || "عمان، الأردن"}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social */}
+                            <div>
+                                <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.35em", color: "#C3D809", marginBottom: 24, textTransform: "uppercase" }}>تابعنا</h4>
+                                <div className="flex gap-3">
+                                    {[<Instagram size={18} />, <span className="text-sm font-black">X</span>].map((icon, i) => (
+                                        <a key={i} href="#" className="w-10 h-10 rounded-full flex items-center justify-center border border-white/10 text-white/40 hover:border-[#C3D809] hover:text-[#C3D809] transition-all duration-500">
+                                            {icon}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom Bar */}
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-7 border-t border-white/[0.04]">
+                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: "rgba(245,242,236,0.2)", letterSpacing: "0.15em", textAlign: "center" }}>
+                                © {new Date().getFullYear()} {salon.name.toUpperCase()}
+                            </span>
+                            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+                                    style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.25em", color: "rgba(245,242,236,0.2)", textTransform: "uppercase" }}
+                                    className="hover:text-[#C3D809] transition-colors duration-500">
+                                ↑ أعلى
+                            </button>
                         </div>
                     </div>
                 </footer>
+            </main>
+
+            {/* ═══ MOBILE STICKY BOTTOM BAR ═══ */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+                style={{ background: "rgba(10,10,10,0.97)", backdropFilter: "blur(20px)", borderTop: "1px solid var(--border-subtle)", padding: "12px 16px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+                <button onClick={() => setIsBookingOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 rounded-2xl font-bold"
+                    style={{ background: "#C3D809", color: "#0A0A0A", fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "1rem", padding: "14px 20px" }}>
+                    <Calendar size={18} />
+                    احجز موعدك الآن
+                </button>
             </div>
-        </>
+
+
+
+            {/* ═══ BOOKING MODAL ═══ */}
+            <BookingModal
+                isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} salon={salon}
+                services={services} employees={employees} step={step} setStep={setStep}
+                sel={sel} setSel={setSel} dates={dates} bookedSlots={bookedSlots}
+                fetchBooked={fetchBooked} genTimes={genTimes} totalPrice={totalPrice}
+                totalDur={totalDur} selSrvs={selSrvs} submitting={submitting}
+                error={error} submitBooking={submitBooking} toggleSrv={toggleSrv}
+            />
+
+            <style jsx global>{`
+                .hide-scroll::-webkit-scrollbar { display: none; }
+                .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+                @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
+                .animate-marquee { animation: marquee 40s linear infinite; }
+                .animate-marquee-slow { animation: marquee 80s linear infinite; }
+                .animate-marquee:hover, .animate-marquee-slow:hover { animation-play-state: paused; }
+                @media (prefers-reduced-motion: reduce) {
+                    .animate-marquee, .animate-marquee-slow { animation: none; }
+                }
+                /* Mobile bottom bar space */
+                @media (max-width: 767px) {
+                    main { padding-bottom: 80px; }
+                }
+                /* Prevent text overflow on all screens */
+                h1, h2, h3, h4 { overflow-wrap: break-word; word-break: break-word; }
+            `}</style>
+        </div>
     );
 }
 
-export default function BookPage() {
-    return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "#000" }}><div className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#E6B31E transparent #E6B31E #E6B31E" }} /></div>}>
-            <BookingContent />
-        </Suspense>
-    );
+export default function BookingPage() {
+    return <Suspense fallback={<div className="min-h-screen" style={{ background: "#0A0A0A" }} />}><BookingContent /></Suspense>;
 }

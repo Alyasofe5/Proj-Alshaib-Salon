@@ -61,8 +61,8 @@ export default function NewCustomerPage() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><Scissors size={18} className="inline ml-2 text-gold" /> تسجيل <span>زبون جديد</span></div>
-                <button className="btn-outline-gold flex items-center gap-2" onClick={() => router.push("/employee/dashboard")}>
+                <div className="topbar-title"><Scissors size={18} className="inline ml-2 text-accent-lime" /> تسجيل <span>زبون جديد</span></div>
+                <button className="btn-outline-lime flex items-center gap-2" onClick={() => router.push("/employee/dashboard")}>
                     <FaArrowRight /> رجوع
                 </button>
             </div>
@@ -85,15 +85,15 @@ export default function NewCustomerPage() {
                                         onClick={() => toggleService(svc)}
                                         className="cursor-pointer text-center p-4 rounded-xl border-2 transition-colors"
                                         style={{
-                                            background: isSelected ? "rgba(230,179,30,0.1)" : "var(--dark4)",
-                                            borderColor: isSelected ? "var(--gold)" : "#333",
+                                            background: isSelected ? "rgba(195,216,9,0.1)" : "var(--dark4)",
+                                            borderColor: isSelected ? "#C3D809" : "#333",
                                         }}
                                     >
                                         <div className="flex justify-center mb-2">
-                                            <Scissors size={22} className={isSelected ? "text-gold" : "text-gray-500"} />
+                                            <Scissors size={22} className={isSelected ? "text-accent-lime" : "text-gray-500"} />
                                         </div>
                                         <div className="text-sm font-semibold text-gray-300">{svc.name}</div>
-                                        <div className="text-gold font-extrabold mt-1">{Number(svc.price).toFixed(3)} د.أ</div>
+                                        <div className="text-accent-lime font-extrabold mt-1">{Number(svc.price).toFixed(3)} د.أ</div>
                                     </motion.div>
                                 );
                             })}
@@ -115,7 +115,7 @@ export default function NewCustomerPage() {
                                     {Object.values(selected).map(svc => (
                                         <div key={svc.id} className="flex justify-between items-center py-2 border-b border-dark-5">
                                             <span className="text-gray-300 text-sm">{svc.name}</span>
-                                            <span className="text-gold font-bold">{Number(svc.price).toFixed(3)} د.أ</span>
+                                            <span className="text-accent-lime font-bold">{Number(svc.price).toFixed(3)} د.أ</span>
                                         </div>
                                     ))}
                                 </div>
@@ -124,7 +124,7 @@ export default function NewCustomerPage() {
                             <div className="border-t border-gray-700 pt-4 mb-4">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">الإجمالي:</span>
-                                    <span className="text-2xl font-extrabold text-gold">{total.toFixed(3)} د.أ</span>
+                                    <span className="text-2xl font-extrabold text-accent-lime">{total.toFixed(3)} د.أ</span>
                                 </div>
                             </div>
 
@@ -137,9 +137,9 @@ export default function NewCustomerPage() {
                                                 key={m}
                                                 className="flex-1 text-center py-3 rounded-lg border-2 cursor-pointer transition-all text-sm"
                                                 style={{
-                                                    borderColor: paymentMethod === m ? "var(--gold)" : "#333",
-                                                    background: paymentMethod === m ? "rgba(230,179,30,0.1)" : "transparent",
-                                                    color: paymentMethod === m ? "var(--gold)" : "#888",
+                                                    borderColor: paymentMethod === m ? "#C3D809" : "#333",
+                                                    background: paymentMethod === m ? "rgba(195,216,9,0.1)" : "transparent",
+                                                    color: paymentMethod === m ? "#C3D809" : "var(--color-text-muted)",
                                                 }}
                                             >
                                                 <input type="radio" name="payment" value={m} checked={paymentMethod === m} onChange={() => setPaymentMethod(m)} className="hidden" />
@@ -159,7 +159,7 @@ export default function NewCustomerPage() {
 
                                 <button
                                     type="submit"
-                                    className="btn-gold w-full py-4 text-base flex items-center justify-center gap-2"
+                                    className="btn-lime w-full py-4 text-base flex items-center justify-center gap-2"
                                     disabled={Object.keys(selected).length === 0 || submitting}
                                 >
                                     {submitting ? <Loader2 size={20} className="animate-spin" /> : <><CheckCircle2 size={18} /> حفظ العملية</>}

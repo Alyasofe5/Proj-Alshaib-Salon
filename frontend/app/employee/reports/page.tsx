@@ -46,14 +46,14 @@ function ReportsContent() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><TrendingUp size={18} className="inline ml-2 text-gold" /> تقاريري <span>الشخصية</span></div>
+                <div className="topbar-title"><TrendingUp size={18} className="inline ml-2 text-accent-lime" /> تقاريري <span>الشخصية</span></div>
                 <div className="flex gap-2">
                     <Link href="/employee/reports?period=daily"
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "daily" ? "btn-gold" : "btn-outline-gold"}`}>يومي</Link>
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "daily" ? "btn-lime" : "btn-outline-lime"}`}>يومي</Link>
                     <Link href="/employee/reports?period=monthly"
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "monthly" ? "btn-gold" : "btn-outline-gold"}`}>شهري</Link>
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "monthly" ? "btn-lime" : "btn-outline-lime"}`}>شهري</Link>
                     <Link href="/employee/reports?period=yearly"
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "yearly" ? "btn-gold" : "btn-outline-gold"}`}>سنوي</Link>
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === "yearly" ? "btn-lime" : "btn-outline-lime"}`}>سنوي</Link>
                 </div>
             </div>
 
@@ -83,7 +83,7 @@ function ReportsContent() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                    <StatCard icon={<FaUsers />} value={totalCustomers} label="عدد الزبائن" color="gold" />
+                    <StatCard icon={<FaUsers />} value={totalCustomers} label="عدد الزبائن" color="lime" />
                     <StatCard icon={<FaCoins />} value={Number(totalSales).toFixed(3)} label="مجموع المبيعات (د.أ)" color="green" />
                     <StatCard icon={<FaPercent />} value={Number(commission).toFixed(3)} label={`عمولتي (${commissionRate}%)`} color="blue" />
                     {period === "yearly" && data.avg_monthly !== undefined && (
@@ -105,7 +105,7 @@ function ReportsContent() {
                                         <td className="text-gray-600">#{i + 1}</td>
                                         <td className="text-gray-300">{tx.services || "—"}</td>
                                         <td className="text-gray-500 text-sm">{tx.notes || "—"}</td>
-                                        <td className="text-gold font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
+                                        <td className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
                                         <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
                                         <td className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
                                     </tr>
@@ -120,14 +120,14 @@ function ReportsContent() {
                 {period === "monthly" && data.daily_breakdown && (
                     <>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="chart-card mb-4">
-                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-gold" /> مبيعاتي اليومية</div>
+                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-accent-lime" /> مبيعاتي اليومية</div>
                             <ResponsiveContainer width="100%" height={250}>
                                 <BarChart data={data.daily_breakdown.filter((d: any) => d.cnt > 0)} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                    <XAxis dataKey="day" tick={{ fill: "#888", fontSize: 12 }} />
-                                    <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
-                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
-                                    <Bar dataKey="total" fill="#E6B31E" radius={[6, 6, 0, 0]} name="المبيعات" cursor={false as unknown as undefined} />
+                                    <XAxis dataKey="day" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} />
+                                    <YAxis orientation="right" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} width={30} />
+                                    <Tooltip contentStyle={{ background: "var(--color-surface)", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
+                                    <Bar dataKey="total" fill="var(--color-accent)" radius={[6, 6, 0, 0]} name="المبيعات" cursor={false as unknown as undefined} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </motion.div>
@@ -139,7 +139,7 @@ function ReportsContent() {
                                         <tr key={dd.day}>
                                             <td className="text-gray-400">{dd.day}</td>
                                             <td><span className="badge badge-blue">{dd.cnt}</span></td>
-                                            <td className="text-gold">{Number(dd.total).toFixed(3)} د.أ</td>
+                                            <td className="text-accent-lime">{Number(dd.total).toFixed(3)} د.أ</td>
                                             <td className="text-green-400">{(Number(dd.total) * commissionRate / 100).toFixed(3)} د.أ</td>
                                         </tr>
                                     ))}
@@ -153,14 +153,14 @@ function ReportsContent() {
                 {period === "yearly" && data.monthly_breakdown && (
                     <>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="chart-card mb-4">
-                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-gold" /> مبيعاتي الشهرية - {year}</div>
+                            <div className="chart-card-title"><BarChart3 size={16} className="inline ml-2 text-accent-lime" /> مبيعاتي الشهرية - {year}</div>
                             <ResponsiveContainer width="100%" height={250}>
                                 <LineChart data={data.monthly_breakdown} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                    <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
-                                    <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
-                                    <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
-                                    <Line type="monotone" dataKey="total" stroke="#E6B31E" strokeWidth={2} dot={{ fill: "#E6B31E" }} name="المبيعات" />
+                                    <XAxis dataKey="month" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} />
+                                    <YAxis orientation="right" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} width={30} />
+                                    <Tooltip contentStyle={{ background: "var(--color-surface)", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
+                                    <Line type="monotone" dataKey="total" stroke="var(--color-accent)" strokeWidth={2} dot={{ fill: "var(--color-accent)" }} name="المبيعات" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </motion.div>
@@ -172,7 +172,7 @@ function ReportsContent() {
                                         <tr key={i}>
                                             <td className="text-gray-400">{md.month}</td>
                                             <td><span className="badge badge-blue">{md.cnt}</span></td>
-                                            <td className="text-gold">{Number(md.total).toFixed(3)} د.أ</td>
+                                            <td className="text-accent-lime">{Number(md.total).toFixed(3)} د.أ</td>
                                             <td className="text-green-400">{(Number(md.total) * commissionRate / 100).toFixed(3)} د.أ</td>
                                         </tr>
                                     ))}

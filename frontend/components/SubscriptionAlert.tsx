@@ -68,10 +68,10 @@ export default function SubscriptionAlert() {
 
     const config = {
         warning: {
-            bg: "linear-gradient(135deg, rgba(230,179,30,0.12), rgba(230,179,30,0.06))",
-            border: "rgba(230,179,30,0.4)",
-            iconColor: "#E6B31E",
-            titleColor: "#E6B31E",
+            bg: "linear-gradient(135deg, var(--border-subtle), rgba(195,216,9,0.06))",
+            border: "rgba(195,216,9,0.4)",
+            iconColor: "var(--color-accent)",
+            titleColor: "var(--color-accent)",
             title: `تنبيه: اشتراكك ينتهي خلال ${days} ${days === 1 ? "يوم" : "أيام"}`,
             desc: "قم بتجديد اشتراكك قبل الانتهاء لتجنب انقطاع الخدمة وفقدان البيانات.",
             pulse: false,
@@ -154,7 +154,7 @@ export default function SubscriptionAlert() {
                                             style={{
                                                 background: urgency === "critical"
                                                     ? "linear-gradient(90deg, #F44336, #FF6B6B)"
-                                                    : "linear-gradient(90deg, #E6B31E, #FFD700)",
+                                                    : "linear-gradient(90deg, #C3D809, #C3D809)",
                                             }}
                                         />
                                     </div>
@@ -171,9 +171,9 @@ export default function SubscriptionAlert() {
                                     className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-all hover:scale-105"
                                     style={{
                                         background: urgency === "warning"
-                                            ? "rgba(230,179,30,0.2)"
+                                            ? "rgba(195,216,9,0.15)"
                                             : "rgba(244,67,54,0.2)",
-                                        color: urgency === "warning" ? "#E6B31E" : "#FF6B6B",
+                                        color: urgency === "warning" ? "var(--color-accent)" : "#FF6B6B",
                                         border: `1px solid ${config.border}`,
                                     }}
                                 >
@@ -185,7 +185,7 @@ export default function SubscriptionAlert() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:opacity-80"
-                                    style={{ color: "#8A8A8A" }}
+                                    style={{ color: "var(--color-text-muted)" }}
                                 >
                                     <ExternalLink size={10} />
                                     تواصل معنا

@@ -4,8 +4,8 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import { FaSignInAlt, FaUser, FaLock, FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
-import { AlertTriangle, Clock, Phone, RefreshCw, ShieldAlert } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+import { AlertTriangle, Clock, Phone, RefreshCw, ShieldAlert, LogIn, User, Lock, Eye, EyeOff, MessageSquare } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
 // ─── Expired / Suspended Screen ──────────────────────────
@@ -17,16 +17,16 @@ function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
     const isSuspended = message.includes("إيقاف") || message.includes("suspend");
     return (
         <div className="min-h-screen flex items-center justify-center px-4"
-            style={{ background: "var(--off-white)" }} dir="rtl">
+            style={{ background: "#0A0A0B" }} dir="rtl">
             <div className="w-full max-w-md text-center">
                 <div className="w-28 h-28 mx-auto mb-8 rounded-3xl flex items-center justify-center"
-                    style={{ background: isSuspended ? "rgba(251,191,36,.08)" : "rgba(231,76,60,.08)", border: `2px solid ${isSuspended ? "rgba(251,191,36,.3)" : "rgba(231,76,60,.3)"}` }}>
-                    {isSuspended ? <AlertTriangle size={52} color="#fbbf24" /> : <Clock size={52} color="#e74c3c" />}
+                    style={{ background: isSuspended ? "rgba(195,216,9,.05)" : "rgba(220,38,38,.05)", border: `2px solid ${isSuspended ? "rgba(195,216,9,.2)" : "rgba(220,38,38,.2)"}` }}>
+                    {isSuspended ? <AlertTriangle size={52} color="#C3D809" /> : <Clock size={52} color="#DC2626" />}
                 </div>
-                <h1 className="text-3xl font-black mb-3" style={{ color: "var(--text-main)" }}>{isSuspended ? "تم إيقاف اشتراكك" : "انتهى اشتراكك"}</h1>
+                <h1 className="text-3xl font-black mb-3" style={{ color: "var(--color-text-primary)" }}>{isSuspended ? "تم إيقاف اشتراكك" : "انتهى اشتراكك"}</h1>
                 {salonName && (
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold mb-5"
-                        style={{ background: "rgba(230,179,30,.1)", border: "1px solid rgba(230,179,30,.2)", color: "#E6B31E" }}>
+                        style={{ background: "rgba(195,216,9,.1)", border: "1px solid rgba(195,216,9,.2)", color: "var(--color-accent)" }}>
                         {salonName}
                     </div>
                 )}
@@ -43,7 +43,7 @@ function SubscriptionBlockedScreen({ message, salonName, onRetry }: {
                     </a>
                     <a href="tel:+962781717990"
                         className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm"
-                        style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", color: "#888" }}>
+                        style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", color: "var(--color-text-muted)" }}>
                         <Phone size={15} />
                         <span dir="ltr">+962 78 171 7990</span>
                     </a>
@@ -65,9 +65,11 @@ export default function LoginPage() {
     const passwordRef = useRef<HTMLInputElement>(null);
 
     const [showPassword, setShowPassword] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [shake, setShake] = useState(false);
+    const gold = "var(--color-accent)";
     const [blockedState, setBlockedState] = useState<{ message: string; salonName: string } | null>(null);
 
     if (blockedState) {
@@ -138,32 +140,64 @@ export default function LoginPage() {
 
     return (
         <div
-            className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8"
-            style={{ background: "var(--off-white)" }}
+            className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden"
+            style={{ background: "#0d0d0d" }}
+            dir="rtl"
         >
+            {/* Background Decor */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-10 pointer-events-none"
+                style={{ background: "radial-gradient(ellipse at center, var(--color-accent) 0%, transparent 60%)" }} />
+
             <motion.div
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full max-w-md"
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-sm relative z-10"
             >
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <div className="flex justify-center mb-3 transition-transform hover:scale-105">
-                        <MaqassLogoIcon size={80} />
+                {/* Logo Area */}
+                <div className="text-center mb-10 group">
+                    <div className="flex justify-center mb-6 relative">
+                        {/* Multi-layered Glow (Bloom) */}
+                        <div className="absolute inset-0 rounded-full blur-[40px] opacity-20 bg-[var(--color-accent)] animate-pulse" />
+                        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 w-full blur-2xl opacity-10 bg-[var(--color-accent)]" />
+
+                        <div className="relative w-28 h-28 rounded-full flex items-center justify-center p-[2px] transition-all duration-1000 group-hover:scale-105"
+                            style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.05) 100%)" }}>
+                            <div className="w-full h-full rounded-full bg-[#050505] flex items-center justify-center p-1.5 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] overflow-hidden">
+                                <img src="/images/logo_new.png" alt="Maqass Logo"
+                                    className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.1] grayscale([0.05]) scale-110" />
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="text-2xl font-extrabold" style={{ color: "var(--text-main)" }}><span style={{ color: "var(--gold)" }}>Maqass</span></h1>
-                    <p className="text-sm mt-1 tracking-widest" style={{ color: "var(--text-muted)" }}>SALON MANAGEMENT PLATFORM</p>
+                    <div className="flex flex-col items-center">
+                        <span className="text-5xl font-black tracking-tighter leading-none maqass-brand bg-clip-text text-transparent bg-gradient-to-b from-[var(--color-accent)] to-[#d4ec0a] drop-shadow-[0_10px_25px_rgba(195,216,9,0.2)]">MAQASS</span>
+                        <div className="flex items-center gap-2 mt-4 opacity-70">
+                            <div className="h-[1px] w-4 bg-[var(--color-accent)]/30" />
+                            <span className="text-[9px] font-bold tracking-[.5em] uppercase" style={{ color: "#F5F2EC" }}>Salon management platform</span>
+                            <div className="h-[1px] w-4 bg-[var(--color-accent)]/30" />
+                        </div>
+                    </div>
                 </div>
 
-                {/* Login Card */}
+                {/* Login Card (Glassmorphism) */}
                 <motion.div
-                    className="chart-card"
-                    animate={shake ? { x: [0, -12, 12, -8, 8, -4, 4, 0] } : {}}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    animate={shake ? { x: [0, -8, 8, -6, 6, -4, 4, 0] } : {}}
+                    transition={{ duration: 0.5 }}
+                    className="p-8 rounded-[28px] border relative overflow-hidden group/card"
+                    style={{
+                        background: "rgba(20, 20, 20, 0.8)",
+                        borderColor: "rgba(255, 255, 255, 0.04)",
+                        backdropFilter: "blur(20px)",
+                        boxShadow: "0 20px 50px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)"
+                    }}
                 >
-                    <h2 className="text-lg font-bold text-white mb-6 text-center">
-                        <FaSignInAlt className="inline ml-2 text-gold" />
+                    {/* Inner Accent Line */}
+                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent)]/30 to-transparent" />
+
+                    <h2 className="text-xl font-black text-white mb-8 text-center flex items-center justify-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+                            <LogIn size={18} className="text-accent-lime" />
+                        </div>
                         تسجيل الدخول
                     </h2>
 
@@ -197,30 +231,28 @@ export default function LoginPage() {
                         onSubmit={handleSubmit}
                         noValidate
                         autoComplete="off"
+                        className="space-y-6"
                     >
-                        <div className="mb-4">
-                            <label className="form-label">
-                                <FaUser className="inline ml-1 text-gold" />
+                        <div className="relative group/input">
+                            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2">
+                                <User size={12} className="text-accent-lime" />
                                 اسم المستخدم
                             </label>
                             <input
                                 ref={usernameRef}
                                 type="text"
                                 name="mq_user"
-                                className="form-input"
                                 placeholder="أدخل اسم المستخدم"
+                                className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)]/50 focus:ring-4 focus:ring-[var(--color-accent)]/10 placeholder:text-white/20 text-sm"
                                 autoComplete="off"
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                                spellCheck={false}
-                                dir="ltr"
+                                dir="rtl"
                                 required
                             />
                         </div>
 
-                        <div className="mb-6">
-                            <label className="form-label">
-                                <FaLock className="inline ml-1 text-gold" />
+                        <div className="relative group/input">
+                            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2">
+                                <Lock size={12} className="text-accent-lime" />
                                 كلمة المرور
                             </label>
                             <div className="relative">
@@ -228,48 +260,50 @@ export default function LoginPage() {
                                     ref={passwordRef}
                                     type={showPassword ? "text" : "password"}
                                     name="mq_pass"
-                                    className="form-input"
                                     placeholder="أدخل كلمة المرور"
+                                    className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)]/50 focus:ring-4 focus:ring-[var(--color-accent)]/10 placeholder:text-white/20 text-sm"
                                     autoComplete="new-password"
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    spellCheck={false}
-                                    dir="ltr"
+                                    dir="rtl"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gold transition-colors"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-accent-lime transition-colors"
                                     tabIndex={-1}
-                                    aria-label="إظهار/إخفاء كلمة المرور"
                                 >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
                         </div>
 
                         <button
                             type="submit"
-                            className="btn-gold w-full py-4 text-base flex items-center justify-center gap-2"
                             disabled={loading}
-                            style={{ touchAction: "manipulation" }}
+                            className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest transition-all relative overflow-hidden group/btn hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3"
+                            style={{ 
+                                background: "linear-gradient(135deg, var(--color-accent) 0%, #d4ec0a 100%)", 
+                                color: "#000",
+                                boxShadow: "0 10px 30px rgba(195,216,9,0.3)"
+                            }}
                         >
                             {loading ? (
-                                <div className="spinner" style={{ width: 22, height: 22, borderWidth: 2 }} />
+                                <RefreshCw size={20} className="animate-spin" />
                             ) : (
                                 <>
-                                    <FaSignInAlt />
-                                    دخول
+                                    <span>دخول</span>
+                                    <LogIn size={18} className="transition-transform group-hover/btn:translate-x-[-4px]" />
                                 </>
                             )}
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
                         </button>
                     </form>
                 </motion.div>
 
                 <p className="text-center text-xs mt-6" style={{ color: "var(--text-muted)" }}>
-                    © {new Date().getFullYear()} <span style={{ color: "var(--gold)" }}>Maqass</span> Platform. All rights reserved.
+                    © {new Date().getFullYear()} <span style={{ color: "#C3D809" }}>Maqass</span> Platform. All rights reserved.
                 </p>
             </motion.div>
         </div>

@@ -6,16 +6,27 @@ import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Cairo', 'Tajawal', sans-serif" }} dir="rtl">
+        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Noto Sans Arabic', 'Noto Sans Arabic', sans-serif" }} dir="rtl">
             {/* Navbar */}
             <nav className="px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                 <div className="max-w-3xl mx-auto flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2.5">
-                        <MaqassLogoIcon size={36} />
-                        <span className="text-[18px] font-black tracking-wider" style={{ color: "var(--gold)" }}>MAQASS</span>
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="relative flex-shrink-0 transition-all duration-700 group-hover:scale-110 group-hover:rotate-[5deg]">
+                            <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
+                            <div className="relative w-11 h-11 rounded-full flex items-center justify-center p-[2px] overflow-hidden" 
+                                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
+                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
+                                    <MaqassLogoIcon size={32} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[16px] font-black tracking-wider leading-none maqass-brand">MAQASS</span>
+                            <span className="text-[7px] font-semibold tracking-[.2em] mt-0.5 uppercase" style={{ color: "rgba(195,216,9,0.6)" }}>Salon Platform</span>
+                        </div>
                     </Link>
                     <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-70"
-                        style={{ color: "var(--gold)" }}>
+                        style={{ color: "#C3D809" }}>
                         العودة للرئيسية
                         <ArrowLeft size={14} />
                     </Link>
@@ -25,7 +36,7 @@ export default function TermsPage() {
             <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
                 <div className="mb-8 sm:mb-10">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4"
-                        style={{ background: "rgba(230,179,30,.08)", border: "1px solid rgba(230,179,30,.15)", color: "var(--gold)" }}>
+                        style={{ background: "var(--border-subtle)", border: "1px solid rgba(195,216,9,.15)", color: "#C3D809" }}>
                         آخر تحديث: مارس 2026
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black mb-3" style={{ color: "var(--text-main)" }}>شروط الاستخدام</h1>
@@ -68,7 +79,7 @@ export default function TermsPage() {
                         },
                     ].map((section, i) => (
                         <div key={i} className="rounded-2xl p-5 sm:p-6" style={{ background: "var(--white)", border: "1px solid var(--border)", boxShadow: "0 2px 12px var(--shadow)" }}>
-                            <h2 className="text-base sm:text-lg font-bold mb-3" style={{ color: "var(--gold)" }}>{section.title}</h2>
+                            <h2 className="text-base sm:text-lg font-bold mb-3" style={{ color: "#C3D809" }}>{section.title}</h2>
                             <p className="text-sm sm:text-base leading-relaxed" style={{ color: "var(--text-mid)" }}>{section.content}</p>
                         </div>
                     ))}

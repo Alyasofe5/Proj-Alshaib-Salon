@@ -66,7 +66,7 @@ export default function AdminPrintReportPage() {
                         <span className="hidden md:inline">العودة للتقارير</span>
                     </Link>
                     <div className="topbar-title m-0">
-                        <FaFileAlt style={{ display: "inline", marginLeft: "8px", color: "var(--gold)" }} />
+                        <FaFileAlt style={{ display: "inline", marginLeft: "8px", color: "#C3D809" }} />
                         <span>طباعة التقرير</span>
                     </div>
                 </div>
@@ -74,14 +74,14 @@ export default function AdminPrintReportPage() {
                 <div className="flex gap-2.5 items-center flex-wrap w-full md:w-auto">
                     <button
                         onClick={() => setPeriod("daily")}
-                        className={period === "daily" ? "btn-gold flex-1 md:flex-none justify-center" : "btn-outline-gold flex-1 md:flex-none justify-center"}
+                        className={period === "daily" ? "btn-lime flex-1 md:flex-none justify-center" : "btn-outline-lime flex-1 md:flex-none justify-center"}
                         style={{ fontSize: "13px", padding: "8px 16px" }}
                     >
                         يومي
                     </button>
                     <button
                         onClick={() => setPeriod("monthly")}
-                        className={period === "monthly" ? "btn-gold flex-1 md:flex-none justify-center" : "btn-outline-gold flex-1 md:flex-none justify-center"}
+                        className={period === "monthly" ? "btn-lime flex-1 md:flex-none justify-center" : "btn-outline-lime flex-1 md:flex-none justify-center"}
                         style={{ fontSize: "13px", padding: "8px 16px" }}
                     >
                         شهري
@@ -106,7 +106,7 @@ export default function AdminPrintReportPage() {
 
                         <button
                             onClick={() => window.print()}
-                            className="btn-gold justify-center flex-1 md:flex-none"
+                            className="btn-lime justify-center flex-1 md:flex-none"
                             style={{ display: "flex", alignItems: "center", gap: "8px" }}
                         >
                             <FaPrint />
@@ -122,7 +122,7 @@ export default function AdminPrintReportPage() {
                 {/* Report Header */}
                 <div className="print-header" style={{
                     textAlign: "center",
-                    borderBottom: "2px solid var(--gold)",
+                    borderBottom: "2px solid #C3D809",
                     paddingBottom: "20px",
                     marginBottom: "28px"
                 }}>
@@ -132,7 +132,7 @@ export default function AdminPrintReportPage() {
                         justifyContent: "center",
                         width: "60px",
                         height: "60px",
-                        background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+                        background: "linear-gradient(135deg, #C3D809, #D4EC0A)",
                         borderRadius: "14px",
                         fontSize: "26px",
                         marginBottom: "12px",
@@ -140,7 +140,7 @@ export default function AdminPrintReportPage() {
                     }}>
                         <FaCut />
                     </div>
-                    <h1 style={{ fontSize: "24px", fontWeight: 900, color: "var(--gold)", letterSpacing: "2px", margin: "0 0 6px" }}>
+                    <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#C3D809", letterSpacing: "2px", margin: "0 0 6px" }}>
                         {salonName}
                     </h1>
                     <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#e0e0e0", margin: "0 0 8px" }}>
@@ -224,13 +224,13 @@ export default function AdminPrintReportPage() {
                         <div style={{
                             width: "4px",
                             height: "20px",
-                            background: "var(--gold)",
+                            background: "#C3D809",
                             borderRadius: "2px"
                         }} />
                         <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                            <FaClipboardList style={{ display: "inline", marginLeft: "6px", color: "var(--gold)" }} /> تفاصيل العمليات
+                            <FaClipboardList style={{ display: "inline", marginLeft: "6px", color: "#C3D809" }} /> تفاصيل العمليات
                         </span>
-                        <span className="badge badge-gold" style={{ marginRight: "auto" }}>
+                        <span className="badge badge-lime" style={{ marginRight: "auto" }}>
                             {transactions.length} عملية
                         </span>
                     </div>
@@ -251,7 +251,7 @@ export default function AdminPrintReportPage() {
                             <table className="min-w-full">
                                 <thead>
                                     <tr>
-                                        <th style={{ color: "var(--gold)" }}>#</th>
+                                        <th style={{ color: "#C3D809" }}>#</th>
                                         <th>الموظف</th>
                                         <th>المبلغ</th>
                                         <th>طريقة الدفع</th>
@@ -264,7 +264,7 @@ export default function AdminPrintReportPage() {
                                             <td style={{ color: "#555", fontSize: "12px" }}>{i + 1}</td>
                                             <td style={{ fontWeight: 600, color: "#ddd" }}>{tx.emp_name || "—"}</td>
                                             <td>
-                                                <span style={{ color: "var(--gold)", fontWeight: 700 }}>
+                                                <span style={{ color: "#C3D809", fontWeight: 700 }}>
                                                     {Number(tx.total_amount).toFixed(3)}
                                                 </span>
                                                 <span style={{ color: "#555", fontSize: "11px", marginRight: "4px" }}>د.أ</span>
@@ -283,7 +283,7 @@ export default function AdminPrintReportPage() {
                                 <tfoot>
                                     <tr style={{ background: "rgba(201, 168, 76, 0.05)", borderTop: "1px solid rgba(201, 168, 76, 0.2)" }}>
                                         <td colSpan={2} style={{ padding: "12px 18px", color: "#aaa", fontWeight: 700 }}>الإجمالي</td>
-                                        <td style={{ padding: "12px 18px", color: "var(--gold)", fontWeight: 800, fontSize: "15px" }}>
+                                        <td style={{ padding: "12px 18px", color: "#C3D809", fontWeight: 800, fontSize: "15px" }}>
                                             {totalRevenue.toFixed(3)} د.أ
                                         </td>
                                         <td colSpan={2} />
@@ -348,7 +348,7 @@ export default function AdminPrintReportPage() {
                                             <td>
                                                 <span className="badge" style={{
                                                     background: "rgba(255,255,255,0.04)",
-                                                    color: "#888",
+                                                    color: "var(--color-text-muted)",
                                                     border: "1px solid rgba(255,255,255,0.06)"
                                                 }}>
                                                     {e.type}
@@ -418,7 +418,7 @@ export default function AdminPrintReportPage() {
                                                 <span className="badge badge-blue">{e.cnt}</span>
                                             </td>
                                             <td>
-                                                <span style={{ color: "var(--gold)", fontWeight: 700 }}>
+                                                <span style={{ color: "#C3D809", fontWeight: 700 }}>
                                                     {Number(e.total).toFixed(3)}
                                                 </span>
                                                 <span style={{ color: "#555", fontSize: "11px", marginRight: "4px" }}>د.أ</span>
@@ -440,7 +440,7 @@ export default function AdminPrintReportPage() {
                     color: "#444",
                     fontSize: "12px"
                 }}>
-                    <span style={{ color: "var(--gold)", fontWeight: 700 }}>{salonName}</span> — نظام إدارة
+                    <span style={{ color: "#C3D809", fontWeight: 700 }}>{salonName}</span> — نظام إدارة
                     &nbsp;|&nbsp; تقرير آلي — {new Date().toLocaleString("ar-JO")}
                 </div>
             </div>
@@ -471,7 +471,7 @@ export default function AdminPrintReportPage() {
                     /* Full page white background */
                     html, body {
                         background: #fff !important;
-                        color: #2D2D2D !important;
+                        color: var(--color-cards) !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         -webkit-print-color-adjust: exact !important;
@@ -489,7 +489,7 @@ export default function AdminPrintReportPage() {
                         border: 1px solid #ddd !important;
                     }
                     .custom-table th {
-                        background: #E6B31E !important;
+                        background: #C3D809 !important;
                         color: #000 !important;
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
@@ -498,7 +498,7 @@ export default function AdminPrintReportPage() {
                         color: #333 !important;
                         border-bottom: 1px solid #eee !important;
                     }
-                    .stat-value { color: #2D2D2D !important; }
+                    .stat-value { color: var(--color-cards) !important; }
                     .stat-label { color: #555 !important; }
                     .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 

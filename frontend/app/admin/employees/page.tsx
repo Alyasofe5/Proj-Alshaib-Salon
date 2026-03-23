@@ -109,10 +109,10 @@ export default function EmployeesPage() {
         <>
             <div className="topbar">
                 <div className="topbar-title">
-                    <FaUsers className="inline ml-2 text-gold" />
+                    <FaUsers className="inline ml-2 text-accent-lime" />
                     إدارة <span>الموظفين</span>
                 </div>
-                <button className="btn-gold flex items-center gap-2" onClick={openAddModal}>
+                <button className="btn-lime flex items-center gap-2" onClick={openAddModal}>
                     <FaPlus /> إضافة موظف
                 </button>
             </div>
@@ -162,11 +162,11 @@ export default function EmployeesPage() {
                                         )}
                                     </td>
                                     <td>
-                                        <span className={`badge ${emp.salary_type === "commission" ? "badge-gold" : "badge-blue"}`}>
+                                        <span className={`badge ${emp.salary_type === "commission" ? "badge-lime" : "badge-blue"}`}>
                                             {emp.salary_type === "commission" ? "عمولة %" : "راتب ثابت"}
                                         </span>
                                     </td>
-                                    <td className="text-gold font-bold">
+                                    <td className="text-accent-lime font-bold">
                                         {emp.salary_type === "commission"
                                             ? `${emp.commission_rate}%`
                                             : `${Number(emp.base_salary).toFixed(3)} د.أ`}
@@ -174,7 +174,7 @@ export default function EmployeesPage() {
                                     <td>
                                         <span className="badge badge-blue">{emp.tx_count}</span>
                                     </td>
-                                    <td className="text-gold font-bold">
+                                    <td className="text-accent-lime font-bold">
                                         {Number(emp.total_sales).toFixed(3)} د.أ
                                     </td>
                                     <td>
@@ -182,7 +182,7 @@ export default function EmployeesPage() {
                                             <button
                                                 onClick={() => openEditModal(emp)}
                                                 className="p-2 rounded-lg transition-colors"
-                                                style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}
+                                                style={{ background: "rgba(195,216,9,0.1)", border: "1px solid rgba(195,216,9,0.3)", color: "var(--color-accent)" }}
                                             >
                                                 <FaEdit size={12} />
                                             </button>
@@ -217,10 +217,10 @@ export default function EmployeesPage() {
                 icon={<FaUsers />}
                 footer={
                     <>
-                        <button className="btn-gold" onClick={handleSubmit}>
+                        <button className="btn-lime" onClick={handleSubmit}>
                             {editingEmp ? "حفظ التعديلات" : "إضافة"}
                         </button>
-                        <button className="btn-outline-gold" onClick={() => setShowModal(false)}>
+                        <button className="btn-outline-lime" onClick={() => setShowModal(false)}>
                             إلغاء
                         </button>
                     </>

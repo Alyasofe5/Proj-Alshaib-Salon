@@ -9,27 +9,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Core Brand Palette — Charcoal + Amber Gold
-        "bg-dark":        "#343434",   // Main background
-        "card-dark":      "#2D2D2D",   // Cards / elevated surfaces
-        "surface-hover":  "#3A3A3A",   // Hover / tertiary surface
-        "accent-gold":    "#E6B31E",   // Primary accent — amber gold
-        "accent-hover":   "#FFD700",   // Gold hover (lighter)
-        "accent-active":  "#C59C00",   // Gold active / pressed (darker)
-        "text-cream":     "#FCFAF1",   // Primary text — warm cream
-        "text-secondary": "#CACACA",   // Secondary text / inactive icons
-        "text-muted":     "#8A8A8A",   // Muted / placeholder
-        "cta-dark":       "#343434",   // CTA button text (dark on gold)
-        "disabled-gray":  "#616161",   // Disabled elements
+        // Core Brand Palette — Charcoal Black + Electric Lime
+        "bg-dark": "#222022",   // Main background — charcoal black
+        "card-dark": "#2A282A",   // Cards / elevated surfaces
+        "surface-hover": "#302E30",   // Hover / tertiary surface
+        "accent-lime": "#C3D809",   // Primary accent — electric lime
+        "accent-hover": "#D4EC0A",   // Lime hover (lighter)
+        "accent-active": "#A8BB06",   // Lime active / pressed (darker)
+        "text-white": "var(--color-text-primary)",   // Primary text
+        "text-secondary": "#BBBBBB",   // Secondary text
+        "text-muted": "#777777",   // Muted / placeholder
+        "cta-dark": "var(--color-background)",   // Dark text on lime CTAs
+        "disabled-gray": "var(--color-surface)",   // Disabled elements
+        
+        // Legacy compatibility aliases (Golden -> Lime)
+        "accent-lime": "#C3D809",
+        "gold-light": "#D4EC0A",
+        "gold": "#C3D809",
 
         // Semantic / Feedback
-        success:  "#4CAF50",
-        warning:  "#FFC107",
-        error:    "#F44336",
-        info:     "#2196F3",
+        success: "#C3D809",
+        warning: "#C3D809",
+        error: "#F44336",
+        info: "#2196F3",
       },
       fontFamily: {
-        tajawal: ["Tajawal", "sans-serif"],
+        noto: ["'Noto Sans Arabic'", "sans-serif"],
       },
       screens: {
         'sm': '480px',    // Small phone → large phone

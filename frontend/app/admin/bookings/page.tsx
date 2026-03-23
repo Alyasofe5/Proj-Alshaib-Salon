@@ -138,7 +138,7 @@ export default function AdminBookings() {
     };
 
     const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-        pending: { label: "بانتظار التأكيد", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+        pending: { label: "بانتظار التأكيد", color: "text-accent-lime", bg: "bg-accent-lime/10 border-accent-lime/20" },
         confirmed: { label: "مؤكد", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
         cancelled: { label: "ملغي", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
         completed: { label: "مكتمل", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
@@ -167,7 +167,7 @@ export default function AdminBookings() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <ClipboardList size={18} className="text-gold" /> إدارة الحجوزات
+                        <ClipboardList size={18} className="text-accent-lime" /> إدارة الحجوزات
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">إدارة مواعيد الزبائن</p>
                 </div>
@@ -177,8 +177,8 @@ export default function AdminBookings() {
             {stats && (
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
                     {[
-                        { label: "اليوم", value: stats.today, color: "text-gold" },
-                        { label: "بانتظار", value: stats.pending, color: "text-amber-400" },
+                        { label: "اليوم", value: stats.today, color: "text-accent-lime" },
+                        { label: "بانتظار", value: stats.pending, color: "text-accent-lime" },
                         { label: "مؤكد", value: stats.confirmed, color: "text-emerald-400" },
                         { label: "مكتمل", value: stats.completed, color: "text-blue-400" },
                         { label: "ملغي", value: stats.cancelled, color: "text-red-400" },
@@ -204,7 +204,7 @@ export default function AdminBookings() {
                     { key: "all", label: "الكل" },
                 ].map((f) => (
                     <button key={f.key} onClick={() => setPeriod(f.key)}
-                        className={`flex-shrink-0 px-3 py-1.5 md:py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-white/10 text-gold border border-gold/20" : "bg-dark text-gray-400 hover:text-white"
+                        className={`flex-shrink-0 px-3 py-1.5 md:py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-white/10 text-accent-lime border border-accent-lime/20" : "bg-dark text-gray-400 hover:text-white"
                             }`}
                     >{f.label}</button>
                 ))}
@@ -253,20 +253,20 @@ export default function AdminBookings() {
                                                 </span>
                                             )}
                                             <span className="text-white text-sm md:text-base font-bold">{b.customer_name}</span>
-                                            <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-xs md:text-sm flex items-center gap-1 hover:text-gold mr-auto md:mr-0">
+                                            <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-xs md:text-sm flex items-center gap-1 hover:text-accent-lime mr-auto md:mr-0">
                                                 <Phone size={10} /> <span dir="ltr">{b.customer_phone}</span>
                                             </a>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs md:text-sm text-gray-400 flex-wrap">
                                             <span className="flex items-center gap-1">
-                                                <CalendarDays size={10} className="text-gold" />
+                                                <CalendarDays size={10} className="text-accent-lime" />
                                                 {dayName(b.booking_date)} {b.booking_date}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Clock size={10} className="text-gold" />
+                                                <Clock size={10} className="text-accent-lime" />
                                                 {formatTime(b.booking_time)}
                                             </span>
-                                            <span className="text-gold font-semibold">{b.service_names || b.service_name}</span>
+                                            <span className="text-accent-lime font-semibold">{b.service_names || b.service_name}</span>
                                             {b.employee_name ? (
                                                 <span className="flex items-center gap-1">
                                                     <User size={9} /> {b.employee_name}
@@ -359,7 +359,7 @@ export default function AdminBookings() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-white font-bold text-base flex items-center gap-2">
-                                        <UserCheck size={16} className="text-gold" /> تعيين حلاق
+                                        <UserCheck size={16} className="text-accent-lime" /> تعيين حلاق
                                     </h2>
                                     <p className="text-gray-500 text-xs mt-0.5">
                                         {assignModal.booking.customer_name} — {formatTime(assignModal.booking.booking_time)}
@@ -382,16 +382,16 @@ export default function AdminBookings() {
                                             key={emp.id}
                                             onClick={() => setSelectedEmpId(emp.id)}
                                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all text-right ${selectedEmpId === emp.id
-                                                    ? "bg-gold/10 border-gold/40 text-gold"
+                                                    ? "bg-accent-lime/10 border-accent-lime/40 text-accent-lime"
                                                     : "bg-white/5 border-white/10 text-gray-300 hover:border-white/20 hover:text-white"
                                                 }`}
                                         >
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${selectedEmpId === emp.id ? "bg-gold/20 text-gold" : "bg-white/10 text-gray-400"}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${selectedEmpId === emp.id ? "bg-accent-lime/20 text-accent-lime" : "bg-white/10 text-gray-400"}`}>
                                                 {emp.name.charAt(0)}
                                             </div>
                                             {emp.name}
                                             {selectedEmpId === emp.id && (
-                                                <Check size={14} className="mr-auto text-gold" />
+                                                <Check size={14} className="mr-auto text-accent-lime" />
                                             )}
                                         </button>
                                     ))}

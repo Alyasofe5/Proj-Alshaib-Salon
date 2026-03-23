@@ -147,14 +147,14 @@ export default function BranchManager() {
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <FaBuilding className="text-[#E6B31E]" />
+                        <FaBuilding className="text-accent-lime" />
                         إدارة الفروع
                     </h3>
-                    <p className="text-xs text-[#8A8A8A] mt-0.5">{branches.length} فرع / منشأة</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{branches.length} فرع / منشأة</p>
                 </div>
                 <button
                     onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#E6B31E] text-black hover:bg-[#d4a419] transition-all"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-accent-lime text-black hover:bg-[#C3D809] transition-all"
                 >
                     <FaPlus size={10} /> فرع جديد
                 </button>
@@ -163,10 +163,10 @@ export default function BranchManager() {
             {/* Branch List */}
             {loading ? (
                 <div className="flex justify-center py-8">
-                    <FaSpinner className="animate-spin text-[#E6B31E] text-xl" />
+                    <FaSpinner className="animate-spin text-accent-lime text-xl" />
                 </div>
             ) : branches.length === 0 ? (
-                <div className="text-center py-8 text-[#8A8A8A] text-sm">
+                <div className="text-center py-8 text-[var(--color-text-muted)] text-sm">
                     <FaBuilding className="mx-auto text-2xl mb-2 opacity-30" />
                     لا توجد فروع بعد. ابدأ بإنشاء فرع جديد
                 </div>
@@ -181,13 +181,13 @@ export default function BranchManager() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className={`rounded-xl border p-3 flex items-center gap-3 transition-all ${
                                     branch.is_current
-                                        ? "border-[#E6B31E]/40 bg-[#E6B31E]/5"
-                                        : "border-[#3A3A3A] bg-[#2A2A2A] hover:border-[#4A4535]"
+                                        ? "border-accent-lime/40 bg-accent-lime/5"
+                                        : "border-[var(--color-surface)] bg-[var(--color-surface)] hover:border-[var(--border-subtle)]"
                                 }`}
                             >
                                 {/* Logo / Initial */}
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm overflow-hidden"
-                                    style={{ background: branch.is_current ? "rgba(230,179,30,0.2)" : "#3A3A3A", color: branch.is_current ? "#E6B31E" : "#8A8A8A" }}>
+                                    style={{ background: branch.is_current ? "rgba(195,216,9,0.15)" : "var(--color-surface)", color: branch.is_current ? "var(--color-accent)" : "var(--color-text-muted)" }}>
                                     {assetUrl(branch.logo) ? (
                                         <img
                                             src={assetUrl(branch.logo)!}
@@ -208,16 +208,16 @@ export default function BranchManager() {
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-bold text-white truncate">{branch.name}</span>
                                         {branch.is_current && (
-                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E6B31E]/20 text-[#E6B31E] font-bold flex-shrink-0">الحالي</span>
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent-lime/20 text-accent-lime font-bold flex-shrink-0">الحالي</span>
                                         )}
                                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0 ${badge.color}`}>{badge.label}</span>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                                        <span className="text-[10px] text-[#8A8A8A] truncate max-w-[80px]">/{branch.slug}</span>
-                                        <span className="text-[10px] text-[#8A8A8A] flex items-center gap-1">
+                                        <span className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[80px]">/{branch.slug}</span>
+                                        <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1">
                                             <FaUsers size={8} /> {branch.emp_count}
                                         </span>
-                                        <span className="text-[10px] text-[#8A8A8A] flex items-center gap-1">
+                                        <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1">
                                             <FaChartLine size={8} /> {branch.month_revenue.toFixed(3)} د.أ
                                         </span>
                                         {branch.days_left !== null && branch.days_left <= 7 && (
@@ -232,7 +232,7 @@ export default function BranchManager() {
                                         <button
                                             onClick={() => handleSwitch(branch)}
                                             disabled={switching === branch.id || branch.status !== "active"}
-                                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-[#3A3A3A] text-[#CACACA] hover:bg-[#E6B31E] hover:text-black transition-all disabled:opacity-50"
+                                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-accent-lime hover:text-black transition-all disabled:opacity-50"
                                         >
                                             {switching === branch.id ? <FaSpinner className="animate-spin" size={10} /> : <FaExchangeAlt size={10} />}
                                             انتقل
@@ -267,19 +267,19 @@ export default function BranchManager() {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-[#2D2D2D] border border-[#4A4535] rounded-2xl w-full max-w-md overflow-hidden"
+                            className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl w-full max-w-md overflow-hidden"
                         >
                             {/* Modal Header */}
-                            <div className="p-5 border-b border-[#4A4535] flex justify-between items-center">
+                            <div className="p-5 border-b border-[var(--border-subtle)] flex justify-between items-center">
                                 <div>
-                                    <h3 className="font-bold text-[#E6B31E] flex items-center gap-2">
+                                    <h3 className="font-bold text-accent-lime flex items-center gap-2">
                                         <FaPlus size={12} /> إنشاء فرع جديد
                                     </h3>
-                                    <p className="text-xs text-[#8A8A8A] mt-0.5">
+                                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
                                         سيرث الفرع نفس مدة اشتراك المنشأة الرئيسية
                                     </p>
                                 </div>
-                                <button onClick={() => setShowCreate(false)} className="text-[#8A8A8A] hover:text-white transition-colors">
+                                <button onClick={() => setShowCreate(false)} className="text-[var(--color-text-muted)] hover:text-white transition-colors">
                                     <FaTimes />
                                 </button>
                             </div>
@@ -287,53 +287,53 @@ export default function BranchManager() {
                             {/* Form */}
                             <form onSubmit={handleCreate} className="p-5 space-y-4">
                                 <div>
-                                    <label className="text-xs text-[#CACACA] mb-1.5 block font-medium">اسم الفرع *</label>
+                                    <label className="text-xs text-[var(--color-text-secondary)] mb-1.5 block font-medium">اسم الفرع *</label>
                                     <input
                                         type="text"
                                         value={form.name}
                                         onChange={(e) => handleNameChange(e.target.value)}
                                         placeholder="مثال: صالون الشايب - عمان"
-                                        className="w-full bg-[#343434] border border-[#4A4535] rounded-xl px-3 py-2.5 text-sm focus:border-[#E6B31E] outline-none placeholder:text-[#5A5A5A] transition-colors"
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm focus:border-accent-lime outline-none placeholder:text-[var(--color-text-muted)] transition-colors"
                                         required
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-xs text-[#CACACA] mb-1.5 block font-medium">الرابط المخصص *</label>
+                                    <label className="text-xs text-[var(--color-text-secondary)] mb-1.5 block font-medium">الرابط المخصص *</label>
                                     <div className="relative">
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8A8A8A]">maqas.site/book/</span>
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-muted)]">maqas.site/book/</span>
                                         <input
                                             type="text"
                                             value={form.slug}
                                             onChange={(e) => setForm(f => ({ ...f, slug: slugify(e.target.value) }))}
                                             placeholder="branch-name"
-                                            className="w-full bg-[#343434] border border-[#4A4535] rounded-xl px-3 py-2.5 text-sm focus:border-[#E6B31E] outline-none pl-3 text-left font-mono"
+                                            className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm focus:border-accent-lime outline-none pl-3 text-left font-mono"
                                             dir="ltr"
                                             required
                                         />
                                     </div>
-                                    <p className="text-[10px] text-[#8A8A8A] mt-1">حروف إنجليزية صغيرة، أرقام، شرطات فقط</p>
+                                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1">حروف إنجليزية صغيرة، أرقام، شرطات فقط</p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs text-[#CACACA] mb-1.5 block font-medium">المدينة</label>
+                                        <label className="text-xs text-[var(--color-text-secondary)] mb-1.5 block font-medium">المدينة</label>
                                         <input
                                             type="text"
                                             value={form.city}
                                             onChange={(e) => setForm(f => ({ ...f, city: e.target.value }))}
                                             placeholder="عمان"
-                                            className="w-full bg-[#343434] border border-[#4A4535] rounded-xl px-3 py-2.5 text-sm focus:border-[#E6B31E] outline-none transition-colors"
+                                            className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm focus:border-accent-lime outline-none transition-colors"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-[#CACACA] mb-1.5 block font-medium">رقم الهاتف</label>
+                                        <label className="text-xs text-[var(--color-text-secondary)] mb-1.5 block font-medium">رقم الهاتف</label>
                                         <input
                                             type="tel"
                                             value={form.phone}
                                             onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
                                             placeholder="07xxxxxxxx"
-                                            className="w-full bg-[#343434] border border-[#4A4535] rounded-xl px-3 py-2.5 text-sm focus:border-[#E6B31E] outline-none transition-colors"
+                                            className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm focus:border-accent-lime outline-none transition-colors"
                                             dir="ltr"
                                         />
                                     </div>
@@ -349,14 +349,14 @@ export default function BranchManager() {
                                     <button
                                         type="button"
                                         onClick={() => setShowCreate(false)}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#3A3A3A] text-[#CACACA] hover:bg-[#4A4A4A] transition-all"
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[#4A4A4A] transition-all"
                                     >
                                         إلغاء
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={creating || !form.name.trim() || !form.slug.trim()}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#E6B31E] text-black hover:bg-[#d4a419] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-accent-lime text-black hover:bg-[#C3D809] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         {creating ? <FaSpinner className="animate-spin" size={12} /> : <FaPlus size={12} />}
                                         {creating ? "جاري الإنشاء..." : "إنشاء الفرع"}
@@ -381,20 +381,20 @@ export default function BranchManager() {
                             initial={{ scale: 0.95 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0.95 }}
-                            className="bg-[#2D2D2D] border border-red-400/20 rounded-2xl w-full max-w-sm p-5 text-center"
+                            className="bg-card-dark border border-red-400/20 rounded-2xl w-full max-w-sm p-5 text-center"
                         >
                             <div className="w-12 h-12 rounded-full bg-red-400/10 flex items-center justify-center mx-auto mb-4">
                                 <FaExclamationTriangle className="text-red-400 text-xl" />
                             </div>
                             <h3 className="font-bold text-white mb-2">إيقاف الفرع</h3>
-                            <p className="text-sm text-[#8A8A8A] mb-5">
+                            <p className="text-sm text-[var(--color-text-muted)] mb-5">
                                 هل تريد إيقاف فرع <strong className="text-white">{confirmDelete.name}</strong>؟<br/>
                                 يمكن إعادة تفعيله لاحقاً من لوحة المشرف العام.
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setConfirmDelete(null)}
-                                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#3A3A3A] text-[#CACACA] hover:bg-[#4A4A4A] transition-all"
+                                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[#4A4A4A] transition-all"
                                 >
                                     إلغاء
                                 </button>

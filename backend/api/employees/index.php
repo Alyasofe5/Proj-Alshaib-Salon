@@ -19,10 +19,19 @@ if (!isSuperAdmin($user) && $user['role'] !== 'admin') {
 
 $method = getMethod();
 
+// Auto-add photo_path column if it doesn't exist
+try {
+    $pdo->query("SELECT photo_path FROM employees LIMIT 1");
+} catch (Exception $e) {
+    $pdo->exec("ALTER TABLE employees ADD COLUMN photo_path VARCHAR(500) DEFAULT NULL");
+}
+
 // ===== GET: قائمة الموظفين =====
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
-        SELECT e.*, u.username,
+        SELECT e.id, e.name, e.phone, e.salary_type, e.commission_rate, e.base_salary,
+               e.is_active, e.photo_path, e.created_at,
+               u.username,
                (SELECT COUNT(*) FROM transactions t WHERE t.employee_id = e.id AND t.salon_id = ?) as tx_count,
                (SELECT COALESCE(SUM(total_amount),0) FROM transactions t WHERE t.employee_id = e.id AND t.salon_id = ?) as total_sales
         FROM employees e
@@ -35,6 +44,7 @@ if ($method === 'GET') {
 
     sendSuccess($employees);
 }
+
 
 // ===== POST: إضافة موظف =====
 if ($method === 'POST') {

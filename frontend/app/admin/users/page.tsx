@@ -90,9 +90,9 @@ export default function UsersPage() {
         <>
             <div className="topbar flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                    <FaUserCog className="text-gold" /> إدارة <span className="text-gold font-black">المستخدمين</span>
+                    <FaUserCog className="text-accent-lime" /> إدارة <span className="text-accent-lime font-black">المستخدمين</span>
                 </div>
-                <button className="btn-gold flex items-center justify-center gap-2 px-4 py-2" onClick={() => { setForm({ name: "", username: "", password: "", role: "employee", employee_id: "" }); setShowAddModal(true); }}>
+                <button className="btn-lime flex items-center justify-center gap-2 px-4 py-2" onClick={() => { setForm({ name: "", username: "", password: "", role: "employee", employee_id: "" }); setShowAddModal(true); }}>
                     <FaUserPlus /> إضافة مستخدم
                 </button>
             </div>
@@ -110,7 +110,7 @@ export default function UsersPage() {
                                     <td className="text-white font-semibold">{u.name}</td>
                                     <td className="text-gray-500 font-mono">{u.username}</td>
                                     <td>
-                                        <span className={`badge ${u.role === "admin" ? "badge-gold" : "badge-blue"}`}>
+                                        <span className={`badge ${u.role === "admin" ? "badge-lime" : "badge-blue"}`}>
                                             {u.role === "admin" ? <><FaCrown className="inline ml-1" size={10} /> مدير</> : <><FaUserTie className="inline ml-1" size={10} /> موظف</>}
                                         </span>
                                     </td>
@@ -118,12 +118,12 @@ export default function UsersPage() {
                                     <td><span className={`badge ${u.is_active ? "badge-green" : "badge-red"}`}>{u.is_active ? "نشط" : "موقوف"}</span></td>
                                     <td>
                                         <div className="flex gap-1">
-                                            <button onClick={() => { setResetUser(u); setNewPassword(""); setShowResetModal(true); }} className="p-2 rounded-lg" style={{ background: "rgba(230,179,30,0.1)", border: "1px solid rgba(230,179,30,0.3)", color: "#E6B31E" }}>
+                                            <button onClick={() => { setResetUser(u); setNewPassword(""); setShowResetModal(true); }} className="p-2 rounded-lg" style={{ background: "rgba(195,216,9,0.1)", border: "1px solid rgba(195,216,9,0.3)", color: "var(--color-accent)" }}>
                                                 <FaKey size={11} />
                                             </button>
                                             {u.id !== currentUser?.id && (
                                                 <>
-                                                    <button onClick={() => handleToggle(u.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "#888" }}>
+                                                    <button onClick={() => handleToggle(u.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "var(--color-text-muted)" }}>
                                                         {u.is_active ? <FaBan size={11} /> : <FaCheck size={11} />}
                                                     </button>
                                                     <button onClick={() => handleDelete(u.id)} className="p-2 rounded-lg" style={{ background: "rgba(231,76,60,0.15)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}>
@@ -142,7 +142,7 @@ export default function UsersPage() {
 
             {/* Add User Modal */}
             <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="إضافة مستخدم جديد" icon={<FaUserPlus />}
-                footer={<><button className="btn-gold" onClick={handleAdd}>حفظ</button><button className="btn-outline-gold" onClick={() => setShowAddModal(false)}>إلغاء</button></>}>
+                footer={<><button className="btn-lime" onClick={handleAdd}>حفظ</button><button className="btn-outline-lime" onClick={() => setShowAddModal(false)}>إلغاء</button></>}>
                 <form onSubmit={handleAdd}>
                     <div className="mb-4"><label className="form-label">الاسم الكامل *</label><input className="form-input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
                     <div className="mb-4"><label className="form-label">اسم الدخول *</label><input className="form-input" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required /></div>
@@ -167,8 +167,8 @@ export default function UsersPage() {
 
             {/* Reset Password Modal */}
             <Modal isOpen={showResetModal} onClose={() => setShowResetModal(false)} title="تغيير كلمة المرور" icon={<FaKey />}
-                footer={<><button className="btn-gold" onClick={handleResetPassword}>تغيير</button><button className="btn-outline-gold" onClick={() => setShowResetModal(false)}>إلغاء</button></>}>
-                <p className="text-gray-400 mb-4">تغيير كلمة مرور: <strong className="text-gold">{resetUser?.name}</strong></p>
+                footer={<><button className="btn-lime" onClick={handleResetPassword}>تغيير</button><button className="btn-outline-lime" onClick={() => setShowResetModal(false)}>إلغاء</button></>}>
+                <p className="text-gray-400 mb-4">تغيير كلمة مرور: <strong className="text-accent-lime">{resetUser?.name}</strong></p>
                 <div className="mb-4"><label className="form-label">كلمة المرور الجديدة *</label><input type="password" className="form-input" value={newPassword} onChange={e => setNewPassword(e.target.value)} required /></div>
             </Modal>
         </>

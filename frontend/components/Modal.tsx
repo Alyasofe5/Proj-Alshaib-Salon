@@ -42,7 +42,7 @@ export default function Modal({
                         <div className="modal-header">
                             <h3 className="flex items-center gap-2">
                                 {icon && (
-                                    <span className="text-gold">{icon}</span>
+                                    <span className="text-accent-lime">{icon}</span>
                                 )}
                                 {title}
                             </h3>

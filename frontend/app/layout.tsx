@@ -107,14 +107,14 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/images/logo_new.png", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/logo.svg",
+    shortcut: "/images/logo_new.png",
   },
 
   // ── Apple PWA ─────────────────────────────
@@ -143,8 +143,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)",  color: "#343434" },
-    { media: "(prefers-color-scheme: light)", color: "#343434" },
+    { media: "(prefers-color-scheme: dark)", color: "#222022" },
+    { media: "(prefers-color-scheme: light)", color: "#222022" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -265,6 +265,9 @@ export default function RootLayout({
           }}
         />
 
+        {/* ── W3C PWA capable (suppresses browser deprecation warning for apple-mobile-web-app-capable) ── */}
+        <meta name="mobile-web-app-capable" content="yes" />
+
         {/* ── Preconnect to speed up font loading ── */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -275,14 +278,14 @@ export default function RootLayout({
         <link
           rel="preload"
           as="style"
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="font-tajawal antialiased" suppressHydrationWarning>
+      <body className="font-noto antialiased" suppressHydrationWarning>
         <ScrollToTop />
         {children}
       </body>

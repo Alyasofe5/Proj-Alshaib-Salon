@@ -8,7 +8,7 @@ interface StatCardProps {
     value: string | number;
     label: string;
     sub?: string;
-    color: "gold" | "green" | "blue" | "red" | "purple";
+    color: 'lime' | "green" | "blue" | "red" | "purple";
 }
 
 export default function StatCard({

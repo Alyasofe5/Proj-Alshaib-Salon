@@ -6,6 +6,7 @@ import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp } from "react-icons/fa";
+import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2 } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
@@ -22,6 +23,16 @@ interface ServiceItem {
     is_active: number;
 }
 
+interface EmployeeItem {
+    id: number;
+    name: string;
+    phone: string;
+    photo_path: string | null;
+    specialty?: string;
+    is_active: number;
+}
+
+
 interface SalonSettings {
     name: string;
     slug: string;
@@ -31,6 +42,8 @@ interface SalonSettings {
     owner_phone: string;
     booking_message: string;
     hero_image: string | null;
+    hero_video: string | null;
+    hero_type: 'image' | 'video' | '';
     work_start: string;
     work_end: string;
     work_interval: number;
@@ -38,7 +51,21 @@ interface SalonSettings {
     booking_days: number;
 }
 
+interface FaqItem { id: string; question: string; answer: string; order: number; }
+
+type TabId = 'general' | 'media' | 'services' | 'employees' | 'booking' | 'faq' | 'link';
+const TABS: { id: TabId; label: string; icon: any }[] = [
+    { id: 'general',   label: 'عام',        icon: Settings },
+    { id: 'media',     label: 'الواجهة',    icon: Palette },
+    { id: 'services',  label: 'الخدمات',   icon: Scissors },
+    { id: 'employees', label: 'الحلاقين',  icon: Users },
+    { id: 'booking',   label: 'الحجز',     icon: Calendar },
+    { id: 'faq',       label: 'الأسئلة',   icon: HelpCircle },
+    { id: 'link',      label: 'الرابط',    icon: Link2 },
+];
+
 export default function BookingSettingsPage() {
+
     const { user, salon, setSalon } = useAuthStore();
     const router = useRouter();
     const [services, setServices] = useState<ServiceItem[]>([]);
@@ -53,6 +80,20 @@ export default function BookingSettingsPage() {
     const [logoSaved, setLogoSaved] = useState(false);
     const [currentLogo, setCurrentLogo] = useState<string | null>(null);
     const [copiedLink, setCopiedLink] = useState(false);
+    const [activeTab, setActiveTab] = useState<TabId>('general');
+
+    // ── FAQ state ──
+    const [faqs, setFaqs] = useState<FaqItem[]>([]);
+    const [faqLoading, setFaqLoading] = useState(false);
+    const [editingFaq, setEditingFaq] = useState<string | null>(null);
+    const [editFaqQ, setEditFaqQ] = useState('');
+    const [editFaqA, setEditFaqA] = useState('');
+    const [savingFaq, setSavingFaq] = useState(false);
+    const [showAddFaq, setShowAddFaq] = useState(false);
+    const [newFaqQ, setNewFaqQ] = useState('');
+    const [newFaqA, setNewFaqA] = useState('');
+    const [addingFaq, setAddingFaq] = useState(false);
+    const heroVideoRef = useRef<HTMLInputElement>(null);
 
     // Service editing
     const [editingService, setEditingService] = useState<number | null>(null);
@@ -70,6 +111,22 @@ export default function BookingSettingsPage() {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
 
+    // ── Employees (Barbers) state ──
+    const [employees, setEmployees] = useState<EmployeeItem[]>([]);
+    const [empUploading, setEmpUploading] = useState<number | null>(null);
+    const [editingEmp, setEditingEmp] = useState<number | null>(null);
+    const [editEmpName, setEditEmpName] = useState("");
+    const [editEmpPhone, setEditEmpPhone] = useState("");
+    const [editEmpSpecialty, setEditEmpSpecialty] = useState("");
+    const [savingEmp, setSavingEmp] = useState(false);
+    const [showAddEmp, setShowAddEmp] = useState(false);
+    const [newEmpName, setNewEmpName] = useState("");
+    const [newEmpPhone, setNewEmpPhone] = useState("");
+    const [newEmpSpecialty, setNewEmpSpecialty] = useState("");
+    const [addingEmp, setAddingEmp] = useState(false);
+    const [deleteEmpId, setDeleteEmpId] = useState<number | null>(null);
+    const [deletingEmp, setDeletingEmp] = useState(false);
+
     useEffect(() => {
         loadData();
     }, []);
@@ -81,17 +138,142 @@ export default function BookingSettingsPage() {
 
     const loadData = async () => {
         try {
-            const [servRes, settRes] = await Promise.all([
+            const auth = { headers: { Authorization: `Bearer ${Cookies.get("token")}` } };
+            const [servRes, settRes, empRes, faqRes] = await Promise.all([
                 servicesAPI.getAll(),
-                axios.get(`${API_BASE}/salon/settings.php`, {
-                    headers: { Authorization: `Bearer ${Cookies.get("token")}` },
-                }),
+                axios.get(`${API_BASE}/salon/settings.php`, auth),
+                axios.get(`${API_BASE}/employees`, auth),
+                axios.get(`${API_BASE}/salon/faq.php`, auth),
             ]);
             setServices(servRes.data.data || []);
             const settData = settRes.data.data || null;
             setSettings(settData);
             if (settData?.logo) setCurrentLogo(settData.logo);
+            setEmployees(empRes.data.data || []);
+            setFaqs(faqRes.data.data || []);
         } catch (e) { console.error(e); }
+    };
+
+    const authH = () => ({ Authorization: `Bearer ${Cookies.get("token")}` });
+
+    // ── Hero Media ──
+    const handleHeroMedia = async (file: File) => {
+        setHeroUploading(true);
+        try {
+            const fd = new FormData();
+            fd.append("media", file);
+            const res = await axios.post(`${API_BASE}/salon/hero-media.php`, fd, {
+                headers: { ...authH(), "Content-Type": "multipart/form-data" },
+            });
+            if (settings && res.data.data) {
+                setSettings({ ...settings, hero_image: res.data.data.hero_image ?? settings.hero_image, hero_video: res.data.data.hero_video ?? settings.hero_video, hero_type: res.data.data.hero_type });
+            }
+        } catch (e) { console.error(e); }
+        finally { setHeroUploading(false); }
+    };
+
+    const deleteHeroMedia = async (type: 'image' | 'video') => {
+        try {
+            await axios.delete(`${API_BASE}/salon/hero-media.php`, { headers: authH(), data: { type } });
+            if (settings) setSettings({ ...settings, [type === 'image' ? 'hero_image' : 'hero_video']: null });
+        } catch (e) { console.error(e); }
+    };
+
+    // ── FAQ CRUD ──
+    const addFaq = async () => {
+        if (!newFaqQ.trim() || !newFaqA.trim()) return;
+        setAddingFaq(true);
+        try {
+            const res = await axios.post(`${API_BASE}/salon/faq.php`, { question: newFaqQ.trim(), answer: newFaqA.trim() }, { headers: authH() });
+            setFaqs(res.data.data || []);
+            setNewFaqQ(''); setNewFaqA(''); setShowAddFaq(false);
+        } catch (e) { console.error(e); }
+        finally { setAddingFaq(false); }
+    };
+
+    const saveFaq = async () => {
+        if (!editingFaq || !editFaqQ.trim() || !editFaqA.trim()) return;
+        setSavingFaq(true);
+        try {
+            const res = await axios.put(`${API_BASE}/salon/faq.php?id=${editingFaq}`, { question: editFaqQ.trim(), answer: editFaqA.trim() }, { headers: authH() });
+            setFaqs(res.data.data || []);
+            setEditingFaq(null);
+        } catch (e) { console.error(e); }
+        finally { setSavingFaq(false); }
+    };
+
+    const deleteFaq = async (id: string) => {
+        try {
+            const res = await axios.delete(`${API_BASE}/salon/faq.php?id=${id}`, { headers: authH() });
+            setFaqs(res.data.data || []);
+        } catch (e) { console.error(e); }
+    };
+
+
+    const handleEmpPhotoUpload = async (empId: number, file: File) => {
+        setEmpUploading(empId);
+        try {
+            const fd = new FormData();
+            fd.append("photo", file);
+            await axios.post(`${API_BASE}/employees/photo.php?id=${empId}`, fd, {
+                headers: { Authorization: `Bearer ${Cookies.get("token")}`, "Content-Type": "multipart/form-data" },
+            });
+            await loadData();
+        } catch (e) { console.error(e); }
+        finally { setEmpUploading(null); }
+    };
+
+    const startEditEmp = (emp: EmployeeItem) => {
+        setEditingEmp(emp.id);
+        setEditEmpName(emp.name);
+        setEditEmpPhone(emp.phone || "");
+        setEditEmpSpecialty(emp.specialty || "");
+    };
+
+    const cancelEditEmp = () => { setEditingEmp(null); setEditEmpName(""); setEditEmpPhone(""); setEditEmpSpecialty(""); };
+
+    const saveEmpEdit = async () => {
+        if (!editingEmp || !editEmpName.trim()) return;
+        setSavingEmp(true);
+        try {
+            await axios.put(`${API_BASE}/employees/manage.php?id=${editingEmp}`,
+                { name: editEmpName.trim(), phone: editEmpPhone.trim(), specialty: editEmpSpecialty.trim() },
+                { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
+            );
+            cancelEditEmp();
+            await loadData();
+        } catch (e) { console.error(e); }
+        finally { setSavingEmp(false); }
+    };
+
+    const addEmployee = async () => {
+        if (!newEmpName.trim()) return;
+        setAddingEmp(true);
+        try {
+            await axios.post(`${API_BASE}/employees`,
+                { name: newEmpName.trim(), phone: newEmpPhone.trim() },
+                { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
+            );
+            setNewEmpName(""); setNewEmpPhone(""); setNewEmpSpecialty(""); setShowAddEmp(false);
+            await loadData();
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "حدث خطأ");
+        }
+        finally { setAddingEmp(false); }
+    };
+
+    const deleteEmployee = async (id: number) => {
+        setDeletingEmp(true);
+        try {
+            await axios.delete(`${API_BASE}/employees/manage.php?id=${id}`, {
+                headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+            });
+            setDeleteEmpId(null);
+            await loadData();
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "لا يمكن حذف هذا الحلاق");
+        }
+        finally { setDeletingEmp(false); }
     };
 
     const handleLogoUpload = async (file: File) => {
@@ -129,21 +311,6 @@ export default function BookingSettingsPage() {
         finally { setUploading(null); }
     };
 
-    const handleHeroUpload = async (file: File) => {
-        setHeroUploading(true);
-        try {
-            const formData = new FormData();
-            formData.append("image", file);
-            await axios.post(`${API_BASE}/salon/hero-image.php`, formData, {
-                headers: {
-                    Authorization: `Bearer ${Cookies.get("token")}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            await loadData();
-        } catch (e) { console.error(e); }
-        finally { setHeroUploading(false); }
-    };
 
     const handleSaveSettings = async () => {
         if (!settings) return;
@@ -217,48 +384,64 @@ export default function BookingSettingsPage() {
         } catch (e) { console.error(e); }
     };
 
-    const gold = "#E6B31E";
+    const gold = "var(--color-accent)";
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
     if (!settings) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#343434]">
+        <div className="min-h-[80vh] flex items-center justify-center">
             <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-[#343434] text-[#FCFAF1]" dir="rtl" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+        <div className="text-[var(--color-text-primary)]" dir="rtl" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
             <style jsx global>{`
                 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
             `}</style>
 
-            {/* Header */}
-            <header className="sticky top-0 z-40 backdrop-blur-xl" style={{ background: "rgba(45,45,45,.95)", borderBottom: "1px solid rgba(230,179,30,.12)" }}>
-                <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <button onClick={() => router.push("/admin/dashboard")} className="text-[#FCFAF1]/40 hover:text-[#FCFAF1] transition-colors">
-                            <FaArrowRight />
-                        </button>
-                        <h1 className="text-base md:text-lg font-bold">تخصيص الحجز</h1>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                        <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
-                            className="hidden sm:flex items-center gap-2 text-xs text-[#FCFAF1]/40 hover:text-[#FCFAF1] transition-colors">
-                            <FaExternalLinkAlt /> معاينة
-                        </a>
-                        <button onClick={handleSaveSettings} disabled={saving}
-                            className="h-9 md:h-10 px-4 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all hover:scale-105 disabled:opacity-50 flex items-center gap-1.5 md:gap-2"
-                            style={{ background: saved ? "#22c55e" : gold, color: "#000" }}>
-                            {saved ? <><FaCheck /> الحفظ</> : saving ? "جاري..." : <><FaSave className="md:hidden" /> <span className="hidden md:inline">حفظ الإعدادات</span></>}
-                        </button>
+            {/* Topbar — High-end Header matching Dashboard */}
+            <div className="topbar">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push("/admin/dashboard")} className="p-2 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all">
+                        <FaArrowRight size={18} />
+                    </button>
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight">إعدادات الحجز</h1>
+                        <p className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-wider opacity-60">تخصيص صفحة الزبائن والخدمات</p>
                     </div>
                 </div>
-            </header>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => window.open(`${baseUrl}/book/${salon?.slug}`, '_blank')} 
+                        className="btn-outline-lime hidden md:flex items-center gap-2 h-10 px-4">
+                        <FaExternalLinkAlt size={11} /> <span>المعاينة</span>
+                    </button>
+                    <button onClick={handleSaveSettings} disabled={saving} className="btn-lime min-w-[120px] h-10 flex border-none items-center justify-center gap-2">
+                        {saving ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-black" /> : <FaSave size={14} />}
+                        <span>{saved ? "تم الحفظ" : "حفظ التغييرات"}</span>
+                    </button>
+                </div>
+            </div>
 
-            <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8 md:space-y-10">
+            <div className="px-4 md:px-8 mt-4 sticky top-[72px] z-20 bg-card-dark/80 backdrop-blur-md">
+                <div className="flex items-center gap-1 overflow-x-auto hide-scroll py-2">
+                    {TABS.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${isActive ? "bg-[var(--color-accent)] text-black border-[var(--color-accent)] shadow-[0_4px_12px_rgba(195,216,9,0.2)]" : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--border-subtle)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"}`}>
+                                <Icon size={14} />
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
-                {/* ══════ Section: Booking Link + QR Code ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-6">
+
+                {/* ══════ Tab: Link ══════ */}
+                {activeTab === 'link' && <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
                             <FaExternalLinkAlt size={13} />
@@ -269,15 +452,15 @@ export default function BookingSettingsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
                         {/* ── Booking Link Card ── */}
-                        <div className="lg:col-span-2 rounded-2xl p-5 md:p-6" style={{ background: "linear-gradient(135deg, rgba(230,179,30,.08) 0%, rgba(230,179,30,.02) 100%)", border: "1px solid rgba(230,179,30,.2)" }}>
+                        <div className="card lg:col-span-2 rounded-2xl p-5 md:p-6">
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(230,179,30,.15)" }}>
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(195,216,9,.15)" }}>
                                         <FaExternalLinkAlt size={14} color={gold} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[#FCFAF1] font-bold text-sm">رابط الحجز</p>
-                                        <p className="text-[#8A8A8A] text-xs mt-0.5 font-mono truncate" dir="ltr">{baseUrl}/book/?s={settings.slug}</p>
+                                        <p className="text-[var(--color-text-primary)] font-bold text-sm">رابط الحجز</p>
+                                        <p className="text-[var(--color-text-muted)] text-xs mt-0.5 font-mono truncate" dir="ltr">{baseUrl}/book/?s={settings.slug}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
@@ -285,7 +468,7 @@ export default function BookingSettingsPage() {
                                         navigator.clipboard.writeText(`${baseUrl}/book/?s=${settings.slug}`);
                                         setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
                                     }}
-                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-[#E6B31E]/15 text-[#E6B31E] hover:bg-[#E6B31E]/25"}`}
+                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copiedLink ? "bg-emerald-500/20 text-emerald-400" : "bg-accent-lime/15 text-accent-lime hover:bg-accent-lime/25"}`}
                                     >
                                         {copiedLink ? <><FaCheckCircle size={11} /> تم النسخ</> : <><FaCopy size={11} /> نسخ الرابط</>}
                                     </button>
@@ -295,7 +478,7 @@ export default function BookingSettingsPage() {
                                         <FaWhatsapp size={12} /> مشاركة واتساب
                                     </button>
                                     <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[#CACACA] hover:text-[#FCFAF1] hover:bg-white/10 transition-all"
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/10 transition-all"
                                     >
                                         <FaExternalLinkAlt size={10} /> معاينة
                                     </a>
@@ -304,10 +487,10 @@ export default function BookingSettingsPage() {
                         </div>
 
                         {/* ── QR Code Card ── */}
-                        <div className="rounded-2xl p-5 flex flex-col items-center gap-4" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.15)" }}>
+                        <div className="rounded-2xl p-5 flex flex-col items-center gap-4" style={{ background: "var(--color-cards)", border: "1px solid var(--border-subtle)" }}>
                             <div className="flex items-center gap-2 self-start">
                                 <FaQrcode style={{ color: gold }} size={14} />
-                                <p className="text-sm font-bold text-[#FCFAF1]">باركود الحجز</p>
+                                <p className="text-sm font-bold text-[var(--color-text-primary)]">باركود الحجز</p>
                             </div>
 
                             {['professional', 'enterprise'].includes(salon?.plan_type || '') ? (
@@ -337,7 +520,7 @@ export default function BookingSettingsPage() {
                                         style={{ display: "none" }}
                                     />
 
-                                    <p className="text-[10px] text-[#FCFAF1]/25 text-center">امسح الكود بالموبايل للحجز مباشرة</p>
+                                    <p className="text-[10px] text-[var(--color-text-primary)]/25 text-center">امسح الكود بالموبايل للحجز مباشرة</p>
 
                                     {/* Download Button */}
                                     <button
@@ -385,44 +568,44 @@ export default function BookingSettingsPage() {
                         </div>
 
                     </div>
-                </motion.section>
+                </motion.section>}
 
-                {/* ══════ Section: Salon Logo ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                {/* ══════ Tab: General — Logo ══════ */}
+                {activeTab === 'general' && <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
                             <FaImage size={14} />
                         </div>
                         <h2 className="text-xl font-bold">لوجو الصالون</h2>
                     </div>
-                    <div className="rounded-2xl p-6" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.12)" }}>
+                    <div className="rounded-2xl p-6" style={{ background: "var(--color-cards)", border: "1px solid var(--border-subtle)" }}>
                         <div className="flex items-center gap-6">
                             {/* Logo Preview */}
                             <div className="relative group cursor-pointer flex-shrink-0" onClick={() => logoInputRef.current?.click()}>
-                                <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden flex items-center justify-center transition-all"
-                                    style={{ background: "#343434", border: `2px solid ${currentLogo ? `${gold}40` : "rgba(230,179,30,.15)"}` }}>
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden flex items-center justify-center transition-all bg-[#0d0d0d] shadow-[0_0_40px_rgba(195,216,9,0.15)]"
+                                    style={{ border: `2px solid ${currentLogo ? gold : "rgba(195,216,9,.1)"}` }}>
                                     {assetUrl(currentLogo) ? (
                                         <img src={assetUrl(currentLogo)!} alt="Logo" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity"
                                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; setCurrentLogo(null); }} />
                                     ) : (
                                         <div className="text-center">
-                                            <span className="text-3xl font-black" style={{ color: gold }}>{settings.name?.charAt(0) || "?"}</span>
+                                            <span className="text-4xl font-black maqass-brand">{settings.name?.charAt(0) || "?"}</span>
                                         </div>
                                     )}
                                 </div>
                                 {/* Overlay */}
-                                <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
+                                <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
                                     {logoUploading ? (
-                                        <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                                        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
                                     ) : (
-                                        <FaCamera className="text-[#FCFAF1]" size={18} />
+                                        <FaCamera className="text-[var(--color-text-primary)]" size={18} />
                                     )}
                                 </div>
                                 {/* Success badge */}
                                 <AnimatePresence>
                                     {logoSaved && (
                                         <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-                                            className="absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500 text-[#FCFAF1] shadow-lg">
+                                            className="absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500 text-[var(--color-text-primary)] shadow-lg">
                                             <FaCheck size={10} />
                                         </motion.div>
                                     )}
@@ -432,8 +615,8 @@ export default function BookingSettingsPage() {
                             </div>
                             {/* Logo Info */}
                             <div className="flex-1">
-                                <p className="text-sm font-bold text-[#FCFAF1] mb-1">شعار الصالون</p>
-                                <p className="text-xs text-[#FCFAF1]/30 mb-3 leading-relaxed">يظهر في صفحة الحجز والسايدبار. يُفضل صورة مربعة بدقة عالية (512×512 أو أكبر)</p>
+                                <p className="text-sm font-bold text-[var(--color-text-primary)] mb-1">شعار الصالون</p>
+                                <p className="text-xs text-[var(--color-text-muted)] mb-3 leading-relaxed">يظهر في صفحة الحجز والسايدبار. يُفضل صورة مربعة بدقة عالية (512×512 أو أكبر)</p>
                                 <button onClick={() => logoInputRef.current?.click()} disabled={logoUploading}
                                     className="flex items-center gap-2 h-9 px-5 rounded-xl text-xs font-bold transition-all hover:scale-105 disabled:opacity-50"
                                     style={{ background: `${gold}15`, color: gold, border: `1px solid ${gold}30` }}>
@@ -443,80 +626,79 @@ export default function BookingSettingsPage() {
                             </div>
                         </div>
                     </div>
-                </motion.section>
+                </motion.section>}
 
-                {/* ══════ Section: Salon Info ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                {/* ══════ Tab: General — Info ══════ */}
+                {activeTab === 'general' && <motion.div key="general" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    
+                    {/* Info Card */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <Users size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">معلومات الصالون الأساسية</h2>
                         </div>
-                        <h2 className="text-xl font-bold">معلومات الصالون</h2>
-                    </div>
-                    <div className="rounded-2xl p-6 space-y-5" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.12)" }}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label="اسم الصالون" value={settings.name} onChange={v => setSettings({ ...settings, name: v })} gold={gold} />
                             <InputField label="رقم الهاتف" value={settings.owner_phone} onChange={v => setSettings({ ...settings, owner_phone: v })} gold={gold} dir="ltr" />
                             <InputField label="العنوان" value={settings.address} onChange={v => setSettings({ ...settings, address: v })} gold={gold} />
                             <InputField label="انستقرام" value={settings.instagram} onChange={v => setSettings({ ...settings, instagram: v })} gold={gold} dir="ltr" placeholder="@username" />
                         </div>
-                        <div>
-                            <label className="text-xs font-bold text-[#FCFAF1]/30 mb-2 block uppercase tracking-wider">وصف الصالون</label>
+                        <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون</label>
                             <textarea value={settings.description} onChange={e => setSettings({ ...settings, description: e.target.value })} rows={4}
-                                className="w-full py-3 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none resize-none text-sm transition-all"
-                                style={{ border: "1.5px solid rgba(230,179,30,.12)" }}
-                                onFocus={e => e.currentTarget.style.borderColor = gold}
-                                onBlur={e => e.currentTarget.style.borderColor = "rgba(230,179,30,.12)"} />
+                                className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                                style={{ border: "1.5px solid var(--border-subtle)" }}
+                                placeholder="اكتب وصفاً مختصراً عن الصالون والخدمات..." />
                         </div>
-                        <InputField label="رسالة بعد الحجز" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholder="مثال: شكراً لحجزك!" />
+                        <div className="mt-6">
+                            <InputField label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholder="مثال: شكراً لحجزك في صالوننا! سننتظرك في الموعد." />
+                        </div>
                     </div>
-                </motion.section>
+                </motion.div>}
 
-                {/* ══════ Section: Work Hours & Off Days ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                {/* ══════ Tab: Booking — Work Hours & Off Days ══════ */}
+                {activeTab === 'booking' && <motion.div key="booking" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <Calendar size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">ساعات العمل والإجازات</h2>
                         </div>
-                        <h2 className="text-xl font-bold">ساعات العمل والإجازات</h2>
-                    </div>
-                    <div className="rounded-2xl p-6 space-y-6" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.12)" }}>
-                        {/* Work Hours */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <TimePicker12 label="بداية الدوام" value={settings.work_start} onChange={(v: string) => setSettings({ ...settings, work_start: v })} gold={gold} />
                             <TimePicker12 label="نهاية الدوام" value={settings.work_end} onChange={(v: string) => setSettings({ ...settings, work_end: v })} gold={gold} />
                             <div>
-                                <label className="text-xs font-bold text-[#FCFAF1]/30 mb-2 block uppercase tracking-wider">الفاصل الزمني (دقيقة)</label>
+                                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">الفاصل الزمني (دقيقة)</label>
                                 <select value={settings.work_interval} onChange={e => setSettings({ ...settings, work_interval: Number(e.target.value) })}
-                                    className="w-full py-3 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none text-sm transition-all cursor-pointer appearance-none"
-                                    style={{ border: "1.5px solid rgba(230,179,30,.12)" }}>
-                                    <option value={15}>15 دقيقة</option>
-                                    <option value={20}>20 دقيقة</option>
-                                    <option value={30}>30 دقيقة</option>
-                                    <option value={45}>45 دقيقة</option>
-                                    <option value={60}>60 دقيقة</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Booking Days */}
-                        <div>
-                            <label className="text-xs font-bold text-[#FCFAF1]/30 mb-2 block uppercase tracking-wider">عدد أيام الحجز المتاحة</label>
-                            <div className="flex items-center gap-4">
-                                <select value={settings.booking_days} onChange={e => setSettings({ ...settings, booking_days: Number(e.target.value) })}
-                                    className="w-40 py-3 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none text-sm transition-all cursor-pointer appearance-none"
-                                    style={{ border: "1.5px solid rgba(230,179,30,.12)" }}>
-                                    {[3, 4, 5, 6, 7, 10, 14, 21, 30].map(n => (
-                                        <option key={n} value={n}>{n} أيام</option>
+                                    className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all cursor-pointer appearance-none"
+                                    style={{ border: "1.5px solid var(--border-subtle)" }}>
+                                    {[15, 20, 30, 45, 60].map(m => (
+                                        <option key={m} value={m}>{m} دقيقة</option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-[#FCFAF1]/20">عدد الأيام اللي تظهر بصفحة الحجز (بدون أيام الإجازة)</p>
                             </div>
                         </div>
 
-                        {/* Off Days */}
+                        <div className="mb-8 p-5 rounded-2xl" style={{ background: "var(--color-background)", border: "1px solid var(--border-subtle)" }}>
+                            <label className="text-xs font-bold text-[var(--color-accent)] mb-3 block uppercase tracking-wider">عدد أيام الحجز المتاحة</label>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <select value={settings.booking_days} onChange={e => setSettings({ ...settings, booking_days: Number(e.target.value) })}
+                                    className="w-full sm:w-40 py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all cursor-pointer appearance-none font-bold"
+                                    style={{ border: "1.5px solid var(--border-subtle)" }}>
+                                    {[3, 4, 5, 6, 7, 10, 14, 21, 30].map(n => (
+                                        <option key={n} value={n}>{n} أيام للقدام</option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-[var(--color-text-muted)] max-w-sm">تحديد المدى الزمني المسموح للزبائن بالحجز فيه خلال المستقبل من اليوم الحالي.</p>
+                            </div>
+                        </div>
+
                         <div>
-                            <label className="text-xs font-bold text-[#FCFAF1]/30 mb-3 block uppercase tracking-wider">أيام الإجازة</label>
+                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-4 block uppercase tracking-wider">أيام الإجازة الأسبوعية</label>
                             <div className="flex flex-wrap gap-2">
                                 {["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"].map((dayName, dayIndex) => {
                                     const isOff = settings.off_days.includes(dayIndex);
@@ -528,124 +710,353 @@ export default function BookingSettingsPage() {
                                                     : [...settings.off_days, dayIndex];
                                                 setSettings({ ...settings, off_days: newDays });
                                             }}
-                                            className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105"
-                                            style={{
-                                                background: isOff ? "rgba(231,76,60,.15)" : "#343434",
-                                                color: isOff ? "#e74c3c" : "#888",
-                                                border: `1.5px solid ${isOff ? "rgba(231,76,60,.3)" : "rgba(230,179,30,.12)"}`,
-                                            }}>
-                                            {isOff ? "🚫 " : ""}{dayName}
+                                            className={`px-5 py-3 rounded-xl text-xs font-bold transition-all ${isOff ? "bg-red-500/10 text-red-500 border-red-500/30" : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--border-subtle)] hover:border-[var(--color-accent)]"}`}
+                                            style={{ border: "1.5px solid" }}>
+                                            {dayName}
                                         </button>
                                     );
                                 })}
                             </div>
-                            <p className="text-xs text-[#FCFAF1]/20 mt-2">اضغط على اليوم لإضافته/إزالته من أيام الإجازة</p>
                         </div>
                     </div>
-                </motion.section>
+                </motion.div>}
 
-                {/* ══════ Section: Hero Image ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                        </div>
-                        <h2 className="text-xl font-bold">صورة الخلفية الرئيسية</h2>
-                    </div>
-                    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(230,179,30,.12)" }}>
-                        <div className="relative h-48 md:h-64 bg-[#2D2D2D] flex items-center justify-center cursor-pointer group"
-                            onClick={() => heroInputRef.current?.click()}>
-                            {assetUrl(settings.hero_image) ? (
-                                <img src={assetUrl(settings.hero_image)!} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
-                            ) : (
-                                <div className="text-[#FCFAF1]/15 text-center">
-                                    <FaCamera className="text-4xl mx-auto mb-3" />
-                                    <p className="text-sm">لا توجد صورة — اضغط لرفع صورة</p>
-                                </div>
-                            )}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                <div className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold" style={{ background: gold, color: "#000" }}>
-                                    <FaCamera /> {heroUploading ? "جاري الرفع..." : "تغيير الصورة"}
-                                </div>
+                {/* ══════ Tab: Media — Hero Image/Video ══════ */}
+                {activeTab === 'media' && <motion.div key="media" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <FaImage size={18} />
                             </div>
-                            <input ref={heroInputRef} type="file" accept="image/*" className="hidden"
-                                onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroUpload(f); }} />
+                            <h2 className="text-lg font-bold">صورة / فيديو الواجهة الرئيسية</h2>
                         </div>
-                    </div>
-                </motion.section>
-
-                {/* ══════ Section: Services Management ══════ */}
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15.5 2-8.46 8.46a2 2 0 0 0 0 2.83l3.67 3.67a2 2 0 0 0 2.83 0L22 8.5" /><path d="M2.5 21.5 9 15" /></svg>
-                            </div>
-                            <h2 className="text-xl font-bold">إدارة الخدمات</h2>
-                            <span className="text-xs text-[#FCFAF1]/25">({services.length} خدمة)</span>
-                        </div>
-                        <button onClick={() => setShowAdd(true)}
-                            className="flex items-center gap-2 h-9 px-5 rounded-xl text-xs font-bold transition-all hover:scale-105"
-                            style={{ background: `${gold}15`, color: gold, border: `1px solid ${gold}30` }}>
-                            <FaPlus size={10} /> إضافة خدمة
-                        </button>
-                    </div>
-
-                    {/* Add New Service */}
-                    <AnimatePresence>
-                        {showAdd && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                                className="rounded-2xl p-5 mb-4 overflow-hidden" style={{ background: `${gold}08`, border: `1px solid ${gold}20` }}>
-                                <p className="text-sm font-bold mb-4" style={{ color: gold }}>إضافة خدمة جديدة</p>
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                    <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="اسم الخدمة"
-                                        className="flex-1 py-2.5 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none text-sm"
-                                        style={{ border: "1.5px solid rgba(230,179,30,.18)" }} />
-                                    <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="السعر" type="number" step="0.01"
-                                        className="w-32 py-2.5 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none text-sm" dir="ltr"
-                                        style={{ border: "1.5px solid rgba(230,179,30,.18)" }} />
-                                    <div className="flex gap-2">
-                                        <button onClick={addService} disabled={addingService || !newName.trim()}
-                                            className="h-10 px-5 rounded-xl text-xs font-bold transition-all hover:scale-105 disabled:opacity-50"
-                                            style={{ background: gold, color: "#000" }}>
-                                            {addingService ? "جاري الإضافة..." : "إضافة"}
-                                        </button>
-                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); }}
-                                            className="h-10 px-4 rounded-xl text-xs text-[#FCFAF1]/40 hover:text-[#FCFAF1] hover:bg-white/5 transition-all">
-                                            <FaTimes />
-                                        </button>
+                        
+                        <div className="rounded-2xl overflow-hidden mb-6" style={{ border: "1.5px solid var(--border-subtle)", background: "var(--color-surface)" }}>
+                            {/* Preview box */}
+                            <div className="relative aspect-video flex items-center justify-center">
+                                {settings.hero_type === 'video' && assetUrl(settings.hero_video) ? (
+                                    <video src={assetUrl(settings.hero_video)!} className="absolute inset-0 w-full h-full object-cover opacity-80" autoPlay muted loop playsInline />
+                                ) : settings.hero_type === 'image' && assetUrl(settings.hero_image) ? (
+                                    <img src={assetUrl(settings.hero_image)!} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                                ) : (
+                                    <div className="text-[var(--color-text-muted)] text-center p-8">
+                                        <FaCamera className="text-5xl mx-auto mb-4 opacity-20" />
+                                        <p className="text-sm font-bold tracking-tight">لم تختر خلفية بعد</p>
+                                        <p className="text-xs opacity-50 mt-1">ارفع صورة أو فيديو ليظهر في خلفية صفحة الحجز</p>
                                     </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                )}
+                                
+                                {heroUploading && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                        <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                                    </div>
+                                )}
 
-                    {/* Services List */}
-                    <div className="space-y-3">
-                        {services.map(service => (
-                            <ServiceRow
-                                key={service.id}
-                                service={service}
-                                isEditing={editingService === service.id}
-                                editName={editName}
-                                editPrice={editPrice}
-                                onEditName={setEditName}
-                                onEditPrice={setEditPrice}
-                                onStartEdit={() => startEdit(service)}
-                                onCancelEdit={cancelEdit}
-                                onSaveEdit={saveServiceEdit}
-                                savingEdit={savingService}
-                                uploading={uploading === service.id}
-                                onImageUpload={(file) => handleImageUpload(service.id, file)}
-                                onToggle={() => toggleService(service.id)}
-                                onDelete={() => setDeleteId(service.id)}
-                                gold={gold}
-                                baseUrl={baseUrl}
-                            />
-                        ))}
+                                {/* Status Badge */}
+                                {settings.hero_type && !heroUploading && (
+                                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+                                        style={{ background: "var(--color-accent)", color: "#000" }}>
+                                        {settings.hero_type === 'video' ? '🎥 VIDEO ACTIVE' : '🖼️ IMAGE ACTIVE'}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <label className="btn-lime flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-pointer">
+                                    <FaCamera size={12} /> <span>رفع صورة</span>
+                                    <input type="file" accept="image/*" className="hidden" 
+                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value=""; }} />
+                                </label>
+                                <label className="btn-outline-lime flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-pointer">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
+                                    <span>رفع فيديو</span>
+                                    <input type="file" accept="video/*" className="hidden"
+                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value=""; }} />
+                                </label>
+                            </div>
+                            
+                            {(settings.hero_image || settings.hero_video) && (
+                                <button onClick={() => deleteHeroMedia(settings.hero_type as any)} 
+                                    className="text-red-500 hover:text-red-400 text-xs font-bold px-4 py-2 hover:bg-red-500/10 rounded-xl transition-all">
+                                    حذف المحتوى الحالي
+                                </button>
+                            )}
+                            <p className="text-[10px] text-[var(--color-text-muted)] sm:mr-auto">أقصى حجم: صورة 8MB / فيديو 100MB</p>
+                        </div>
                     </div>
-                </motion.section>
+                </motion.div>}
+
+                {/* ══════ Tab: Services ══════ */}
+                {activeTab === 'services' && <motion.div key="services" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    <div className="card">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                    <Scissors size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold">قائمة الخدمات</h2>
+                                    <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-widest">{services.length} خدمة مفعلة</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowAdd(true)} className="btn-outline-lime flex items-center gap-2 h-10 px-6">
+                                <FaPlus size={10} /> إضافة خدمة
+                            </button>
+                        </div>
+
+                        <AnimatePresence>
+                            {showAdd && (
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                    className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
+                                    <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>تفاصيل الخدمة الجديدة</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الخدمة</label>
+                                            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="مثال: حلاقة كلاسيكية" 
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">السعر (د.أ)</label>
+                                            <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="0.00" type="number" step="0.01" dir="ltr"
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-6">
+                                        <button onClick={addService} disabled={addingService || !newName.trim()} className="btn-lime min-w-[120px]">
+                                            {addingService ? <div className="spinner-sm mx-auto" /> : "تأكيد الإضافة"}
+                                        </button>
+                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); }} 
+                                            className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <div className="grid grid-cols-1 gap-3">
+                            {services.map(service => (
+                                <ServiceRow
+                                    key={service.id}
+                                    service={service}
+                                    isEditing={editingService === service.id}
+                                    editName={editName}
+                                    editPrice={editPrice}
+                                    onEditName={setEditName}
+                                    onEditPrice={setEditPrice}
+                                    onStartEdit={() => startEdit(service)}
+                                    onCancelEdit={cancelEdit}
+                                    onSaveEdit={saveServiceEdit}
+                                    savingEdit={savingService}
+                                    uploading={uploading === service.id}
+                                    onImageUpload={(file) => handleImageUpload(service.id, file)}
+                                    onToggle={() => toggleService(service.id)}
+                                    onDelete={() => setDeleteId(service.id)}
+                                    gold={gold}
+                                    baseUrl={baseUrl}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>}
+
+                {/* ══════ Tab: Employees ══════ */}
+                {activeTab === 'employees' && <motion.div key="employees" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    <div className="card">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                    <Users size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold">فريق العمل</h2>
+                                    <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-widest">{employees.length} حلاق مسجل</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowAddEmp(true)} className="btn-outline-lime flex items-center gap-2 h-10 px-6">
+                                <FaPlus size={10} /> إضافة حلاق
+                            </button>
+                        </div>
+
+                        <AnimatePresence>
+                            {showAddEmp && (
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                    className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
+                                    <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>بيانات الحلاق الجديد</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الحلاق</label>
+                                            <input value={newEmpName} onChange={e => setNewEmpName(e.target.value)} placeholder="الاسم الكامل" 
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">رقم الهاتف (اختياري)</label>
+                                            <input value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="07XXXXXXXX" dir="ltr"
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-6">
+                                        <button onClick={addEmployee} disabled={addingEmp || !newEmpName.trim()} className="btn-lime min-w-[120px]">
+                                            {addingEmp ? <div className="spinner-sm mx-auto" /> : "إضافة الحلاق"}
+                                        </button>
+                                        <button onClick={() => { setShowAddEmp(false); setNewEmpName(""); setNewEmpPhone(""); }} 
+                                            className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {employees.map(emp => (
+                                <EmployeeCard
+                                    key={emp.id}
+                                    emp={emp}
+                                    isEditing={editingEmp === emp.id}
+                                    editName={editEmpName}
+                                    editPhone={editEmpPhone}
+                                    editSpecialty={editEmpSpecialty}
+                                    onEditName={setEditEmpName}
+                                    onEditPhone={setEditEmpPhone}
+                                    onEditSpecialty={setEditEmpSpecialty}
+                                    onStartEdit={() => startEditEmp(emp)}
+                                    onCancelEdit={cancelEditEmp}
+                                    onSaveEdit={saveEmpEdit}
+                                    savingEdit={savingEmp}
+                                    uploading={empUploading === emp.id}
+                                    onPhotoUpload={(file) => handleEmpPhotoUpload(emp.id, file)}
+                                    onDelete={() => setDeleteEmpId(emp.id)}
+                                    gold={gold}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>}
+
+                {/* ══════ Tab: FAQ ══════ */}
+                {activeTab === 'faq' && <motion.div key="faq" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    <div className="card">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                    <HelpCircle size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold">الأسئلة الشائعة</h2>
+                                    <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-widest">تحسين تجربة الزبون</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowAddFaq(true)} className="btn-outline-lime flex items-center gap-2 h-10 px-6">
+                                <FaPlus size={10} /> إضافة سؤال
+                            </button>
+                        </div>
+
+                        <AnimatePresence>
+                            {showAddFaq && (
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                    className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
+                                    <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>سؤال وجواب جديد</h3>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">السؤال</label>
+                                            <input value={newFaqQ} onChange={e => setNewFaqQ(e.target.value)} placeholder="مثال: هل توجد مواقف للسيارات؟" 
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">الإجابة</label>
+                                            <textarea value={newFaqA} onChange={e => setNewFaqA(e.target.value)} placeholder="اكتب الإجابة هنا بوضوح..." rows={3}
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm resize-none" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-6">
+                                        <button onClick={addFaq} disabled={addingFaq || !newFaqQ.trim() || !newFaqA.trim()} className="btn-lime min-w-[120px]">
+                                            {addingFaq ? <div className="spinner-sm mx-auto" /> : "إضافة السؤال"}
+                                        </button>
+                                        <button onClick={() => { setShowAddFaq(false); setNewFaqQ(''); setNewFaqA(''); }} 
+                                            className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {faqs.length === 0 ? (
+                            <div className="rounded-2xl p-16 text-center border-2 border-dashed border-[var(--border-subtle)]">
+                                <HelpCircle className="w-12 h-12 text-[var(--color-text-muted)] mx-auto mb-4 opacity-20" />
+                                <p className="text-sm font-bold text-[var(--color-text-muted)]">لا توجد أسئلة شائعة بعد</p>
+                                <p className="text-xs text-[var(--color-text-muted)]/50 mt-1">أضف الأسئلة المتكررة لتقليل استفسارات الزبائن</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {faqs.map((faq, i) => (
+                                    <motion.div key={faq.id} layout className="rounded-2xl p-5 group transition-all"
+                                        style={{ background: "var(--color-surface)", border: editingFaq === faq.id ? `1.5px solid ${gold}` : "1.5px solid var(--border-subtle)" }}>
+                                        {editingFaq === faq.id ? (
+                                            <div className="space-y-4">
+                                                <input value={editFaqQ} onChange={e => setEditFaqQ(e.target.value)} 
+                                                    className="w-full bg-transparent border-b border-[var(--color-accent)] pb-2 text-sm font-bold outline-none" />
+                                                <textarea value={editFaqA} onChange={e => setEditFaqA(e.target.value)} rows={3}
+                                                    className="w-full bg-transparent border border-[var(--border-subtle)] p-3 rounded-lg text-sm outline-none resize-none" />
+                                                <div className="flex gap-2">
+                                                    <button onClick={saveFaq} className="btn-lime h-8 px-4 text-[10px]">حفظ</button>
+                                                    <button onClick={() => setEditingFaq(null)} className="text-[10px] font-bold px-3">إلغاء</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <h3 className="text-sm font-bold mb-2 flex items-center gap-2">
+                                                        <span className="text-[var(--color-accent)] font-mono text-xs opacity-40">Q.</span>
+                                                        {faq.question}
+                                                    </h3>
+                                                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">{faq.answer}</p>
+                                                </div>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => { setEditingFaq(faq.id); setEditFaqQ(faq.question); setEditFaqA(faq.answer); }}
+                                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 transition-all">
+                                                        <FaPen size={10} />
+                                                    </button>
+                                                    <button onClick={() => deleteFaq(faq.id)}
+                                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-500/10 transition-all">
+                                                        <FaTrash size={10} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </motion.div>}
+
             </div>
+
+            {/* Delete Employee Confirmation Modal */}
+            <AnimatePresence>
+                {deleteEmpId && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+                        onClick={() => !deletingEmp && setDeleteEmpId(null)}>
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                            className="rounded-2xl p-6 max-w-sm w-full text-center" style={{ background: "var(--color-cards)", border: "1px solid rgba(195,216,9,.15)" }}
+                            onClick={e => e.stopPropagation()}>
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "#dc262620" }}>
+                                <FaTrash className="text-red-500" />
+                            </div>
+                            <h3 className="text-lg font-bold mb-2">حذف الحلاق</h3>
+                            <p className="text-sm text-[var(--color-text-primary)]/40 mb-6">هل أنت متأكد من حذف &quot;{employees.find(e => e.id === deleteEmpId)?.name}&quot;؟ لا يمكن التراجع.</p>
+                            <div className="flex gap-3 justify-center">
+                                <button onClick={() => setDeleteEmpId(null)} disabled={deletingEmp}
+                                    className="h-10 px-6 rounded-xl text-sm text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">إلغاء</button>
+                                <button onClick={() => deleteEmployee(deleteEmpId)} disabled={deletingEmp}
+                                    className="h-10 px-6 rounded-xl text-sm font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50">
+                                    {deletingEmp ? "جاري الحذف..." : "حذف نهائياً"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Delete Confirmation Modal */}
             <AnimatePresence>
@@ -654,16 +1065,16 @@ export default function BookingSettingsPage() {
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
                         onClick={() => !deleting && setDeleteId(null)}>
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                            className="rounded-2xl p-6 max-w-sm w-full text-center" style={{ background: "#2D2D2D", border: "1px solid rgba(230,179,30,.15)" }}
+                            className="rounded-2xl p-6 max-w-sm w-full text-center" style={{ background: "var(--color-cards)", border: "1px solid rgba(195,216,9,.15)" }}
                             onClick={e => e.stopPropagation()}>
                             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "#dc262620" }}>
                                 <FaTrash className="text-red-500" />
                             </div>
                             <h3 className="text-lg font-bold mb-2">حذف الخدمة</h3>
-                            <p className="text-sm text-[#FCFAF1]/40 mb-6">هل أنت متأكد من حذف &quot;{services.find(s => s.id === deleteId)?.name}&quot;؟ لا يمكن التراجع.</p>
+                            <p className="text-sm text-[var(--color-text-primary)]/40 mb-6">هل أنت متأكد من حذف &quot;{services.find(s => s.id === deleteId)?.name}&quot;؟ لا يمكن التراجع.</p>
                             <div className="flex gap-3 justify-center">
                                 <button onClick={() => setDeleteId(null)} disabled={deleting}
-                                    className="h-10 px-6 rounded-xl text-sm text-[#FCFAF1]/50 hover:text-[#FCFAF1] hover:bg-white/5 transition-all">إلغاء</button>
+                                    className="h-10 px-6 rounded-xl text-sm text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">إلغاء</button>
                                 <button onClick={() => deleteService(deleteId)} disabled={deleting}
                                     className="h-10 px-6 rounded-xl text-sm font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50">
                                     {deleting ? "جاري الحذف..." : "حذف نهائياً"}
@@ -677,18 +1088,23 @@ export default function BookingSettingsPage() {
     );
 }
 
-/* ═══════ Input Field Component ═══════ */
 function InputField({ label, value, onChange, gold, dir, placeholder }: {
     label: string; value: string; onChange: (v: string) => void; gold: string; dir?: string; placeholder?: string;
 }) {
     return (
         <div>
-            <label className="text-xs font-bold text-[#FCFAF1]/30 mb-2 block uppercase tracking-wider">{label}</label>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">{label}</label>
             <input value={value} onChange={e => onChange(e.target.value)} dir={dir} placeholder={placeholder}
-                className="w-full py-3 px-4 rounded-xl bg-[#343434] text-[#FCFAF1] outline-none text-sm transition-all"
-                style={{ border: "1.5px solid rgba(230,179,30,.12)" }}
-                onFocus={e => e.currentTarget.style.borderColor = gold}
-                onBlur={e => e.currentTarget.style.borderColor = "rgba(230,179,30,.12)"} />
+                className="w-full py-3.5 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none text-sm transition-all"
+                style={{ border: "1.5px solid var(--border-subtle)" }}
+                onFocus={e => {
+                    e.currentTarget.style.borderColor = gold;
+                    e.currentTarget.style.backgroundColor = "var(--color-background)";
+                }}
+                onBlur={e => {
+                    e.currentTarget.style.borderColor = "var(--border-subtle)";
+                    e.currentTarget.style.backgroundColor = "black";
+                }} />
         </div>
     );
 }
@@ -719,10 +1135,10 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
 
     return (
         <div className={`rounded-2xl p-3 md:p-4 flex flex-row items-center gap-3 md:gap-4 transition-all ${!service.is_active ? "opacity-40" : ""}`}
-            style={{ background: "#2D2D2D", border: isEditing ? `1px solid ${gold}40` : "1px solid rgba(230,179,30,.12)" }}>
+            style={{ background: "var(--color-cards)", border: isEditing ? `1px solid ${gold}40` : "1px solid var(--border-subtle)" }}>
 
             {/* Image Thumbnail */}
-            <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group bg-[#343434]"
+            <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group bg-card-dark"
                 onClick={() => !uploading && inputRef.current?.click()}>
                 <img
                     src={imageUrl}
@@ -740,7 +1156,7 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                     {uploading ? (
                         <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
                     ) : (
-                        <FaCamera className="text-[#FCFAF1]" size={12} />
+                        <FaCamera className="text-[var(--color-text-primary)]" size={12} />
                     )}
                 </div>
                 <input ref={inputRef} type="file" accept="image/*" className="hidden"
@@ -752,11 +1168,11 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                 {isEditing ? (
                     <div className="flex flex-col sm:flex-row gap-2">
                         <input value={editName} onChange={e => onEditName(e.target.value)} autoFocus
-                            className="flex-1 py-2 px-3 rounded-lg bg-[#343434] text-[#FCFAF1] outline-none text-sm"
+                            className="flex-1 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
                             style={{ border: `1px solid ${gold}30` }}
                             onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
                         <input value={editPrice} onChange={e => onEditPrice(e.target.value)} type="number" step="0.01" dir="ltr"
-                            className="w-24 py-2 px-3 rounded-lg bg-[#343434] text-[#FCFAF1] outline-none text-sm text-center"
+                            className="w-24 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm text-center"
                             style={{ border: `1px solid ${gold}30` }}
                             onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
                     </div>
@@ -778,22 +1194,22 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                             <FaSave size={12} />
                         </button>
                         <button onClick={onCancelEdit}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#FCFAF1]/30 hover:text-[#FCFAF1] hover:bg-white/5 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
                             <FaTimes size={12} />
                         </button>
                     </>
                 ) : (
                     <>
                         <button onClick={onStartEdit} title="تعديل"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#FCFAF1]/20 hover:text-[#FCFAF1] hover:bg-white/5 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/20 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
                             <FaPen size={10} />
                         </button>
                         <button onClick={onToggle} title={service.is_active ? "تعطيل" : "تفعيل"}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs font-bold ${service.is_active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-white/5 text-[#FCFAF1]/30 hover:bg-white/10"}`}>
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs font-bold ${service.is_active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-white/5 text-[var(--color-text-primary)]/30 hover:bg-white/10"}`}>
                             {service.is_active ? "✓" : "○"}
                         </button>
                         <button onClick={onDelete} title="حذف"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#FCFAF1]/15 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/15 hover:text-red-400 hover:bg-red-500/10 transition-all">
                             <FaTrash size={10} />
                         </button>
                     </>
@@ -803,7 +1219,140 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
     );
 }
 
-/* ═══════ 12-Hour Time Picker Component ═══════ */
+/* ═══════ Employee Card Component ═══════ */
+function EmployeeCard({
+    emp, isEditing, editName, editPhone, editSpecialty,
+    onEditName, onEditPhone, onEditSpecialty,
+    onStartEdit, onCancelEdit, onSaveEdit, savingEdit,
+    uploading, onPhotoUpload, onDelete, gold,
+}: {
+    emp: EmployeeItem;
+    isEditing: boolean;
+    editName: string; editPhone: string; editSpecialty: string;
+    onEditName: (v: string) => void; onEditPhone: (v: string) => void; onEditSpecialty: (v: string) => void;
+    onStartEdit: () => void; onCancelEdit: () => void; onSaveEdit: () => void; savingEdit: boolean;
+    uploading: boolean; onPhotoUpload: (file: File) => void;
+    onDelete: () => void; gold: string;
+}) {
+    const photoRef = useRef<HTMLInputElement>(null);
+
+    const initials = emp.name
+        .split(" ")
+        .map(w => w[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
+            style={{
+                background: "var(--color-cards)",
+                border: isEditing ? `1.5px solid ${gold}50` : "1px solid rgba(195,216,9,.15)",
+                boxShadow: isEditing ? `0 0 0 3px ${gold}10` : "none",
+            }}
+        >
+            {/* Photo + Name Row */}
+            <div className="flex items-center gap-4">
+                {/* Avatar / Photo Upload */}
+                <div className="relative group cursor-pointer flex-shrink-0"
+                    onClick={() => !uploading && photoRef.current?.click()}>
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center bg-[#0d0d0d] shadow-lg"
+                        style={{ border: `2.5px solid ${assetUrl(emp.photo_path) ? `${gold}40` : "var(--border-subtle)"}` }}>
+                        {uploading ? (
+                            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                                style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                        ) : assetUrl(emp.photo_path) ? (
+                            <img src={assetUrl(emp.photo_path)!} alt={emp.name}
+                                className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                        ) : (
+                            <span className="text-xl font-black" style={{ color: gold }}>{initials}</span>
+                        )}
+                    </div>
+                    {/* Hover overlay */}
+                    {!uploading && (
+                        <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
+                            <FaCamera className="text-[var(--color-text-primary)]" size={13} />
+                        </div>
+                    )}
+                    <input ref={photoRef} type="file" accept="image/*" className="hidden"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) onPhotoUpload(f); e.target.value = ""; }} />
+                </div>
+
+                {/* Name & Specialty */}
+                <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                        <div className="space-y-2">
+                            <input value={editName} onChange={e => onEditName(e.target.value)} autoFocus
+                                placeholder="اسم الحلاق"
+                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
+                                style={{ border: `1px solid ${gold}30` }}
+                                onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
+                            <input value={editPhone} onChange={e => onEditPhone(e.target.value)}
+                                placeholder="الهاتف" dir="ltr"
+                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
+                                style={{ border: `1px solid ${gold}20` }} />
+                            <input value={editSpecialty} onChange={e => onEditSpecialty(e.target.value)}
+                                placeholder="التخصص (مثال: حلاقة، لحية)"
+                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
+                                style={{ border: `1px solid ${gold}20` }} />
+                        </div>
+                    ) : (
+                        <div>
+                            <p className="font-bold text-sm text-[var(--color-text-primary)] truncate">{emp.name}</p>
+                            {emp.specialty && (
+                                <p className="text-xs mt-0.5" style={{ color: gold }}>{emp.specialty}</p>
+                            )}
+                            {emp.phone && (
+                                <p className="text-xs text-[var(--color-text-primary)]/30 mt-0.5 font-mono" dir="ltr">{emp.phone}</p>
+                            )}
+                            {!emp.specialty && !emp.phone && (
+                                <p className="text-xs text-[var(--color-text-primary)]/20 mt-0.5">اضغط تعديل لإضافة التفاصيل</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Actions Row */}
+            <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                {isEditing ? (
+                    <>
+                        <button onClick={onSaveEdit} disabled={savingEdit}
+                            className="flex-1 h-9 rounded-xl text-xs font-bold transition-all hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                            style={{ background: `${gold}15`, color: gold }}>
+                            <FaSave size={11} /> {savingEdit ? "جاري الحفظ..." : "حفظ"}
+                        </button>
+                        <button onClick={onCancelEdit}
+                            className="h-9 w-9 rounded-xl flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
+                            <FaTimes size={12} />
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button onClick={onStartEdit}
+                            className="flex-1 h-9 rounded-xl text-xs font-bold transition-all hover:scale-105 flex items-center justify-center gap-1.5 text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:bg-white/5">
+                            <FaPen size={10} /> تعديل
+                        </button>
+                        <button onClick={() => photoRef.current?.click()} disabled={uploading}
+                            className="h-9 px-3 rounded-xl text-xs transition-all hover:scale-105 flex items-center justify-center gap-1.5 text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5">
+                            <FaCamera size={11} /> صورة
+                        </button>
+                        <button onClick={onDelete}
+                            className="h-9 w-9 rounded-xl flex items-center justify-center text-[var(--color-text-primary)]/15 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                            <FaTrash size={10} />
+                        </button>
+                    </>
+                )}
+            </div>
+        </motion.div>
+    );
+}
+
 function TimePicker12({ label, value, onChange, gold }: {
     label: string; value: string; onChange: (v: string) => void; gold: string;
 }) {
@@ -819,29 +1368,29 @@ function TimePicker12({ label, value, onChange, gold }: {
         onChange(`${String(h).padStart(2, "0")}:${String(newM).padStart(2, "0")}`);
     };
 
-    const selectStyle = { background: "#343434", border: "1.5px solid rgba(230,179,30,.12)" };
+    const selectStyle = { background: "var(--color-cards)", border: "1.5px solid var(--border-subtle)" };
 
     return (
         <div>
-            <label className="text-xs font-bold text-[#FCFAF1]/30 mb-2 block uppercase tracking-wider">{label}</label>
+            <label className="text-xs font-bold text-[var(--color-text-primary)]/30 mb-2 block uppercase tracking-wider">{label}</label>
             <div className="flex gap-2" dir="ltr">
                 <select value={h12} onChange={e => update(Number(e.target.value), m, period)}
-                    className="flex-1 py-3 px-2 rounded-xl text-[#FCFAF1] outline-none text-sm text-center transition-all cursor-pointer appearance-none"
+                    className="flex-1 py-3 px-2 rounded-xl text-[var(--color-text-primary)] outline-none text-sm text-center transition-all cursor-pointer appearance-none"
                     style={selectStyle}>
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
                         <option key={h} value={h}>{h}</option>
                     ))}
                 </select>
-                <span className="flex items-center text-[#FCFAF1]/20 text-lg font-bold">:</span>
+                <span className="flex items-center text-[var(--color-text-primary)]/20 text-lg font-bold">:</span>
                 <select value={m} onChange={e => update(h12, Number(e.target.value), period)}
-                    className="flex-1 py-3 px-2 rounded-xl text-[#FCFAF1] outline-none text-sm text-center transition-all cursor-pointer appearance-none"
+                    className="flex-1 py-3 px-2 rounded-xl text-[var(--color-text-primary)] outline-none text-sm text-center transition-all cursor-pointer appearance-none"
                     style={selectStyle}>
                     {[0, 15, 30, 45].map(min => (
                         <option key={min} value={min}>{String(min).padStart(2, "0")}</option>
                     ))}
                 </select>
                 <select value={period} onChange={e => update(h12, m, e.target.value)}
-                    className="w-16 py-3 px-1 rounded-xl text-[#FCFAF1] outline-none text-sm text-center transition-all cursor-pointer appearance-none font-bold"
+                    className="w-16 py-3 px-1 rounded-xl text-[var(--color-text-primary)] outline-none text-sm text-center transition-all cursor-pointer appearance-none font-bold"
                     style={{ ...selectStyle, color: gold }}>
                     <option value="ص">ص</option>
                     <option value="م">م</option>

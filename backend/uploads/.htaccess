@@ -1,0 +1,8 @@
+# Protect uploads directory — do NOT allow PHP execution for security
+# Only allow image and video files
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Require all denied
+</FilesMatch>
+
+# Allow direct access to image/video files
+Options -Indexes

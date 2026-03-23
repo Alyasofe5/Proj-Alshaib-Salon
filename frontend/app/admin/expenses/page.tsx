@@ -88,10 +88,10 @@ export default function ExpensesPage() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><BarChart2 size={18} className="inline ml-2 text-gold" /> المالية <span>والمصاريف</span></div>
+                <div className="topbar-title"><BarChart2 size={18} className="inline ml-2 text-accent-lime" /> المالية <span>والمصاريف</span></div>
                 <div className="flex gap-2 items-center">
                     <input type="month" className="form-input" style={{ width: 160 }} value={month} onChange={e => setMonth(e.target.value)} />
-                    <button className="btn-gold flex items-center gap-2" onClick={() => { setForm({ title: "", amount: 0, type: "rent", notes: "" }); setShowModal(true); }}>
+                    <button className="btn-lime flex items-center gap-2" onClick={() => { setForm({ title: "", amount: 0, type: "rent", notes: "" }); setShowModal(true); }}>
                         <FaPlus /> إضافة مصروف
                     </button>
                 </div>
@@ -115,9 +115,9 @@ export default function ExpensesPage() {
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                <XAxis dataKey="month" tick={{ fill: "#888", fontSize: 12 }} />
-                                <YAxis orientation="right" tick={{ fill: "#888", fontSize: 12 }} width={30} />
-                                <Tooltip contentStyle={{ background: "#3A3A3A", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
+                                <XAxis dataKey="month" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} />
+                                <YAxis orientation="right" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} width={30} />
+                                <Tooltip contentStyle={{ background: "var(--color-surface)", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
                                 <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
                                 <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
                             </BarChart>
@@ -133,7 +133,7 @@ export default function ExpensesPage() {
                                     <div key={type} className="mb-3">
                                         <div className="flex justify-between mb-1">
                                             <span className="text-sm text-gray-400">{typeLabels[type] || type}</span>
-                                            <span className="text-sm text-gold font-bold">{amount.toFixed(3)} د.أ</span>
+                                            <span className="text-sm text-accent-lime font-bold">{amount.toFixed(3)} د.أ</span>
                                         </div>
                                         <div className="h-2 bg-dark-1 rounded"><div className="h-full bg-red-500 rounded" style={{ width: `${pct}%` }} /></div>
                                         <span className="text-xs text-gray-600">{pct}%</span>
@@ -156,7 +156,7 @@ export default function ExpensesPage() {
                                 <tr key={exp.id}>
                                     <td className="text-gray-600">{i + 1}</td>
                                     <td className="text-white font-semibold">{exp.title}</td>
-                                    <td><span className="badge badge-gold">{typeLabels[exp.type] || exp.type}</span></td>
+                                    <td><span className="badge badge-lime">{typeLabels[exp.type] || exp.type}</span></td>
                                     <td className="text-red-500 font-bold">{Number(exp.amount).toFixed(3)} د.أ</td>
                                     <td className="text-gray-500 text-sm">{exp.notes || "-"}</td>
                                     <td className="text-gray-600 text-xs">{new Date(exp.created_at).toLocaleDateString("ar-JO")}</td>
@@ -175,7 +175,7 @@ export default function ExpensesPage() {
 
             {/* Add Modal */}
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="إضافة مصروف جديد" icon={<FaPlus />}
-                footer={<><button className="btn-gold" onClick={handleSubmit}>حفظ</button><button className="btn-outline-gold" onClick={() => setShowModal(false)}>إلغاء</button></>}>
+                footer={<><button className="btn-lime" onClick={handleSubmit}>حفظ</button><button className="btn-outline-lime" onClick={() => setShowModal(false)}>إلغاء</button></>}>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4"><label className="form-label">عنوان المصروف *</label><input className="form-input" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required placeholder="مثال: إيجار المحل" /></div>
                     <div className="mb-4"><label className="form-label">المبلغ (د.أ) *</label><input type="number" className="form-input" value={form.amount} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} min={0} step={0.001} required /></div>

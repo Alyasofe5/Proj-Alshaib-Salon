@@ -104,6 +104,20 @@
 .glass-card-3 { animation: glassCardIn 0.4s ease both 0.19s; }
 
 /* ===== Brand Shimmer — MAQASS logo text ===== */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-slow {
+  animation: marquee 60s linear infinite;
+}
+
+.animate-marquee-slow-reverse {
+  animation: marquee 60s linear infinite reverse;
+}
+
+/* ===== Brand Shimmer — MAQASS logo text ===== */
 @keyframes brand-shimmer {
   0%   { background-position: 200% center; }
   100% { background-position: -200% center; }

@@ -2,11 +2,28 @@ export interface Service { id: number; name: string; price: string; duration_min
 export interface Employee { id: number; name: string; avatar?: string; role?: string; }
 export interface SalonInfo {
     name: string; slug: string; logo: string | null; phone: string | null;
-    description: string; address: string; instagram: string; booking_message: string;
+    description: string; secondary_description?: string; address: string; instagram: string;
+    whatsapp?: string; facebook?: string; booking_message: string;
     hero_image: string | null;
+    hero_video?: string | null;
+    hero_type?: string;
     gallery?: string[];
     reviews?: { id: number; customer_name: string; rating: number; comment: string; }[];
     faqs?: { id: number; question: string; answer: string; }[];
+    // New Content Fields
+    hero_subtitle?: string;
+    hero_title?: string;
+    about_title?: string;
+    about_subtitle?: string;
+    about_description?: string;
+    about_image_1?: string;
+    about_image_2?: string;
+    services_title?: string;
+    services_subtitle?: string;
+    services_description?: string;
+    team_title?: string;
+    team_subtitle?: string;
+    team_description?: string;
 }
 
 export interface BookingSel {

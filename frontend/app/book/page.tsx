@@ -6,9 +6,10 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import axios from "axios";
 import { assetUrl } from "@/lib/assets";
 import {
-    Scissors, Calendar, Clock, UserCircle, X, ArrowRight, Plus, Sparkles,
-    ChevronDown, MapPin, Phone, Instagram, AlertCircle, Check, CheckCircle2,
+    Scissors, Calendar, Clock, UserCircle, X, ArrowRight, ArrowLeft, Plus, Sparkles, Star,
+    ChevronDown, MapPin, Phone, Instagram, AlertCircle, Check, CheckCircle2, Facebook
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { Service, Employee, SalonInfo, BookingSel, dayNames, monthNames, fmt12, API } from "./types";
 import BookingModal from "./BookingModal";
 
@@ -53,10 +54,11 @@ function BookingContent() {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const [activeServiceIndex, setActiveServiceIndex] = useState(0);
     const [notFound, setNotFound] = useState(false);
     const [noBookingPage, setNoBookingPage] = useState(false);
 
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(0);
     const [sel, setSel] = useState<BookingSel>({ service_ids: [], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
     const [submitting, setSubmitting] = useState(false);
@@ -69,12 +71,20 @@ function BookingContent() {
                 const res = await axios.get(`${API}/booking/salon.php?slug=${slug}`);
                 const d = res.data.data;
                 setSalon(d.salon); setServices(d.services || []); setEmployees(d.employees || []);
-                if (d.settings) {
-                    setWorkHours({ start: d.settings.work_start || "09:00", end: d.settings.work_end || "22:00", interval: parseInt(d.settings.slot_interval) || 30 });
-                    setOffDays(JSON.parse(d.settings.off_days || "[]").map(Number));
-                    setBookingDays(parseInt(d.settings.booking_days_ahead) || 7);
-                    if (d.settings.is_booking_active === 0 || d.settings.is_booking_active === "0") setNoBookingPage(true);
+                if (d.work_hours) {
+                    setWorkHours({
+                        start: d.work_hours.start || "09:00",
+                        end: d.work_hours.end || "22:00",
+                        interval: parseInt(d.work_hours.interval) || 30
+                    });
                 }
+                if (d.off_days) {
+                    setOffDays(Array.isArray(d.off_days) ? d.off_days.map(Number) : []);
+                }
+                if (d.booking_days) {
+                    setBookingDays(parseInt(d.booking_days) || 7);
+                }
+                if (d.salon?.is_booking_active === 0 || d.salon?.is_booking_active === "0") setNoBookingPage(true);
             } catch (err: unknown) {
                 const axiosErr = err as { response?: { status?: number } };
                 if (axiosErr.response?.status === 404) setNotFound(true);
@@ -140,6 +150,39 @@ function BookingContent() {
         setSel(p => ({ ...p, service_ids: p.service_ids.includes(id) ? p.service_ids.filter(x => x !== id) : [...p.service_ids, id] }));
     }, []);
 
+    /* ─── Helpers ─── */
+    const formatOpenDays = useCallback(() => {
+        if (offDays.length === 0) return "طوال أيام الأسبوع";
+        if (offDays.length === 7) return "مغلق مؤقتاً";
+
+        const openIndices = Array.from({ length: 7 }, (_, i) => i).filter(i => !offDays.includes(i));
+        if (openIndices.length === 0) return "مغلق";
+
+        const groups: number[][] = [];
+        let cur: number[] = [];
+        for (let i = 0; i < openIndices.length; i++) {
+            if (cur.length === 0 || openIndices[i] === cur[cur.length - 1] + 1) {
+                cur.push(openIndices[i]);
+            } else {
+                groups.push(cur);
+                cur = [openIndices[i]];
+            }
+        }
+        if (cur.length > 0) groups.push(cur);
+
+        // Handle wrap-around (e.g., Saturday and Sunday)
+        if (groups.length > 1 && groups[0][0] === 0 && groups[groups.length - 1][groups[groups.length - 1].length - 1] === 6) {
+            const last = groups.pop()!;
+            groups[0] = [...last, ...groups[0]];
+        }
+
+        return groups.map(g => {
+            if (g.length === 1) return dayNames[g[0]];
+            if (g.length === 2) return `${dayNames[g[0]]} ، ${dayNames[g[1]]}`;
+            return `${dayNames[g[0]]} - ${dayNames[g[g.length - 1]]}`;
+        }).join(" ، ");
+    }, [offDays]);
+
     /* ─── Error States ─── */
     if (notFound) return (
         <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A", color: "#F5F2EC", direction: "rtl" }}>
@@ -168,11 +211,13 @@ function BookingContent() {
         </div>
     );
 
-    const mockGallery = salon.gallery?.length ? salon.gallery : [
-        "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1200",
-        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1200",
-        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200",
-        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1200",
+    const mockGallery = salon.gallery?.length ? salon.gallery.map((g: any) => typeof g === "string" ? { type: "image", url: g } : g) : [
+        { type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-barber-trimming-a-beard-with-a-razor-4148-large.mp4" },
+        { type: "image", url: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1200" },
+        { type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-stylist-combing-hair-of-a-customer-4147-large.mp4" },
+        { type: "image", url: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1200" },
+        { type: "image", url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200" },
+        { type: "image", url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1200" },
     ];
     const mockReviews = salon.reviews?.length ? salon.reviews : [
         { id: 1, customer_name: "أحمد العبدالله", rating: 5, comment: "خدمة احترافية جداً، الحلاق فهم قصة الشعر اللي أريدها بالضبط." },
@@ -198,195 +243,493 @@ function BookingContent() {
 
             {/* GOOGLE FONTS */}
             {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Tajawal:wght@400;500;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Noto+Sans+Arabic:wght@100;400;700;900&family=Tajawal:wght@400;500;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-            {/* ═══ HEADER ═══ */}
-            <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500" style={{
-                padding: scrolled ? "10px 16px" : "18px 16px",
-                background: scrolled ? "rgba(10,10,10,0.96)" : "transparent",
-                backdropFilter: scrolled ? "blur(20px)" : "none",
-                borderBottom: "none",
-                boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.15)" : "none",
+            {/* ═══ HEADER (Solv Style) ═══ */}
+            <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-700 border-b border-transparent" style={{
+                padding: scrolled ? "12px 24px" : "24px 24px",
+                background: scrolled ? "rgba(5,5,5,0.85)" : "transparent",
+                backdropFilter: scrolled ? "blur(24px)" : "none",
             }}>
-                <div className="max-w-[1400px] mx-auto flex justify-between items-center">
-                    <a href="/" className="transition-opacity hover:opacity-80">
-                        {salon.logo ? (
-                            <img
-                                src={assetUrl(salon.logo)!}
-                                alt={salon.name}
-                                className="object-cover rounded-full"
-                                style={{
-                                    width: 44, height: 44,
-                                    mixBlendMode: "screen",
-                                    filter: "brightness(1.1) contrast(1.1)",
-                                    border: "1px solid rgba(245,242,236,0.1)"
-                                }}
-                            />
-                        ) : (
-                            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.2rem, 4vw, 1.75rem)", fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.03em" }}>
-                                {salon.name}<span style={{ color: "#C3D809" }}>.</span>
-                            </div>
-                        )}
-                    </a>
-                    <nav className="hidden lg:flex items-center gap-10" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.85rem", fontWeight: 500, letterSpacing: "0.05em" }}>
-                        {[{ name: "الخدمات", id: "services" }, { name: "عن الصالون", id: "about" }, { name: "الفريق", id: "team" }, { name: "تواصل", id: "contact" }].map(item => (
-                            <a key={item.id} href={`#${item.id}`} className="transition-colors" style={{ color: "rgba(245,242,236,0.5)" }}
-                                onMouseEnter={e => (e.target as HTMLElement).style.color = "#C3D809"}
-                                onMouseLeave={e => (e.target as HTMLElement).style.color = "rgba(245,242,236,0.5)"}>{item.name}</a>
+                <div className="max-w-[1500px] mx-auto grid grid-cols-3 items-center">
+                    {/* Left: Nav */}
+                    <nav className="hidden lg:flex items-center gap-2">
+                        {[{ name: "الخدمات", id: "services" }, { name: "الاشتراكات", id: "membership" }, { name: "المنتجات", id: "products" }].map(item => (
+                            <a key={item.id} href={`#${item.id}`} className="px-5 py-2 rounded-full text-[13px] font-bold text-white/70 hover:text-white hover:bg-white/5 transition-all">
+                                {item.name}
+                            </a>
                         ))}
                     </nav>
-                    {/* Desktop CTA */}
-                    <button onClick={() => setIsBookingOpen(true)}
-                        className="hidden md:block px-6 py-2.5 rounded-full text-sm font-bold transition-all"
-                        style={{ border: "1px solid rgba(245,242,236,0.15)", color: "#F5F2EC", background: "transparent", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.9rem" }}
-                        onMouseEnter={e => { (e.target as HTMLElement).style.background = "#C3D809"; (e.target as HTMLElement).style.borderColor = "#C3D809"; (e.target as HTMLElement).style.color = "#0A0A0A"; }}
-                        onMouseLeave={e => { (e.target as HTMLElement).style.background = "transparent"; (e.target as HTMLElement).style.borderColor = "rgba(245,242,236,0.15)"; (e.target as HTMLElement).style.color = "#F5F2EC"; }}>
-                        احجز الآن
-                    </button>
-                    {/* Mobile menu icon → opens booking */}
-                    <button onClick={() => setIsBookingOpen(true)}
-                        className="flex md:hidden items-center gap-1.5 px-4 py-2 rounded-full"
-                        style={{ background: "var(--border-subtle)", border: "1px solid rgba(195,216,9,0.3)", color: "#C3D809", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.85rem", fontWeight: 700 }}>
-                        احجز
-                    </button>
+
+                    {/* Center: Logo */}
+                    <div className="flex justify-center">
+                        <a href={`/book?s=${slug}`} className="flex items-center gap-3 transition-transform hover:scale-105">
+                            <div className="w-8 h-8 rounded-lg bg-[#C3D809] flex items-center justify-center transform rotate-12">
+                                <Scissors size={18} className="text-black -rotate-12" />
+                            </div>
+                            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.5rem", fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.04em", color: "#F5F2EC" }}>
+                                {salon.name}
+                            </span>
+                        </a>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex justify-end items-center gap-4">
+
+                        <button 
+                            onClick={() => setIsBookingOpen(true)}
+                            className="px-6 py-2.5 rounded-full bg-white text-black text-[13px] font-black hover:bg-[#C3D809] transition-all"
+                        >
+                            احجز الآن
+                        </button>
+                        <button className="flex flex-col gap-1 px-3 py-2 rounded-full border border-white/10 bg-white/5 group">
+                            <div className="w-4 h-[1.5px] bg-white group-hover:bg-[#C3D809] transition-colors" />
+                            <div className="w-2.5 h-[1.5px] bg-white group-hover:bg-[#C3D809] transition-colors" />
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <main>
-                {/* ═══ HERO ═══ */}
-                <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
-                    <div className="absolute inset-0 z-0">
-                        <video className="w-full h-full object-cover" autoPlay loop muted playsInline>
-                            <source src="/hero.mp4" type="video/mp4" />
-                        </video>
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(10,10,10,0.7) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)" }} />
-                        {/* Grain texture overlay */}
-                        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
+                {/* ═══ SALON & CO. MINIMAL SPLIT HERO ═══ */}
+                <section className="relative min-h-[100svh] flex flex-col bg-[#050505] overflow-hidden">
+                    
+                    {/* Left Sub-Section (Image goes left in RTL context) */}
+                    <div className="absolute inset-y-0 left-0 w-full lg:w-[60%] z-0 h-full overflow-hidden">
+                        {/* Make the image fade out entirely towards the right edge so it blends into the solid black text background */}
+                        <div className="absolute inset-0 z-10 pointer-events-none hidden lg:block" style={{ background: "linear-gradient(to right, transparent 0%, transparent 40%, #050505 100%)" }} />
+                        
+                        {/* Mobile Gradient (Fades bottom up to let text sitting on top read clearly) */}
+                        <div className="absolute inset-0 z-10 pointer-events-none lg:hidden" style={{ background: "linear-gradient(to top, #050505 0%, #050505 40%, transparent 100%)" }} />
+
+                        {/* Slight bottom dark gradient to blend with the rest of the page globally */}
+                        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#050505] to-transparent z-10 pointer-events-none" />
+                        
+                        <img 
+                            src={salon.hero_image ? assetUrl(salon.hero_image)! : "/images/salon_hero.png"} 
+                            className="w-full h-full object-cover grayscale brightness-[60%] lg:brightness-75 object-center" 
+                            alt="Hero Background" 
+                        />
                     </div>
-                    <div className="relative z-10 w-full px-5 sm:px-8 text-center">
-                        <motion.div initial="hidden" animate="visible" variants={stagger}>
-                            <motion.h1 variants={fadeUp} transition={spring} style={{
-                                fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900,
-                                fontSize: "clamp(2.8rem, 12vw, 8rem)", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 20,
-                            }}>
-                                نلتزم
-                                <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, display: "block" }}>بالتميز</span>
-                            </motion.h1>
-                            <motion.p variants={fadeUp} transition={{ ...spring, delay: 0.2 }} style={{
-                                fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", color: "rgba(245,242,236,0.5)", maxWidth: 400, margin: "0 auto 32px",
-                                lineHeight: 1.9, fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 400,
-                            }}>
-                                {salon.description || "نحن ملتزمون بتزويد عملائنا بتجربة صالون لا مثيل لها."}
+
+                    {/* Content Container */}
+                    <div className="relative z-20 w-full max-w-[1500px] mx-auto grid grid-cols-1 lg:grid-cols-2 px-6 sm:px-12 lg:px-16 xl:px-24 pt-[15vh] pb-8 lg:pt-24 lg:pb-16 my-auto">
+                        
+                        {/* Right Sub-Section: Text Content */}
+                        <div className="flex flex-col justify-end lg:justify-center text-right lg:pl-12 xl:pl-20 w-full">
+                            
+                            {/* Top Subtitle Component */}
+                            <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="flex items-center gap-4 mb-4 lg:mb-5"
+                            >
+                                <div className="w-8 md:w-12 h-[1px] bg-[#C3D809]" />
+                                <span className="text-[#C3D809] text-[9px] md:text-[10px] font-bold tracking-widest uppercase" style={{ fontFamily: "'Space Mono', monospace" }}>
+                                    {salon.hero_subtitle || "تأسس ٢٠٢٤ -- صالون فاخر"}
+                                </span>
+                            </motion.div>
+
+                            {/* Massive Typography */}
+                            {(() => {
+                                const fullTitle = salon.hero_title || "أين يلتقي الإبــــداع بالأناقة";
+                                const words = fullTitle.trim().split(/\s+/);
+                                let line1 = "", line2 = "", line3 = "";
+
+                                if (words.length <= 3) {
+                                    line1 = words[0] || "";
+                                    line2 = words[1] || "";
+                                    line3 = words[2] || "";
+                                } else if (words.length === 4) {
+                                    line1 = words.slice(0, 2).join(" ");
+                                    line2 = words[2];
+                                    line3 = words[3];
+                                } else {
+                                    const count = words.length;
+                                    const cut1 = Math.ceil(count / 3);
+                                    const cut2 = Math.ceil((count * 2) / 3);
+                                    line1 = words.slice(0, cut1).join(" ");
+                                    line2 = words.slice(cut1, cut2).join(" ");
+                                    line3 = words.slice(cut2).join(" ");
+                                }
+
+                                return (
+                                    <motion.h1 
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.8, delay: 0.2 }}
+                                        className="text-white font-black leading-[1.25] mb-6 lg:mb-8 flex flex-col items-start gap-1"
+                                    >
+                                        {line1 && <span className="text-[clamp(2.2rem,4.5vw,4.5rem)]" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{line1}</span>}
+                                        {line2 && <span className="text-[clamp(2.7rem,5vw,5.5rem)]" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{line2}</span>}
+                                        {line3 && <span className="text-[clamp(2.2rem,4.5vw,4.5rem)] text-transparent" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", WebkitTextStroke: "1px rgba(255,255,255,0.6)" }}>{line3}</span>}
+                                    </motion.h1>
+                                );
+                            })()}
+
+                            {/* Minimal Paragraph */}
+                            <motion.p 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: 0.4 }}
+                                className="text-white/70 text-[13px] md:text-[14px] lg:text-[15px] xl:text-base max-w-[320px] sm:max-w-md lg:max-w-xl xl:max-w-2xl whitespace-pre-line leading-[1.7] lg:leading-[1.8] mb-8 lg:mb-10 font-medium"
+                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                            >
+                                {salon.description || "ادخل إلى عالم يروي فيه كل مظهر قصة. يجمع خبراء الشايب بين التقنيات الأصيلة والفن الحديث لخلق مظهرك الفريد، بأسلوب يعكس شخصيتك ويرتقي بتجربتك."}
                             </motion.p>
-                            <motion.button variants={fadeUp} transition={{ ...spring, delay: 0.4 }}
-                                onClick={() => setIsBookingOpen(true)}
-                                className="inline-flex items-center gap-2 rounded-full font-bold transition-all"
-                                style={{ border: "1px solid #C3D809", color: "#C3D809", background: "transparent", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.9rem, 3vw, 1rem)", padding: "12px 28px" }}
-                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#C3D809"; (e.currentTarget as HTMLElement).style.color = "#0A0A0A"; }}
-                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#C3D809"; }}>
-                                احجز موعدك الآن
-                                <ArrowRight size={14} className="-rotate-180" />
-                            </motion.button>
-                        </motion.div>
-                    </div>
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-                        <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ opacity: 0.3 }}>
-                            <ChevronDown size={24} />
-                        </motion.div>
+
+                            {/* Sharp Minimal Buttons */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: 0.6 }}
+                                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-10"
+                            >
+                                {/* Brand Colored Button (Sharp Edges!) */}
+                                <button 
+                                    onClick={() => setIsBookingOpen(true)}
+                                    className="bg-[#C3D809] hover:bg-white text-black transition-colors duration-300 font-bold uppercase tracking-widest text-[11px] md:text-xs px-8 py-4 lg:py-4 flex items-center justify-between sm:justify-start gap-3 sm:gap-4 w-full sm:w-auto overflow-hidden group"
+                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                                >
+                                    <span>احجز موعدك الآن</span>
+                                    <ArrowLeft className="w-4 h-4 sm:w-3 sm:h-3 group-hover:-translate-x-1 transition-transform" />
+                                </button>
+
+                                {/* Text Link with Arrow */}
+                                <a 
+                                    href="#services"
+                                    className="text-white/60 hover:text-white uppercase font-bold tracking-widest text-[11px] md:text-xs flex items-center justify-between sm:justify-start gap-3 transition-colors group px-4 py-3 border border-white/10 sm:border-transparent sm:px-0 sm:py-0"
+                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                                >
+                                    <span>استكشف الخدمات</span>
+                                    <ArrowLeft className="w-4 h-4 sm:w-3 sm:h-3 group-hover:-translate-x-2 transition-transform opacity-60 group-hover:opacity-100" />
+                                </a>
+                            </motion.div>
+
+                        </div>
+
+                        {/* Empty Column (Takes up the Left side in RTL grid-cols-2, allowing absolute image below to show) */}
+                        <div className="hidden lg:block pointer-events-none" />
+
                     </div>
                 </section>
 
-                {/* ═══ MARQUEE ═══ */}
-                <div className="overflow-hidden" style={{ height: 56, background: "#0A0A0A", borderTop: "1px solid rgba(245,242,236,0.04)", borderBottom: "1px solid rgba(245,242,236,0.04)" }}>
-                    <div className="flex items-center h-full animate-marquee whitespace-nowrap">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                            <span key={i} className="flex items-center gap-6 mx-6" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.15em", color: "rgba(245,242,236,0.2)" }}>
-                                <span style={{ color: "#C3D809" }}>✦</span> PREMIUM QUALITY <span style={{ color: "#C3D809" }}>✦</span> احجز الآن <span style={{ color: "#C3D809" }}>✦</span> EXCELLENCE <span style={{ color: "#C3D809" }}>✦</span> تميز
-                            </span>
+                {/* ═══ SERVICES TICKER ═══ */}
+                <div className="w-full bg-[#050505] border-t border-b border-white/5 py-5 overflow-hidden flex whitespace-nowrap z-20 relative pointer-events-none" dir="ltr">
+                    <motion.div 
+                        animate={{ x: ["0%", "-50%"] }} 
+                        transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+                        className="flex items-center w-max"
+                    >
+                        {/* 2 continuous sets for perfect infinite scrolling loop */}
+                        {[...Array(2)].map((_, i) => (
+                            <div key={i} className="flex items-center pr-8 lg:pr-16">
+                                {[
+                                    "قصات دقيقة",
+                                    "تلوين وميش الشعر",
+                                    "تصفيف الشعر",
+                                    "تسريحات المناسبات",
+                                    "التجديد العميق",
+                                    "العناية باللحية",
+                                    "تنظيف البشرة",
+                                    "مساج استرخائي"
+                                ].map((service, j) => (
+                                    <div key={j} className="flex items-center gap-8 lg:gap-16 pr-8 lg:pr-16">
+                                        <span className="text-white/60 text-[13px] md:text-[15px] font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                            {service}
+                                        </span>
+                                        <span className="text-[#C3D809]/60 text-[10px] md:text-xs">•</span>
+                                    </div>
+                                ))}
+                            </div>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* ═══ ABOUT ═══ */}
-                <section id="about" className="py-16 sm:py-24 lg:py-40 px-5 sm:px-8 lg:px-12" style={{ background: "#F5F2EC", color: "#0A0A0A" }}>
-                    <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-24">
-                        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring} className="w-full lg:w-1/2 relative">
-                            <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "4/3", maxHeight: 420 }}>
-                                <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800" alt="About" className="w-full h-full object-cover" loading="lazy" />
+                {/* ═══ ABOUT (Reference Style) ═══ */}
+                <section id="about" className="py-24 sm:py-32 lg:py-48 px-6 lg:px-12 relative overflow-hidden" style={{ background: "#050505", color: "#F5F2EC" }}>
+
+
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center relative z-10">
+                        
+                        {/* Text Content (Right side in RTL context -> First in DOM) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 30 }} 
+                            whileInView={{ opacity: 1, y: 0 }} 
+                            viewport={{ once: true }} 
+                            transition={{ duration: 0.8 }} 
+                            className="w-full space-y-10"
+                        >
+                            <div className="space-y-6 lg:space-y-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-[1px] bg-[#C3D809]" />
+                                    <span className="text-[#C3D809] text-[10px] md:text-[11px] font-bold tracking-widest uppercase opacity-90" style={{ fontFamily: "'Space Mono', monospace" }}>
+                                        {salon.about_subtitle || "قصتنا وقيمنا"}
+                                    </span>
+                                </div>
+                                
+                                <h2 className="text-white font-black leading-[1.05] tracking-tight text-[clamp(2.5rem,5vw,5rem)]" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                    {salon.about_title || "أكثر من مجرد صالون"}
+                                </h2>
                             </div>
 
-                        </motion.div>
-                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring} className="w-full lg:w-1/2 space-y-5 sm:space-y-7">
-                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#C3D809" }}>قصتنا وتاريخنا</span>
-                            <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 6vw, 4rem)", lineHeight: 1.05, letterSpacing: "-0.02em" }}>
-                                نخلق <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>الجمال</span><br />بدقة وإبداع
-                            </h2>
-                            <p style={{ fontSize: "clamp(0.9rem, 3vw, 1.05rem)", color: "rgba(10,10,10,0.5)", lineHeight: 1.9 }}>
-                                نحن في {salon.name} نؤمن بأن الحلاقة ليست مجرد خدمة، بل هي فن يتطلب الدقة والشغف.
-                            </p>
-                            <div className="flex gap-8 sm:gap-12 pt-4 sm:pt-8">
-                                {[{ n: 20, label: "خبير مظهر" }, { n: 15, label: "سنة خبرة" }].map((stat, i) => (
-                                    <div key={i} className="flex flex-col gap-2 relative">
-                                        <div className="absolute -right-3 sm:-right-4 top-1 bottom-1 w-[1px] bg-[#C3D809]/30" />
-                                        <h4 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 3rem)", color: "#0A0A0A", fontStyle: "italic", lineHeight: 1 }}>
-                                            <AnimatedCounter target={stat.n} />
+                             <div className="space-y-6 text-white/50 text-sm md:text-[15px] leading-[2] lg:leading-[2.2] max-w-xl font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                <p>
+                                    {salon.about_description || "تأسس صالون الشايب في قلب المدينة من شغف حقيقي بالحرفة. نحن نؤمن بأن كل عميل يستحق عناية تفوق المعايير التقليدية. نحن المكان الذي يسود فيه الهدوء والذي يلعب فيه كل تفصيل دوراً مهماً في الارتقاء بمظهرك."}
+                                </p>
+                            </div>
+
+                            <div className="w-full max-w-xl h-[1px] bg-white/5 my-10" />
+
+                            <div className="grid grid-cols-3 gap-6 sm:gap-10 pt-4">
+                                {[
+                                    { n: "7+", label: "سنوات خبرة" },
+                                    { n: "15K+", label: "عميل راضٍ" },
+                                    { n: "6", label: "خبراء مظهر" }
+                                ].map((stat, i) => (
+                                    <div key={i} className="space-y-4">
+                                        <h4 className="text-[#C3D809] font-black text-4xl lg:text-5xl tracking-tighter" style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif" }}>
+                                            {stat.n}
                                         </h4>
-                                        <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", color: "#C3D809", letterSpacing: "0.12em", fontWeight: 700, textTransform: "uppercase" }}>
-                                            {stat.label}
+                                        <p className="text-white/40 text-[10px] sm:text-[11px] font-bold leading-[1.6]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                            {stat.label.split(' ').map((word, wIdx) => <span key={wIdx} className="block">{word}</span>)}
                                         </p>
                                     </div>
                                 ))}
                             </div>
                         </motion.div>
+
+                        {/* Image Composition (Left side in RTL context -> Second in DOM) */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }} 
+                            whileInView={{ opacity: 1, scale: 1 }} 
+                            viewport={{ once: true }} 
+                            transition={{ duration: 1 }} 
+                            className="relative w-full aspect-[4/5] mx-auto max-w-lg lg:max-w-none lg:h-[800px]"
+                        >
+                            {/* Main Background Image - Anchored Top-Right */}
+                            <div className="absolute top-0 right-0 w-[80%] h-[75%] lg:h-[80%] overflow-hidden bg-[#111]">
+                                <img src={salon.about_image_1 || "/images/barber_action.png"} alt="Salon Vibe" className="w-full h-full object-cover grayscale opacity-60 hover:opacity-80 transition-opacity duration-700 mix-blend-lighten" loading="lazy" />
+                            </div>
+                            
+                            {/* Overlay Image - Anchored Bottom-Left */}
+                            <motion.div 
+                                initial={{ x: -20, opacity: 0 }} 
+                                whileInView={{ x: 0, opacity: 1 }} 
+                                viewport={{ once: true }} 
+                                transition={{ duration: 0.8, delay: 0.3 }} 
+                                className="absolute bottom-0 left-0 w-[60%] h-[50%] lg:h-[55%] border-[12px] sm:border-[16px] border-[#050505] overflow-hidden bg-[#111]"
+                            >
+                                <img src={salon.about_image_2 || "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600"} alt="Master Barber" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+                            </motion.div>
+                        </motion.div>
+
                     </div>
                 </section>
 
-                {/* ═══ SERVICES ═══ */}
-                <section id="services" className="py-16 sm:py-24 lg:py-40 px-4 sm:px-5 lg:px-6" style={{ background: "#0A0A0A" }}>
-                    <div className="max-w-[1600px] mx-auto">
-                        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-10 sm:mb-16">
-                            <motion.h2 variants={fadeUp} style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 5rem)", lineHeight: 1, marginBottom: 12 }}>
-                                خدمات <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>نخبوية</span>
-                            </motion.h2>
-                            <motion.p variants={fadeUp} style={{ color: "rgba(245,242,236,0.3)", fontSize: "clamp(0.85rem, 3vw, 1rem)", maxWidth: 400, margin: "0 auto" }}>
-                                نقدم مجموعة واسعة من الخدمات لتظهر بأفضل صورة
-                            </motion.p>
-                        </motion.div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
-                            {serviceCards.map((s, i) => (
-                                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
-                                    className="group relative overflow-hidden cursor-pointer" style={{ aspectRatio: "4/5", borderRadius: 12, background: "var(--color-background)" }}
-                                    onClick={() => setIsBookingOpen(true)}>
-                                    <img src={s.img} alt={s.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.15) 60%)" }} />
-                                    <div className="relative h-full flex flex-col justify-end p-3 sm:p-5">
-                                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.15em", color: "#C3D809", display: "block", marginBottom: 3 }}>{s.en}</span>
-                                        <h3 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "clamp(0.85rem, 3vw, 1.1rem)" }}>{s.name}</h3>
-                                    </div>
+                {/* ═══ SERVICES (Minimalist Layout) ═══ */}
+                <section id="services" className="relative overflow-hidden bg-[#0A0A0A] py-24 sm:py-32 lg:py-56 px-6 lg:px-12">
+                    
+                    <div className="relative max-w-7xl mx-auto">
+                        
+                        {/* Improved Header */}
+                        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-10 lg:gap-20 border-b border-white/[0.05] pb-12 mb-16 sm:mb-20 lg:mb-24">
+                            <div className="space-y-6 lg:space-y-8">
+                                <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center gap-4">
+                                    <div className="w-10 h-[1px] bg-[#C3D809]" />
+                                    <span className="text-[#C3D809] text-[10px] sm:text-[11px] font-bold tracking-widest uppercase opacity-90" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
+                                        {salon.services_subtitle || "خدمات الصالون"}
+                                    </span>
                                 </motion.div>
-                            ))}
+                                <motion.h2 initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-white font-black leading-[1.05] tracking-tighter text-[clamp(2.5rem,5vw,5.5rem)]" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                    {salon.services_title || "قائمة الخدمات"}
+                                </motion.h2>
+                            </div>
+                            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="max-w-xl text-right lg:pb-4">
+                                <p className="text-white/50 text-sm md:text-[15px] leading-[2.2] font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                    {salon.services_description || "اختر الخدمة، شاهد لمحة فورية، ثم احجز بضغطة واحدة. تصميم واضح لتجربة راقية وعناية دقيقة تليق بك."}
+                                </p>
+                            </motion.div>
+                        </div>
+
+                        <div className="grid lg:grid-cols-[minmax(0,1fr)_450px] gap-16 lg:gap-24 items-start">
+                            
+                            {/* list of services - Accordion typographic style */}
+                            <div className="flex flex-col">
+                                {serviceCards.map((s, i) => {
+                                    const isActive = activeServiceIndex === i;
+                                    return (
+                                        <motion.button
+                                            type="button"
+                                            key={s.name}
+                                            initial={{ opacity: 0, x: -15 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: i * 0.08, duration: 0.6, ease: "easeOut" }}
+                                            className={[
+                                                "group relative w-full text-right overflow-hidden border-b border-white/[0.05] py-7 sm:py-9 transition-colors outline-none",
+                                                isActive ? "opacity-100" : "opacity-40 hover:opacity-100",
+                                            ].join(" ")}
+                                            onClick={() => setIsBookingOpen(true)}
+                                            onMouseEnter={() => setActiveServiceIndex(i)}
+                                            onFocus={() => setActiveServiceIndex(i)}
+                                            aria-label={`احجز خدمة ${s.name}`}
+                                        >
+                                            <div className="flex flex-row items-center justify-between gap-6">
+                                                <div className="flex flex-row items-center gap-5 sm:gap-8 lg:gap-12">
+                                                    
+                                                    {/* Index Number */}
+                                                    <div className={[
+                                                        "text-[0.8rem] sm:text-[0.95rem] font-medium tracking-[0.2em] transition-colors font-mono min-w-[2rem]",
+                                                        isActive ? "text-[#C3D809]" : "text-white/30",
+                                                    ].join(" ")}>
+                                                        {String(i + 1).padStart(2, "0")}
+                                                    </div>
+
+                                                    {/* Name & Expanded Body */}
+                                                    <div className="flex flex-col justify-center">
+                                                        <h3 className={[
+                                                            "font-black tracking-tight transition-all duration-500",
+                                                            "text-3xl sm:text-4xl lg:text-5xl",
+                                                            isActive ? "text-white" : "text-white/80 group-hover:text-white",
+                                                        ].join(" ")}
+                                                            style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                                            <span className={isActive ? "text-[#C3D809] italic transition-colors duration-500" : ""}>{s.name}</span>
+                                                        </h3>
+                                                        <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-20 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-[1px] w-6 bg-[#C3D809]" />
+                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/50" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                                                    عناية دقيقة بأدوات احترافية
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Arrow */}
+                                                <div className="flex items-center justify-center shrink-0">
+                                                    <ArrowRight size={24} strokeWidth={isActive ? 2.5 : 1.5} className={[
+                                                        "-rotate-180 transition-all duration-500",
+                                                        isActive ? "text-[#C3D809] translate-x-2" : "text-white/20 group-hover:text-white/50 scale-90",
+                                                    ].join(" ")} />
+                                                </div>
+                                            </div>
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* preview sticky framed image */}
+                            <div className="lg:sticky lg:top-32 mt-10 lg:mt-0">
+                                <div className="relative">
+                                    <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.05] bg-[#050505] p-2.5 sm:p-3 shadow-2xl">
+                                        <div className="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-[1.5rem]">
+                                            <AnimatePresence mode="wait">
+                                                <motion.img
+                                                    key={serviceCards[activeServiceIndex].img}
+                                                    src={serviceCards[activeServiceIndex].img}
+                                                    alt={serviceCards[activeServiceIndex].name}
+                                                    className="absolute inset-0 w-full h-full object-cover grayscale opacity-70"
+                                                    initial={{ opacity: 0, scale: 1.05 }}
+                                                    animate={{ opacity: 0.7, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    transition={{ duration: 0.5, ease: "easeOut" }}
+                                                />
+                                            </AnimatePresence>
+
+                                            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/20 to-transparent" />
+                                            
+                                            {/* Preview Tag */}
+                                            <div className="absolute top-5 right-5 flex items-center gap-2 rounded-full border border-white/10 bg-[#050505]/60 px-3 py-1.5 text-[0.65rem] font-bold tracking-[0.07em] text-white/80 backdrop-blur-md"
+                                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                                معاينة الحجز
+                                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#C3D809] shadow-[0_0_10px_rgba(195,216,9,0.8)]" />
+                                            </div>
+
+                                            {/* Content Footer */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-8">
+                                                <p className="mb-2 text-[0.7rem] font-bold tracking-[0.08em] text-[#C3D809]/80 uppercase"
+                                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                                    خدمة مختارة
+                                                </p>
+                                                <h3 className="text-3xl sm:text-4xl font-black leading-none text-white mb-6" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                                    {serviceCards[activeServiceIndex].name}
+                                                </h3>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsBookingOpen(true)}
+                                                    className="inline-flex w-full justify-center items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#C3D809] hover:text-[#050505] hover:border-[#C3D809]"
+                                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                                                >
+                                                    احجز الخدمة الآن
+                                                    <ArrowRight size={18} className="-rotate-180" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* thumbnails (minimal squares below) */}
+                                    <div className="mt-4 grid grid-cols-5 gap-2 sm:gap-3 px-1">
+                                        {serviceCards.map((s, i) => {
+                                            const isActive = activeServiceIndex === i;
+                                            return (
+                                                <button
+                                                    key={`thumb-${s.en}`}
+                                                    type="button"
+                                                    className={[
+                                                        "relative overflow-hidden rounded-xl sm:rounded-2xl transition-all focus:outline-none",
+                                                        isActive ? "border-[1.5px] border-[#C3D809]" : "border-[1px] border-white/10 hover:border-white/30",
+                                                    ].join(" ")}
+                                                    style={{ aspectRatio: "1 / 1" }}
+                                                    onClick={() => setActiveServiceIndex(i)}
+                                                    aria-label={`عرض ${s.name}`}
+                                                >
+                                                    <img src={s.img} alt="" className="absolute inset-0 h-full w-full object-cover grayscale opacity-50" />
+                                                    <div className={["absolute inset-0 transition-opacity bg-black", isActive ? "opacity-0" : "opacity-40"].join(" ")} />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 {/* ═══ TEAM ═══ */}
                 {employees.length > 0 && (
-                    <section id="team" className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6" style={{ background: "var(--color-background)" }}>
+                    <section id="team" className="py-24 sm:py-32 lg:py-48 px-6 lg:px-12" style={{ background: "#050505" }}>
                         <div className="max-w-[1400px] mx-auto">
-                            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={spring}
-                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 7vw, 4.5rem)", lineHeight: 1.05, marginBottom: 32 }}>
-                                فريقنا من<br /><span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>مبدعين حقيقيين</span>
-                            </motion.h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-8">
+                            <div className="flex flex-col items-center text-center">
+                                <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
+                                    <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
+                                    <span className="text-[#C3D809] text-[10px] sm:text-[11px] uppercase font-bold tracking-widest opacity-80" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
+                                        {salon.team_subtitle || "نخبة الخبراء"}
+                                    </span>
+                                    <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
+                                </motion.div>
+
+                                <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14 sm:mb-24">
+                                    <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                        {salon.team_title || "فريقنا من المبدعين"}
+                                    </h2>
+                                </motion.div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 lg:gap-16">
                                 {employees.map((emp, i) => (
-                                    <motion.div key={emp.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                                        className="group relative overflow-hidden" style={{ aspectRatio: "3/4", borderRadius: 12 }}>
-                                        <img src={emp.avatar ? assetUrl(emp.avatar)! : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
-                                            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 grayscale group-hover:grayscale-0 group-hover:scale-105" alt={emp.name} loading="lazy" />
-                                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 55%)" }} />
-                                        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
-                                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.12em", color: "#C3D809" }}>{emp.role || "خبير مظهر"}</span>
-                                            <h3 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1rem, 4vw, 1.6rem)", marginTop: 2 }}>{emp.name}</h3>
+                                    <motion.div key={emp.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.8 }} className="group relative">
+                                        <div className="relative overflow-hidden aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03]">
+                                            <img src={emp.avatar ? assetUrl(emp.avatar)! : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
+                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={emp.name} />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-30" />
+                                            <div className="absolute inset-0 border-[0.5px] border-white/0 group-hover:border-white/10 transition-all duration-700 m-3 sm:m-4 rounded-[1.25rem] sm:rounded-[1.5rem] pointer-events-none" />
+                                        </div>
+                                        <div className="mt-8 px-4">
+                                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#C3D809", textTransform: "uppercase" }}>{emp.role || "خبير مظهر"}</span>
+                                            <h3 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{emp.name}</h3>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -395,250 +738,415 @@ function BookingContent() {
                     </section>
                 )}
 
-                {/* ═══ GALLERY ═══ */}
-                <section className="py-16 sm:py-24 lg:py-40 overflow-hidden" style={{ background: "#0A0A0A" }}>
-                    <div className="max-w-[1700px] mx-auto px-5 sm:px-6 mb-8 sm:mb-10">
-                        <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.6rem, 6vw, 3.5rem)", marginBottom: 6 }}>
-                            فلسفة <span style={{ color: "rgba(245,242,236,0.15)", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>المظهر</span>
-                        </h2>
-                    </div>
-                    <div className="relative">
-                        {/* Shadow over edges for cinematic fade */}
-                        <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none" style={{ background: "linear-gradient(to right, #0A0A0A, transparent)" }} />
-                        <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none" style={{ background: "linear-gradient(to left, #0A0A0A, transparent)" }} />
+                {/* ═══ GALLERY (Atmospheric Minimalist) ═══ */}
+                <section className="py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#070707]">
+                    <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-20 sm:mb-32">
+                        <div className="flex flex-col items-center text-center">
+                            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
+                                <span className="text-white/40 text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.3em]" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
+                                    الفيديو والصور
+                                </span>
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
+                            </motion.div>
 
-                        {/* Track 1: Move Left */}
-                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused] mb-6">
-                            {[...mockGallery, ...mockGallery].map((img, i) => (
-                                <div key={`t1-${i}`} className="inline-block shrink-0 w-[60vw] lg:w-[30vw] mx-3 lg:mx-4 overflow-hidden group" style={{ aspectRatio: i % 2 === 0 ? "16/9" : "4/5", borderRadius: 8 }}>
-                                    <img src={img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" loading="lazy" />
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-3xl sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                فلسفة <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, paddingRight: "0.1em" }}>المظهر</span>
+                            </motion.h2>
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        {/* Edge Fades */}
+                        <div className="absolute inset-y-0 left-0 w-32 sm:w-64 lg:w-96 z-10 pointer-events-none bg-gradient-to-r from-[#070707] via-[#070707]/80 to-transparent" />
+                        <div className="absolute inset-y-0 right-0 w-32 sm:w-64 lg:w-96 z-10 pointer-events-none bg-gradient-to-l from-[#070707] via-[#070707]/80 to-transparent" />
+
+                        {/* Row 1 (Moving to Right) */}
+                        <div className="flex animate-marquee-slow-reverse whitespace-nowrap hover:[animation-play-state:paused] mb-10 lg:mb-16">
+                            {[...mockGallery, ...mockGallery].map((item, i) => (
+                                <div key={`t1-${i}`} 
+                                    className="inline-block shrink-0 w-[75vw] lg:w-[40vw] mx-3 lg:mx-5 overflow-hidden group rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03] relative" 
+                                    style={{ aspectRatio: i % 2 === 0 ? "16/10" : "4/5" }}
+                                    onMouseEnter={(e) => { const v = e.currentTarget.querySelector("video"); if(v) v.play(); }}
+                                    onMouseLeave={(e) => { const v = e.currentTarget.querySelector("video"); if(v) { v.pause(); v.currentTime = 0; } }}
+                                >
+                                    {item.type === "video" ? (
+                                        <video 
+                                            src={item.url} 
+                                            loop muted playsInline 
+                                            className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <img src={item.url} className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105" alt="" />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/20 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
+                                    {item.type === "video" && (
+                                        <div className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:scale-0 transition-transform duration-500">
+                                            <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-white border-b-[5px] border-b-transparent translate-x-0.5" />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
 
-                        {/* Track 2: Move Right */}
-                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused] direction-ltr" style={{ animationDirection: "reverse" }}>
-                            {[...mockGallery.reverse(), ...mockGallery].map((img, i) => (
-                                <div key={`t2-${i}`} className="inline-block shrink-0 w-[50vw] lg:w-[25vw] mx-3 lg:mx-4 overflow-hidden group" style={{ aspectRatio: i % 3 === 0 ? "1/1" : "3/2", borderRadius: 8 }}>
-                                    <img src={img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" loading="lazy" />
+                        {/* Row 2 (Moving to Left) */}
+                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused]">
+                            {[...mockGallery.reverse(), ...mockGallery].map((item, i) => (
+                                <div key={`t2-${i}`} 
+                                    className="inline-block shrink-0 w-[65vw] lg:w-[35vw] mx-3 lg:mx-5 overflow-hidden group rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03] relative" 
+                                    style={{ aspectRatio: i % 3 === 0 ? "1/1" : "3/2" }}
+                                    onMouseEnter={(e) => { const v = e.currentTarget.querySelector("video"); if(v) v.play(); }}
+                                    onMouseLeave={(e) => { const v = e.currentTarget.querySelector("video"); if(v) { v.pause(); v.currentTime = 0; } }}
+                                >
+                                    {item.type === "video" ? (
+                                        <video 
+                                            src={item.url} 
+                                            loop muted playsInline 
+                                            className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <img src={item.url} className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105" alt="" />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/20 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
+                                    {item.type === "video" && (
+                                        <div className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:scale-0 transition-transform duration-500">
+                                            <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-white border-b-[5px] border-b-transparent translate-x-0.5" />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                <section className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6 relative overflow-hidden" style={{ background: "#111111" }}>
+                {/* ═══ REVIEWS (Minimal Reference Style) ═══ */}
+                <section id="reviews" className="py-24 sm:py-32 lg:py-48 px-6 lg:px-12 relative overflow-hidden bg-[#050505]">
+                    {/* Background glow & watermark */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.015] rounded-full blur-[140px] pointer-events-none" />
+                    
+
+
                     <div className="max-w-4xl mx-auto relative z-10">
                         <div className="flex flex-col items-center text-center">
-                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.3em", color: "#C3D809", display: "block", marginBottom: 24 }}>آراء عملائنا</span>
                             
-                            <div className="relative">
-                                {/* Large Quote Mark Decoration */}
-                                <div className="absolute -top-12 -right-8 opacity-10 select-none" style={{ fontFamily: "'Playfair Display', serif", fontSize: "10rem", color: "#C3D809", lineHeight: 1 }}>"</div>
-                                
+                            {/* Top Title Line */}
+                            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
+                                <span className="text-[#C3D809] text-[10px] sm:text-[11px] uppercase font-bold tracking-widest opacity-80" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
+                                    آراء عمـلائنا
+                                </span>
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
+                            </motion.div>
+
+                            {/* Headline */}
+                            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14 sm:mb-20">
+                                <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                    ماذا يقول عنّا <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, paddingRight: "0.1em" }}>العملاء</span>
+                                </h2>
+                            </motion.div>
+
+                            <div className="relative w-full">
                                 <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={step % mockReviews.length}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={spring}
-                                        className="relative"
+                                    <motion.div 
+                                        key={step % (mockReviews.length || 1)} 
+                                        initial={{ opacity: 0, y: 15 }} 
+                                        animate={{ opacity: 1, y: 0 }} 
+                                        exit={{ opacity: 0, y: -15 }} 
+                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                        className="flex flex-col items-center"
                                     >
-                                        <p style={{ 
-                                            fontFamily: "'Playfair Display', serif", 
-                                            fontSize: "clamp(1.1rem, 4.5vw, 2.2rem)", 
-                                            fontStyle: "italic", 
-                                            lineHeight: 1.65, 
-                                            color: "#F5F2EC",
-                                            marginBottom: 28
-                                        }}>
-                                            "{mockReviews[step % mockReviews.length].comment}"
+                                        {/* Stars */}
+                                        <div className="flex gap-2 justify-center mb-8 text-[#C3D809]">
+                                            {[1, 2, 3, 4, 5].map(s => <svg key={s} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star opacity-90"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>)}
+                                        </div>
+                                        
+                                        {/* Review Paragraph */}
+                                        <p className="leading-[1.9] text-[#E0E0E0] italic mb-12 max-w-3xl mx-auto" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.1rem, 3.5vw, 1.8rem)", fontWeight: 400 }}>
+                                            &ldquo;{mockReviews[step % (mockReviews.length || 1)]?.comment}&rdquo;
                                         </p>
                                         
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="w-12 h-[1px] bg-[#C3D809]/40 mb-2" />
-                                            <span style={{ 
-                                                fontFamily: "'Space Mono', monospace", 
-                                                fontSize: "0.75rem", 
-                                                letterSpacing: "0.2em", 
-                                                color: "#C3D809",
-                                                fontWeight: 700
-                                            }}>
-                                                {mockReviews[step % mockReviews.length].customer_name}
+                                        {/* Footer / Author */}
+                                        <div className="flex flex-col items-center gap-1.5 mt-4">
+                                            <h4 className="text-white text-[11px] sm:text-[12px] font-black uppercase tracking-[0.15em]" style={{ fontFamily: "'Space Mono', 'Noto Sans Arabic', monospace" }}>
+                                                {mockReviews[step % (mockReviews.length || 1)]?.customer_name}
+                                            </h4>
+                                            <span className="text-[#C3D809]/60 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.25em] font-mono">
+                                                عميل دائم
                                             </span>
-                                            <span style={{ fontSize: "0.6rem", color: "rgba(245,242,236,0.3)", fontWeight: 500 }}>عميل دائم</span>
                                         </div>
                                     </motion.div>
                                 </AnimatePresence>
                             </div>
-
-                            {/* Indicators */}
-                            <div className="flex gap-2 mt-16">
-                                {mockReviews.map((_, i) => (
-                                    <div key={i} className="h-[2px] transition-all duration-500" style={{ 
-                                        width: (step % mockReviews.length) === i ? 32 : 12,
-                                        background: (step % mockReviews.length) === i ? "#C3D809" : "rgba(245,242,236,0.1)"
-                                    }} />
-                                ))}
+                            
+                            {/* Pagination Dots */}
+                            <div className="flex items-center gap-3 mt-16 sm:mt-24">
+                                {mockReviews.map((_, i) => {
+                                    const active = (step % (mockReviews.length || 1)) === i;
+                                    return (
+                                        <button key={i} onClick={() => setStep(i)} className="p-2.5 group outline-none" aria-label={`التقييم ${i + 1}`}>
+                                            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${active ? "bg-[#C3D809] border-[1.5px] border-[#C3D809]" : "bg-transparent border-[1.5px] border-white/20 group-hover:border-white/50"}`} />
+                                        </button>
+                                    );
+                                })}
                             </div>
+                            
                         </div>
                     </div>
                 </section>
 
-                {/* ═══ FAQ ═══ */}
-                <section className="py-16 sm:py-24 lg:py-40 px-5 sm:px-6" style={{ background: "#F5F2EC", color: "#0A0A0A" }}>
-                    <div className="max-w-3xl mx-auto">
-                        <div className="text-center mb-8 sm:mb-12">
-                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#C3D809", display: "block", marginBottom: 10 }}>لديك استفسار؟</span>
-                            <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 6vw, 3rem)" }}>
-                                الأسئلة <span style={{ color: "#C3D809", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>الشائعة</span>
+                {/* ═══ FAQ (Sophisticated Minimalist) ═══ */}
+                <section id="faq" className="py-24 sm:py-32 lg:py-56 px-6 lg:px-12 bg-[#050505]">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="flex flex-col items-center text-center mb-16 sm:mb-24">
+                            <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
+                                <span className="text-white/40 text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.3em]" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
+                                    لديك استفسار؟
+                                </span>
+                                <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
+                            </motion.div>
+
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-3xl sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                الأسئلة <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700 }}>الشائعة</span>
+                            </motion.h2>
+                        </div>
+
+                        <div className="border-t border-white/5">
+                            {mockFaqs.map((faq, i) => {
+                                const isOpen = openFaq === faq.id;
+                                return (
+                                    <motion.div 
+                                        key={faq.id} 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="border-bottom border-white/5"
+                                        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                                    >
+                                        <button 
+                                            onClick={() => setOpenFaq(isOpen ? null : faq.id)} 
+                                            className="w-full py-6 sm:py-9 flex justify-between items-center text-right group outline-none"
+                                        >
+                                            <span 
+                                                className={`transition-all duration-500 font-bold text-[clamp(0.95rem,3.5vw,1.25rem)] tracking-tight ${isOpen ? "text-[#C3D809]" : "text-white/80 group-hover:text-white"}`}
+                                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                                            >
+                                                {faq.question}
+                                            </span>
+                                            
+                                            <div className={`flex-shrink-0 w-8 h-8 sm:w-11 sm:h-11 rounded-full border transition-all duration-500 flex items-center justify-center ${isOpen ? "bg-[#C3D809] border-[#C3D809] text-black rotate-45" : "border-white/10 text-white/40 group-hover:border-white/30 group-hover:text-white"}`}>
+                                                <Plus size={16} />
+                                            </div>
+                                        </button>
+                                        
+                                        <AnimatePresence>
+                                            {isOpen && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0 }} 
+                                                    animate={{ height: "auto", opacity: 1 }} 
+                                                    exit={{ height: 0, opacity: 0 }} 
+                                                    transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <p 
+                                                        className="pb-8 sm:pb-12 text-white/40 leading-[1.8] text-[clamp(0.85rem,3vw,1rem)] max-w-2xl ml-auto"
+                                                        style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}
+                                                    >
+                                                        {faq.answer}
+                                                    </p>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ═══ CTA (Minimal Punch) ═══ */}
+                <section className="relative py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#050505]">
+                    {/* Atmospheric Glow */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C3D809]/5 rounded-full blur-[120px] pointer-events-none" />
+                    
+                    <div className="relative z-10 text-center px-6">
+                        <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                            <h2 
+                                className="text-white font-black leading-[1.05] tracking-tighter mb-12 sm:mb-16"
+                                style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(2.5rem, 10vw, 7rem)" }}
+                            >
+                                استعد <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700 }}>لمظهرك</span> <br className="hidden sm:block" /> القادم
                             </h2>
-                        </div>
-                        <div style={{ borderTop: "1px solid rgba(10,10,10,0.07)" }}>
-                            {mockFaqs.map(faq => (
-                                <div key={faq.id} style={{ borderBottom: "1px solid rgba(10,10,10,0.07)" }}>
-                                    <button onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)} className="w-full py-5 sm:py-7 flex justify-between items-center text-right gap-4">
-                                        <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, fontSize: "clamp(0.95rem, 3.5vw, 1.2rem)", color: openFaq === faq.id ? "#C3D809" : "#0A0A0A", transition: "color 0.3s" }}>{faq.question}</span>
-                                        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all" style={{
-                                            background: openFaq === faq.id ? "#0A0A0A" : "transparent",
-                                            border: openFaq === faq.id ? "none" : "1px solid rgba(10,10,10,0.12)",
-                                            color: openFaq === faq.id ? "#F5F2EC" : "#0A0A0A",
-                                        }}>
-                                            <Plus size={15} style={{ transition: "transform 0.5s", transform: openFaq === faq.id ? "rotate(45deg)" : "none" }} />
-                                        </div>
-                                    </button>
-                                    <AnimatePresence>
-                                        {openFaq === faq.id && (
-                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={spring} className="overflow-hidden">
-                                                <p style={{ paddingBottom: 20, color: "rgba(10,10,10,0.5)", lineHeight: 1.9, fontSize: "clamp(0.85rem, 3vw, 0.95rem)" }}>{faq.answer}</p>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ))}
-                        </div>
+                            
+                            <button 
+                                onClick={() => setIsBookingOpen(true)} 
+                                className="inline-flex items-center gap-4 bg-[#C3D809] text-black px-10 sm:px-14 py-5 sm:py-6 rounded-full font-black uppercase tracking-widest hover:bg-white transition-all duration-500 hover:scale-105 active:scale-95 group shadow-2xl shadow-[#C3D809]/20"
+                                style={{ fontFamily: "'Space Mono', 'Tajawal', monospace", fontSize: "0.85rem" }}
+                            >
+                                احجز موعدك الآن
+                                <ArrowRight size={18} className="group-hover:translate-x-[-10px] transition-transform duration-500" />
+                            </button>
+                        </motion.div>
                     </div>
                 </section>
 
-                {/* ═══ CTA ═══ */}
-                <section className="relative py-20 sm:py-32 lg:py-48 overflow-hidden" style={{ background: "#0A0A0A" }}>
-                    <div className="absolute inset-0 opacity-[0.04]" style={{ background: "radial-gradient(circle at center, #C3D809 0%, transparent 70%)" }} />
-                    <div className="relative z-10 text-center px-5 sm:px-6">
-                        <h2 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 5rem)", lineHeight: 1.1, marginBottom: 28 }}>
-                            استعد<br /><span style={{ color: "#C3D809" }}>لمظهرك</span><br />القادم
-                        </h2>
-                        <button onClick={() => setIsBookingOpen(true)}
-                            className="inline-block rounded-full font-bold transition-all"
-                            style={{ background: "#F5F2EC", color: "#0A0A0A", fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.9rem, 3vw, 1.05rem)", padding: "14px 36px" }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#C3D809"; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#F5F2EC"; }}>
-                            ابدأ الحجز الآن
-                        </button>
-                    </div>
-                </section>
-
-                <footer id="contact" className="py-12 sm:py-16 px-5 sm:px-8 lg:px-12" style={{ background: "#050505", borderTop: "1px solid rgba(245,242,236,0.05)" }}>
-                    <div className="max-w-[1400px] mx-auto">
-                        {/* Top Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12 text-right">
-                            {/* Brand */}
-                            <div>
-                                <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontStyle: "italic", lineHeight: 1.1, marginBottom: 16, letterSpacing: "-0.02em" }}>
-                                    {salon.name}<span style={{ color: "#C3D809" }}>.</span>
+                <footer id="contact" className="py-16 sm:py-20 px-6 lg:px-12 bg-[#050505] border-t border-white/[0.03]">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-12 text-right">
+                            {/* Brand Info */}
+                            <div className="space-y-8">
+                                <h3 className="text-white font-black italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif", fontSize: "2.2rem" }}>
+                                    {salon.name}<span className="text-[#C3D809]">.</span>
                                 </h3>
-                                <p style={{ color: "rgba(245,242,236,0.45)", lineHeight: 1.8, fontSize: "0.9rem" }}>
-                                    تجربة استثنائية تجمع بين الفن العريق والأسلوب المعاصر.
+                                <p className="text-white/40 leading-relaxed text-sm max-w-xs" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                    {salon.secondary_description || salon.description || "تجربة استثنائية تجمع بين الفن العريق والأسلوب المعاصر في قلب العاصمة."}
                                 </p>
+                                <div className="inline-block p-4 rounded-2xl border border-white/5 bg-white/[0.02]" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                    <p className="text-[#C3D809] font-black text-lg mb-0.5">احصل على 30% خصم</p>
+                                    <p className="text-white/20 text-[0.7rem] uppercase tracking-widest font-bold">على زيارتك الأولى</p>
+                                </div>
                             </div>
 
-                            {/* Contact */}
+                            {/* Links */}
+                            <div className="lg:pr-10">
+                                <span className="text-[#C3D809] text-[9px] uppercase font-bold tracking-[0.4em] mb-8 block" style={{ fontFamily: "'Space Mono', monospace" }}>قائمة الروابط</span>
+                                <ul className="space-y-5">
+                                    {[{ name: "قصتنا", id: "about" }, { name: "خدماتنا", id: "services" }, { name: "فريقنا", id: "team" }, { name: "الخصوصية", id: "privacy" }].map(link => (
+                                        <li key={link.id}>
+                                            <a href={`#${link.id}`} className="text-white/50 hover:text-white transition-all duration-300 text-[0.95rem] font-medium" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
+                                                {link.name}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Work Hours */}
                             <div>
-                                <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.35em", color: "#C3D809", marginBottom: 24, textTransform: "uppercase" }}>تواصل معنا</h4>
-                                <div className="space-y-5" style={{ color: "rgba(245,242,236,0.7)", fontSize: "0.9rem" }}>
-                                    <a href={`tel:${salon.phone}`} className="flex items-center gap-3 hover:text-[#C3D809] transition-colors duration-400">
-                                        <Phone size={13} className="opacity-50 shrink-0" />
-                                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}>{salon.phone || "0785295125"}</span>
-                                    </a>
-                                    <div className="flex items-center gap-3 hover:text-[#C3D809] transition-colors duration-400 cursor-pointer">
-                                        <MapPin size={13} className="opacity-50 shrink-0" />
-                                        <span>{salon.address || "عمان، الأردن"}</span>
+                                <span className="text-[#C3D809] text-[9px] uppercase font-bold tracking-[0.4em] mb-8 block" style={{ fontFamily: "'Space Mono', monospace" }}>أوقات العمل</span>
+                                <div className="space-y-8">
+                                    <div className="space-y-1">
+                                        <p className="text-white/80 font-black text-lg" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{formatOpenDays()}</p>
+                                        <p className="text-white/20 text-[0.7rem] uppercase tracking-[0.2em] font-bold" style={{ fontFamily: "'Space Mono', monospace" }}>الأيام المتاحة</p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 text-[#C3D809]">
+                                            <div className="w-9 h-9 rounded-xl border border-[#C3D809]/20 flex items-center justify-center bg-[#C3D809]/5">
+                                                <Clock size={16} />
+                                            </div>
+                                            <span className="text-2xl font-black text-white" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", letterSpacing: "-0.02em" }}>
+                                                {fmt12(workHours.start)} — {fmt12(workHours.end)}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Social */}
+                            {/* Contact & Social */}
                             <div>
-                                <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.35em", color: "#C3D809", marginBottom: 24, textTransform: "uppercase" }}>تابعنا</h4>
-                                <div className="flex gap-3">
-                                    {[<Instagram size={18} />, <span className="text-sm font-black">X</span>].map((icon, i) => (
-                                        <a key={i} href="#" className="w-10 h-10 rounded-full flex items-center justify-center border border-white/10 text-white/40 hover:border-[#C3D809] hover:text-[#C3D809] transition-all duration-500">
-                                            {icon}
-                                        </a>
-                                    ))}
+                                <span className="text-[#C3D809] text-[9px] uppercase font-bold tracking-[0.4em] mb-8 block" style={{ fontFamily: "'Space Mono', monospace" }}>تواصل معنا</span>
+                                <div className="space-y-8">
+                                    <a href={`tel:${salon.phone}`} className="block group">
+                                        <p className="text-white text-lg font-black group-hover:text-[#C3D809] transition-colors" dir="ltr">{salon.phone || "0785295125"}</p>
+                                        <p className="text-white/20 text-[0.7rem] uppercase tracking-widest font-bold mt-1">اتصل بنا</p>
+                                    </a>
+                                    
+                                    <div className="flex gap-4">
+                                        {salon.instagram && (
+                                            <div className="relative group cursor-pointer">
+                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gradient-to-tr from-[#405DE6] to-[#F56040] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
+                                                    INSTAGRAM
+                                                </div>
+                                                <a href={`https://instagram.com/${salon.instagram.replace('@', '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                    <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-gradient-to-tr from-[#405DE6] via-[#E1306C] to-[#FFDC80] z-0" />
+                                                    <Instagram size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
+                                                </a>
+                                            </div>
+                                        )}
+                                        {salon.whatsapp && (
+                                            <div className="relative group cursor-pointer">
+                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-[#25D366] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
+                                                    WHATSAPP
+                                                </div>
+                                                <a href={`https://wa.me/${salon.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                    <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-[#25D366] z-0" />
+                                                    <FaWhatsapp size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
+                                                </a>
+                                            </div>
+                                        )}
+                                        {salon.facebook && (
+                                            <div className="relative group cursor-pointer">
+                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-[#1877F2] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
+                                                    FACEBOOK
+                                                </div>
+                                                <a href={salon.facebook.startsWith('http') ? salon.facebook : `https://facebook.com/${salon.facebook}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                    <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-[#1877F2] z-0" />
+                                                    <Facebook size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Bottom Bar */}
-                        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-7 border-t border-white/[0.04]">
-                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: "rgba(245,242,236,0.2)", letterSpacing: "0.15em", textAlign: "center" }}>
-                                © {new Date().getFullYear()} {salon.name.toUpperCase()}
-                            </span>
-                            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
-                                    style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.25em", color: "rgba(245,242,236,0.2)", textTransform: "uppercase" }}
-                                    className="hover:text-[#C3D809] transition-colors duration-500">
-                                ↑ أعلى
-                            </button>
+                        {/* Copyright */}
+                        <div className="mt-16 pt-10 border-t border-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex items-center gap-8" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem" }}>
+                                <a href="https://maqas.site/" target="_blank" className="text-[#C3D809] font-black tracking-[0.1em] hover:opacity-80 transition-opacity">MAQAS.SITE</a>
+                                <div className="flex gap-6">
+                                    <a href={`/privacy?s=${slug}`} className="text-white/20 hover:text-white transition-colors uppercase tracking-widest font-bold">Privacy</a>
+                                    <a href={`/terms?s=${slug}`} className="text-white/20 hover:text-white transition-colors uppercase tracking-widest font-bold">Terms Policy</a>
+                                </div>
+                            </div>
+                            <div className="text-white/20 font-bold tracking-[0.05em] uppercase text-[10px]" style={{ fontFamily: "'Space Mono', monospace" }}>
+                                © {new Date().getFullYear()} {salon.name} . ALL RIGHTS RESERVED
+                            </div>
                         </div>
                     </div>
                 </footer>
             </main>
 
-            {/* ═══ MOBILE STICKY BOTTOM BAR ═══ */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-                style={{ background: "rgba(10,10,10,0.97)", backdropFilter: "blur(20px)", borderTop: "1px solid var(--border-subtle)", padding: "12px 16px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
-                <button onClick={() => setIsBookingOpen(true)}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl font-bold"
-                    style={{ background: "#C3D809", color: "#0A0A0A", fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "1rem", padding: "14px 20px" }}>
-                    <Calendar size={18} />
-                    احجز موعدك الآن
-                </button>
-            </div>
-
-
-
-            {/* ═══ BOOKING MODAL ═══ */}
-            <BookingModal
-                isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} salon={salon}
-                services={services} employees={employees} step={step} setStep={setStep}
-                sel={sel} setSel={setSel} dates={dates} bookedSlots={bookedSlots}
-                fetchBooked={fetchBooked} genTimes={genTimes} totalPrice={totalPrice}
-                totalDur={totalDur} selSrvs={selSrvs} submitting={submitting}
-                error={error} submitBooking={submitBooking} toggleSrv={toggleSrv}
-            />
-
-            <style jsx global>{`
-                .hide-scroll::-webkit-scrollbar { display: none; }
-                .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-                @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
-                .animate-marquee { animation: marquee 40s linear infinite; }
-                .animate-marquee-slow { animation: marquee 80s linear infinite; }
-                .animate-marquee:hover, .animate-marquee-slow:hover { animation-play-state: paused; }
-                @media (prefers-reduced-motion: reduce) {
-                    .animate-marquee, .animate-marquee-slow { animation: none; }
-                }
-                /* Mobile bottom bar space */
-                @media (max-width: 767px) {
-                    main { padding-bottom: 80px; }
-                }
-                /* Prevent text overflow on all screens */
-                h1, h2, h3, h4 { overflow-wrap: break-word; word-break: break-word; }
-            `}</style>
+            <AnimatePresence>
+                {isBookingOpen && (
+                    <BookingModal
+                        isOpen={isBookingOpen}
+                        onClose={() => setIsBookingOpen(false)}
+                        salon={salon}
+                        services={services}
+                        employees={employees}
+                        step={step}
+                        setStep={setStep}
+                        sel={sel}
+                        setSel={setSel}
+                        dates={dates}
+                        bookedSlots={bookedSlots}
+                        fetchBooked={fetchBooked}
+                        genTimes={genTimes}
+                        totalPrice={totalPrice}
+                        totalDur={totalDur}
+                        selSrvs={selSrvs}
+                        submitting={submitting}
+                        error={error}
+                        submitBooking={submitBooking}
+                        toggleSrv={toggleSrv}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
 export default function BookingPage() {
-    return <Suspense fallback={<div className="min-h-screen" style={{ background: "#0A0A0A" }} />}><BookingContent /></Suspense>;
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A" }}>
+                <div className="w-10 h-10 rounded-full animate-spin" style={{ border: "3px solid rgba(195,216,9,0.15)", borderTopColor: "#C3D809" }} />
+            </div>
+        }>
+            <BookingContent />
+        </Suspense>
+    );
 }

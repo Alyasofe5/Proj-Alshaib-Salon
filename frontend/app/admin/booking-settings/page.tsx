@@ -37,8 +37,11 @@ interface SalonSettings {
     name: string;
     slug: string;
     description: string;
+    secondary_description: string;
     address: string;
     instagram: string;
+    whatsapp: string;
+    facebook: string;
     owner_phone: string;
     booking_message: string;
     hero_image: string | null;
@@ -49,24 +52,39 @@ interface SalonSettings {
     work_interval: number;
     off_days: number[];
     booking_days: number;
+    // New Content Fields
+    hero_subtitle: string;
+    hero_title: string;
+    about_title: string;
+    about_subtitle: string;
+    about_description: string;
+    about_image_1: string;
+    about_image_2: string;
+    services_title: string;
+    services_subtitle: string;
+    services_description: string;
+    team_title: string;
+    team_subtitle: string;
+    team_description: string;
 }
 
 interface FaqItem { id: string; question: string; answer: string; order: number; }
 
-type TabId = 'general' | 'media' | 'services' | 'employees' | 'booking' | 'faq' | 'link';
+type TabId = 'general' | 'content' | 'media' | 'services' | 'employees' | 'booking' | 'faq' | 'link';
 const TABS: { id: TabId; label: string; icon: any }[] = [
-    { id: 'general',   label: 'عام',        icon: Settings },
-    { id: 'media',     label: 'الواجهة',    icon: Palette },
-    { id: 'services',  label: 'الخدمات',   icon: Scissors },
-    { id: 'employees', label: 'الحلاقين',  icon: Users },
-    { id: 'booking',   label: 'الحجز',     icon: Calendar },
-    { id: 'faq',       label: 'الأسئلة',   icon: HelpCircle },
-    { id: 'link',      label: 'الرابط',    icon: Link2 },
+    { id: 'general', label: 'عام', icon: Settings },
+    { id: 'content', label: 'المحتوى', icon: Palette },
+    { id: 'media', label: 'الخلفية', icon: FaImage },
+    { id: 'services', label: 'الخدمات', icon: Scissors },
+    { id: 'employees', label: 'الحلاقين', icon: Users },
+    { id: 'booking', label: 'الحجز', icon: Calendar },
+    { id: 'faq', label: 'الأسئلة', icon: HelpCircle },
+    { id: 'link', label: 'الرابط', icon: Link2 },
 ];
 
 export default function BookingSettingsPage() {
 
-    const { user, salon, setSalon } = useAuthStore();
+    const { salon, setSalon } = useAuthStore();
     const router = useRouter();
     const [services, setServices] = useState<ServiceItem[]>([]);
     const [settings, setSettings] = useState<SalonSettings | null>(null);
@@ -74,7 +92,6 @@ export default function BookingSettingsPage() {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [heroUploading, setHeroUploading] = useState(false);
-    const heroInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
     const [logoUploading, setLogoUploading] = useState(false);
     const [logoSaved, setLogoSaved] = useState(false);
@@ -93,7 +110,6 @@ export default function BookingSettingsPage() {
     const [newFaqQ, setNewFaqQ] = useState('');
     const [newFaqA, setNewFaqA] = useState('');
     const [addingFaq, setAddingFaq] = useState(false);
-    const heroVideoRef = useRef<HTMLInputElement>(null);
 
     // Service editing
     const [editingService, setEditingService] = useState<number | null>(null);
@@ -322,6 +338,8 @@ export default function BookingSettingsPage() {
                     "Content-Type": "application/json",
                 },
             });
+            // Re-fetch from server to confirm data was actually saved
+            await loadData();
             setSaved(true);
             setTimeout(() => setSaved(false), 2500);
         } catch (e) { console.error(e); }
@@ -411,7 +429,7 @@ export default function BookingSettingsPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => window.open(`${baseUrl}/book/${salon?.slug}`, '_blank')} 
+                    <button onClick={() => window.open(`${baseUrl}/book/${salon?.slug}`, '_blank')}
                         className="btn-outline-lime hidden md:flex items-center gap-2 h-10 px-4">
                         <FaExternalLinkAlt size={11} /> <span>المعاينة</span>
                     </button>
@@ -630,7 +648,7 @@ export default function BookingSettingsPage() {
 
                 {/* ══════ Tab: General — Info ══════ */}
                 {activeTab === 'general' && <motion.div key="general" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                    
+
                     {/* Info Card */}
                     <div className="card">
                         <div className="flex items-center gap-3 mb-6">
@@ -641,16 +659,25 @@ export default function BookingSettingsPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label="اسم الصالون" value={settings.name} onChange={v => setSettings({ ...settings, name: v })} gold={gold} />
-                            <InputField label="رقم الهاتف" value={settings.owner_phone} onChange={v => setSettings({ ...settings, owner_phone: v })} gold={gold} dir="ltr" />
+                            <InputField label="رقم الهاتف" value={settings.owner_phone} onChange={v => setSettings({ ...settings, owner_phone: v })} gold={gold} />
                             <InputField label="العنوان" value={settings.address} onChange={v => setSettings({ ...settings, address: v })} gold={gold} />
-                            <InputField label="انستقرام" value={settings.instagram} onChange={v => setSettings({ ...settings, instagram: v })} gold={gold} dir="ltr" placeholder="@username" />
+                            <InputField label="انستقرام" value={settings.instagram} onChange={v => setSettings({ ...settings, instagram: v })} gold={gold} placeholder="@username" />
+                            <InputField label="واتساب (اختياري)" value={settings.whatsapp} onChange={v => setSettings({ ...settings, whatsapp: v })} gold={gold} placeholder="00962..." />
+                            <InputField label="فيسبوك (اختياري)" value={settings.facebook} onChange={v => setSettings({ ...settings, facebook: v })} gold={gold} placeholder="facebook.com/..." />
                         </div>
                         <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
-                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون</label>
-                            <textarea value={settings.description} onChange={e => setSettings({ ...settings, description: e.target.value })} rows={4}
+                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون الرئيسي (يظهر في الواجهة العليا)</label>
+                            <textarea value={settings.description ?? ""} onChange={e => setSettings({ ...settings, description: e.target.value })} rows={4}
                                 className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
                                 style={{ border: "1.5px solid var(--border-subtle)" }}
                                 placeholder="اكتب وصفاً مختصراً عن الصالون والخدمات..." />
+                        </div>
+                        <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون الفرعي (يظهر في أسفل الصفحة - Footer)</label>
+                            <textarea value={settings.secondary_description ?? ""} onChange={e => setSettings({ ...settings, secondary_description: e.target.value })} rows={3}
+                                className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                                style={{ border: "1.5px solid var(--border-subtle)" }}
+                                placeholder="اكتب وصفاً موجزاً للفوتر..." />
                         </div>
                         <div className="mt-6">
                             <InputField label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholder="مثال: شكراً لحجزك في صالوننا! سننتظرك في الموعد." />
@@ -667,7 +694,7 @@ export default function BookingSettingsPage() {
                             </div>
                             <h2 className="text-lg font-bold">ساعات العمل والإجازات</h2>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <TimePicker12 label="بداية الدوام" value={settings.work_start} onChange={(v: string) => setSettings({ ...settings, work_start: v })} gold={gold} />
                             <TimePicker12 label="نهاية الدوام" value={settings.work_end} onChange={(v: string) => setSettings({ ...settings, work_end: v })} gold={gold} />
@@ -721,6 +748,74 @@ export default function BookingSettingsPage() {
                     </div>
                 </motion.div>}
 
+                {/* ══════ Tab: Content — Hero & About ══════ */}
+                {activeTab === 'content' && <motion.div key="content" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                    
+                    {/* Hero Text Customization */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <Palette size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">نصوص الواجهة الرئيسية (Hero)</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField label="العنوان الصغير (أعلى الهيدر)" value={settings.hero_subtitle} onChange={v => setSettings({ ...settings, hero_subtitle: v })} gold={gold} placeholder="مثال: تأسس ٢٠٢٤ -- صالون فاخر" />
+                            <div className="md:col-span-2">
+                                <InputField label="العنوان الرئيسي للموقع" value={settings.hero_title} onChange={v => setSettings({ ...settings, hero_title: v })} gold={gold} placeholder="مثال: أين يلتقي الإبداع بالأناقة" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* About Section Customization */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <Users size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">قسم "قصتنا" (About)</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField label="عنوان القسم الصغير" value={settings.about_subtitle} onChange={v => setSettings({ ...settings, about_subtitle: v })} gold={gold} placeholder="لمسة من الإبداع" />
+                            <InputField label="العنوان الرئيسي للقسم" value={settings.about_title} onChange={v => setSettings({ ...settings, about_title: v })} gold={gold} placeholder="قصتنا" />
+                            <div className="md:col-span-2">
+                                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف القسم (قصة الصالون)</label>
+                                <textarea value={settings.about_description ?? ""} onChange={e => setSettings({ ...settings, about_description: e.target.value })} rows={5}
+                                    className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                                    style={{ border: "1.5px solid var(--border-subtle)" }}
+                                    placeholder="اكتب تاريخ الصالون ورجال الأعمال العاملين فيه..." />
+                            </div>
+                            <InputField label="رابط الصورة الرئيسية (اختياري)" value={settings.about_image_1} onChange={v => setSettings({ ...settings, about_image_1: v })} gold={gold} placeholder="https://..." />
+                            <InputField label="رابط الصورة الفرعية (اختياري)" value={settings.about_image_2} onChange={v => setSettings({ ...settings, about_image_2: v })} gold={gold} placeholder="https://..." />
+                        </div>
+                    </div>
+
+                    {/* Sections Headers */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <Scissors size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">عناوين الأقسام الأخرى</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم الخدمات</h3>
+                                <InputField label="عنوان الخدمات الصغير" value={settings.services_subtitle} onChange={v => setSettings({ ...settings, services_subtitle: v })} gold={gold} />
+                                <InputField label="عنوان الخدمات الكبير" value={settings.services_title} onChange={v => setSettings({ ...settings, services_title: v })} gold={gold} />
+                                <InputField label="وصف قسم الخدمات" value={settings.services_description} onChange={v => setSettings({ ...settings, services_description: v })} gold={gold} />
+                            </div>
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم فريق العمل</h3>
+                                <InputField label="عنوان الفريق الصغير" value={settings.team_subtitle} onChange={v => setSettings({ ...settings, team_subtitle: v })} gold={gold} />
+                                <InputField label="عنوان الفريق الكبير" value={settings.team_title} onChange={v => setSettings({ ...settings, team_title: v })} gold={gold} />
+                                <InputField label="وصف قسم الفريق" value={settings.team_description} onChange={v => setSettings({ ...settings, team_description: v })} gold={gold} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>}
+
+
                 {/* ══════ Tab: Media — Hero Image/Video ══════ */}
                 {activeTab === 'media' && <motion.div key="media" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                     <div className="card">
@@ -730,7 +825,7 @@ export default function BookingSettingsPage() {
                             </div>
                             <h2 className="text-lg font-bold">صورة / فيديو الواجهة الرئيسية</h2>
                         </div>
-                        
+
                         <div className="rounded-2xl overflow-hidden mb-6" style={{ border: "1.5px solid var(--border-subtle)", background: "var(--color-surface)" }}>
                             {/* Preview box */}
                             <div className="relative aspect-video flex items-center justify-center">
@@ -745,7 +840,7 @@ export default function BookingSettingsPage() {
                                         <p className="text-xs opacity-50 mt-1">ارفع صورة أو فيديو ليظهر في خلفية صفحة الحجز</p>
                                     </div>
                                 )}
-                                
+
                                 {heroUploading && (
                                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                                         <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
@@ -767,19 +862,19 @@ export default function BookingSettingsPage() {
                             <div className="flex items-center gap-2 w-full sm:w-auto">
                                 <label className="btn-lime flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-pointer">
                                     <FaCamera size={12} /> <span>رفع صورة</span>
-                                    <input type="file" accept="image/*" className="hidden" 
-                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value=""; }} />
+                                    <input type="file" accept="image/*" className="hidden"
+                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value = ""; }} />
                                 </label>
                                 <label className="btn-outline-lime flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-pointer">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
                                     <span>رفع فيديو</span>
                                     <input type="file" accept="video/*" className="hidden"
-                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value=""; }} />
+                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroMedia(f); e.currentTarget.value = ""; }} />
                                 </label>
                             </div>
-                            
+
                             {(settings.hero_image || settings.hero_video) && (
-                                <button onClick={() => deleteHeroMedia(settings.hero_type as any)} 
+                                <button onClick={() => deleteHeroMedia(settings.hero_type as any)}
                                     className="text-red-500 hover:text-red-400 text-xs font-bold px-4 py-2 hover:bg-red-500/10 rounded-xl transition-all">
                                     حذف المحتوى الحالي
                                 </button>
@@ -815,7 +910,7 @@ export default function BookingSettingsPage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الخدمة</label>
-                                            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="مثال: حلاقة كلاسيكية" 
+                                            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="مثال: حلاقة كلاسيكية"
                                                 className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                         </div>
                                         <div className="space-y-1.5">
@@ -828,7 +923,7 @@ export default function BookingSettingsPage() {
                                         <button onClick={addService} disabled={addingService || !newName.trim()} className="btn-lime min-w-[120px]">
                                             {addingService ? <div className="spinner-sm mx-auto" /> : "تأكيد الإضافة"}
                                         </button>
-                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); }} 
+                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); }}
                                             className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
                                     </div>
                                 </motion.div>
@@ -887,7 +982,7 @@ export default function BookingSettingsPage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الحلاق</label>
-                                            <input value={newEmpName} onChange={e => setNewEmpName(e.target.value)} placeholder="الاسم الكامل" 
+                                            <input value={newEmpName} onChange={e => setNewEmpName(e.target.value)} placeholder="الاسم الكامل"
                                                 className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                         </div>
                                         <div className="space-y-1.5">
@@ -900,7 +995,7 @@ export default function BookingSettingsPage() {
                                         <button onClick={addEmployee} disabled={addingEmp || !newEmpName.trim()} className="btn-lime min-w-[120px]">
                                             {addingEmp ? <div className="spinner-sm mx-auto" /> : "إضافة الحلاق"}
                                         </button>
-                                        <button onClick={() => { setShowAddEmp(false); setNewEmpName(""); setNewEmpPhone(""); }} 
+                                        <button onClick={() => { setShowAddEmp(false); setNewEmpName(""); setNewEmpPhone(""); }}
                                             className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
                                     </div>
                                 </motion.div>
@@ -959,7 +1054,7 @@ export default function BookingSettingsPage() {
                                     <div className="space-y-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">السؤال</label>
-                                            <input value={newFaqQ} onChange={e => setNewFaqQ(e.target.value)} placeholder="مثال: هل توجد مواقف للسيارات؟" 
+                                            <input value={newFaqQ} onChange={e => setNewFaqQ(e.target.value)} placeholder="مثال: هل توجد مواقف للسيارات؟"
                                                 className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-bold" />
                                         </div>
                                         <div className="space-y-1.5">
@@ -972,7 +1067,7 @@ export default function BookingSettingsPage() {
                                         <button onClick={addFaq} disabled={addingFaq || !newFaqQ.trim() || !newFaqA.trim()} className="btn-lime min-w-[120px]">
                                             {addingFaq ? <div className="spinner-sm mx-auto" /> : "إضافة السؤال"}
                                         </button>
-                                        <button onClick={() => { setShowAddFaq(false); setNewFaqQ(''); setNewFaqA(''); }} 
+                                        <button onClick={() => { setShowAddFaq(false); setNewFaqQ(''); setNewFaqA(''); }}
                                             className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
                                     </div>
                                 </motion.div>
@@ -992,7 +1087,7 @@ export default function BookingSettingsPage() {
                                         style={{ background: "var(--color-surface)", border: editingFaq === faq.id ? `1.5px solid ${gold}` : "1.5px solid var(--border-subtle)" }}>
                                         {editingFaq === faq.id ? (
                                             <div className="space-y-4">
-                                                <input value={editFaqQ} onChange={e => setEditFaqQ(e.target.value)} 
+                                                <input value={editFaqQ} onChange={e => setEditFaqQ(e.target.value)}
                                                     className="w-full bg-transparent border-b border-[var(--color-accent)] pb-2 text-sm font-bold outline-none" />
                                                 <textarea value={editFaqA} onChange={e => setEditFaqA(e.target.value)} rows={3}
                                                     className="w-full bg-transparent border border-[var(--border-subtle)] p-3 rounded-lg text-sm outline-none resize-none" />
@@ -1094,7 +1189,7 @@ function InputField({ label, value, onChange, gold, dir, placeholder }: {
     return (
         <div>
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">{label}</label>
-            <input value={value} onChange={e => onChange(e.target.value)} dir={dir} placeholder={placeholder}
+            <input value={value ?? ""} onChange={e => onChange(e.target.value)} dir={dir} placeholder={placeholder}
                 className="w-full py-3.5 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none text-sm transition-all"
                 style={{ border: "1.5px solid var(--border-subtle)" }}
                 onFocus={e => {
@@ -1293,7 +1388,7 @@ function EmployeeCard({
                                 style={{ border: `1px solid ${gold}30` }}
                                 onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
                             <input value={editPhone} onChange={e => onEditPhone(e.target.value)}
-                                placeholder="الهاتف" dir="ltr"
+                                placeholder="الهاتف"
                                 className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
                                 style={{ border: `1px solid ${gold}20` }} />
                             <input value={editSpecialty} onChange={e => onEditSpecialty(e.target.value)}

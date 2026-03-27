@@ -1,0 +1,122 @@
+name: Build And Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Upload to production FTP after build"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      should_deploy: ${{ steps.decision.outputs.should_deploy }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend export
+        working-directory: frontend
+        run: npm run build
+
+      - name: Verify exported assets exist
+        shell: bash
+        run: |
+          test -d frontend/out
+          test -d frontend/out/_next
+          test -d frontend/out/_next/static
+          test -f frontend/out/book/index.html
+
+      - name: Prepare deploy package
+        shell: bash
+        run: |
+          rm -rf deploy_combined
+          mkdir -p deploy_combined
+          cp -R frontend/out/. deploy_combined/
+          cp -R backend/api deploy_combined/api
+          cp -R backend/config deploy_combined/config
+          cp -R backend/middleware deploy_combined/middleware
+          cp backend/.htaccess deploy_combined/.htaccess
+
+      - name: Verify deploy package
+        shell: bash
+        run: |
+          test -d deploy_combined/_next/static
+          test -d deploy_combined/api
+          test -d deploy_combined/config
+          test -d deploy_combined/middleware
+          test -f deploy_combined/.htaccess
+          test -f deploy_combined/book/index.html
+
+      - name: Archive deploy package
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy_combined
+          path: deploy_combined
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Decide whether to deploy
+        id: decision
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ inputs.deploy }}" == "true" ]]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download deploy artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy_combined
+          path: deploy_combined
+
+      - name: Upload to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          local-dir: ./deploy_combined/
+          protocol: ftp
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/uploads/**
+            **/backups/**

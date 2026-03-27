@@ -84,6 +84,14 @@ export const servicesAPI = {
             headers: { "Content-Type": "multipart/form-data" },
         });
     },
+    uploadVideo: (id: number, file: File) => {
+        const formData = new FormData();
+        formData.append("video", file);
+        return api.post(`/services/video.php?id=${id}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
+    deleteVideo: (id: number) => api.delete(`/services/video.php?id=${id}`),
 };
 
 // ===== Transactions API =====

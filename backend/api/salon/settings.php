@@ -77,6 +77,9 @@ if (getMethod() === 'GET') {
         'team_description' => $settings['team_description'] ?? 'خبراء محترفون يجمعون بين المهارة والإبداع لتقديم أفضل النتائج.',
         'gallery_title'   => $settings['gallery_title']   ?? 'معرض أعمالنا',
         'gallery_subtitle' => $settings['gallery_subtitle'] ?? 'لمحة عن إبداعاتنا وأعمالنا المميزة',
+        'reviews_title'   => $settings['reviews_title']   ?? 'Ù…Ø§Ø°Ø§ ÙŠÙ‚ÙˆÙ„ Ø¹Ù†Ù‘Ø§ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡',
+        'reviews_subtitle' => $settings['reviews_subtitle'] ?? 'Ø¢Ø±Ø§Ø¡ Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§',
+        'reviews'         => $settings['reviews']         ?? [],
     ]);
 }
 
@@ -136,6 +139,9 @@ if (getMethod() === 'PUT') {
 
             'gallery_title'         => (string)($data['gallery_title']         ?? 'معرض أعمالنا'),
             'gallery_subtitle'      => (string)($data['gallery_subtitle']      ?? 'لمحة عن إبداعاتنا وأعمالنا المميزة'),
+            'reviews_title'         => (string)($data['reviews_title']         ?? 'Ù…Ø§Ø°Ø§ ÙŠÙ‚ÙˆÙ„ Ø¹Ù†Ù‘Ø§ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡'),
+            'reviews_subtitle'      => (string)($data['reviews_subtitle']      ?? 'Ø¢Ø±Ø§Ø¡ Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§'),
+            'reviews'               => (array)($data['reviews']                ?? ($existingSettings['reviews'] ?? [])),
         ]);
 
         $settingsJson = json_encode($merged, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

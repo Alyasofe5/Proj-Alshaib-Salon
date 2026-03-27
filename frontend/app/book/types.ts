@@ -1,4 +1,4 @@
-export interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; }
+export interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; video?: string | null; }
 export interface Employee { id: number; name: string; avatar?: string; role?: string; }
 export interface SalonInfo {
     name: string; slug: string; logo: string | null; phone: string | null;
@@ -24,6 +24,11 @@ export interface SalonInfo {
     team_title?: string;
     team_subtitle?: string;
     team_description?: string;
+    gallery_title?: string;
+    gallery_subtitle?: string;
+    reviews_title?: string;
+    reviews_subtitle?: string;
+    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; }[];
 }
 
 export interface BookingSel {

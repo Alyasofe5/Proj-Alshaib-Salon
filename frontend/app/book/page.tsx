@@ -55,10 +55,11 @@ function BookingContent() {
     const [scrolled, setScrolled] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+    const [activeReviewIndex, setActiveReviewIndex] = useState(0);
     const [notFound, setNotFound] = useState(false);
     const [noBookingPage, setNoBookingPage] = useState(false);
 
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(1);
     const [sel, setSel] = useState<BookingSel>({ service_ids: [], employee_id: 0, booking_date: "", booking_time: "", customer_name: "", customer_phone: "", notes: "" });
     const [bookedSlots, setBookedSlots] = useState<{ booking_time: string; employee_id: number }[]>([]);
     const [submitting, setSubmitting] = useState(false);
@@ -150,6 +151,8 @@ function BookingContent() {
         setSel(p => ({ ...p, service_ids: p.service_ids.includes(id) ? p.service_ids.filter(x => x !== id) : [...p.service_ids, id] }));
     }, []);
 
+    const resolveMediaUrl = useCallback((path?: string | null) => assetUrl(path) || path || "", []);
+
     /* ─── Helpers ─── */
     const formatOpenDays = useCallback(() => {
         if (offDays.length === 0) return "طوال أيام الأسبوع";
@@ -211,7 +214,13 @@ function BookingContent() {
         </div>
     );
 
-    const mockGallery = salon.gallery?.length ? salon.gallery.map((g: any) => typeof g === "string" ? { type: "image", url: g } : g) : [
+    const mockGallery = salon.gallery?.length ? salon.gallery.map((g: any) => {
+        if (typeof g === "string") return { type: "image", url: resolveMediaUrl(g) };
+        return {
+            type: g.type || g.file_type || "image",
+            url: resolveMediaUrl(g.url || g.file_path),
+        };
+    }) : [
         { type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-barber-trimming-a-beard-with-a-razor-4148-large.mp4" },
         { type: "image", url: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1200" },
         { type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-stylist-combing-hair-of-a-customer-4147-large.mp4" },
@@ -219,18 +228,90 @@ function BookingContent() {
         { type: "image", url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200" },
         { type: "image", url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1200" },
     ];
+    const legacyStaticServiceCards = [
+        { name: "حلاقة الشعر", en: "HAIR", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600" },
+        { name: "تلوين الشعر", en: "COLOR", img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?q=80&w=600" },
+        { name: "العناية الكيميائية", en: "CHEMICAL", img: "https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?q=80&w=600" },
+        { name: "علاجات الشعر", en: "TREATMENT", img: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=600" },
+        { name: "خدمات التجميل", en: "AESTHETICS", img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600" },
+    ];
+    const serviceCards = services.length
+        ? services.map((service, index) => ({
+            id: service.id,
+            name: service.name,
+            en: `SERVICE-${index + 1}`,
+            img: resolveMediaUrl(service.image),
+            video: resolveMediaUrl(service.video) || null,
+            fallbackImg: legacyStaticServiceCards[index % legacyStaticServiceCards.length]?.img,
+            price: service.price,
+            duration: service.duration_minutes,
+        }))
+        : legacyStaticServiceCards.map((card, index) => ({
+            id: index + 1,
+            name: card.name,
+            en: card.en,
+            img: card.img,
+            video: null,
+            fallbackImg: card.img,
+            price: "0",
+            duration: null,
+        }));
+    const activeServiceCard = serviceCards[Math.min(activeServiceIndex, Math.max(serviceCards.length - 1, 0))];
+    const gallerySplitIndex = Math.ceil(mockGallery.length / 2);
+    const galleryRowOneSource = mockGallery.slice(0, gallerySplitIndex);
+    const galleryRowTwoSource = mockGallery.slice(gallerySplitIndex);
+    const galleryRowOne = [...(galleryRowOneSource.length ? galleryRowOneSource : mockGallery), ...(galleryRowOneSource.length ? galleryRowOneSource : mockGallery)];
+    const galleryRowTwoBase = galleryRowTwoSource.length ? galleryRowTwoSource : mockGallery;
+    const galleryRowTwo = [...galleryRowTwoBase, ...galleryRowTwoBase];
+    const renderGalleryCard = (
+        item: { type: string; url: string },
+        key: string,
+        widthClass: string,
+        aspectRatio: string
+    ) => (
+        <div
+            key={key}
+            className={`shrink-0 ${widthClass} overflow-hidden group rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03] relative`}
+            style={{ aspectRatio }}
+            onMouseEnter={(e) => { const v = e.currentTarget.querySelector("video"); if (v) v.play(); }}
+            onMouseLeave={(e) => { const v = e.currentTarget.querySelector("video"); if (v) { v.pause(); v.currentTime = 0; } }}
+        >
+            {item.type === "video" ? (
+                <video
+                    src={item.url}
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
+                />
+            ) : (
+                <img
+                    src={item.url}
+                    className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
+                    alt=""
+                />
+            )}
+            <div className="absolute inset-0 bg-black/20 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
+            {item.type === "video" && (
+                <div className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:scale-0 transition-transform duration-500">
+                    <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-white border-b-[5px] border-b-transparent translate-x-0.5" />
+                </div>
+            )}
+        </div>
+    );
     const mockReviews = salon.reviews?.length ? salon.reviews : [
         { id: 1, customer_name: "أحمد العبدالله", rating: 5, comment: "خدمة احترافية جداً، الحلاق فهم قصة الشعر اللي أريدها بالضبط." },
         { id: 2, customer_name: "محمد خالد", rating: 5, comment: "المكان راقي جداً والتعامل ممتاز. أنصح بتجربة قسم العناية بالبشرة." },
         { id: 3, customer_name: "سالم المري", rating: 5, comment: "تجربة رائعة وتطبيق الحجز سهل جداً. السعر مناسب مقابل الجودة." },
     ];
+    const currentReview = mockReviews[Math.min(activeReviewIndex, Math.max(mockReviews.length - 1, 0))];
     const mockFaqs = salon.faqs?.length ? salon.faqs : [
         { id: 1, question: "هل يتوفر مواقف سيارات؟", answer: "نعم، نوفر مواقف مجانية لعملائنا أمام الصالون مباشرة." },
         { id: 2, question: "هل يمكن إلغاء أو تعديل الموعد؟", answer: "بالطبع، تواصل معنا قبل ساعتين على الأقل من موعدك." },
         { id: 3, question: "ما هي طرق الدفع المتاحة؟", answer: "نوفر الدفع نقداً وعبر البطاقات الائتمانية وبطاقات مدى." },
     ];
 
-    const serviceCards = [
+    const staticServiceCards = [
         { name: "حلاقة الشعر", en: "HAIR", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600" },
         { name: "تلوين الشعر", en: "COLOR", img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?q=80&w=600" },
         { name: "العناية الكيميائية", en: "CHEMICAL", img: "https://images.unsplash.com/photo-1622288432450-277d0fef5ed6?q=80&w=600" },
@@ -264,8 +345,16 @@ function BookingContent() {
                     {/* Center: Logo */}
                     <div className="flex justify-center">
                         <a href={`/book?s=${slug}`} className="flex items-center gap-3 transition-transform hover:scale-105">
-                            <div className="w-8 h-8 rounded-lg bg-[#C3D809] flex items-center justify-center transform rotate-12">
-                                <Scissors size={18} className="text-black -rotate-12" />
+                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#C3D809] flex items-center justify-center border border-white/10 shadow-[0_4px_18px_rgba(195,216,9,0.22)]">
+                                {salon.logo ? (
+                                    <img
+                                        src={salon.logo}
+                                        alt={salon.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Scissors size={18} className="text-black" />
+                                )}
                             </div>
                             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.5rem", fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.04em", color: "#F5F2EC" }}>
                                 {salon.name}
@@ -305,11 +394,22 @@ function BookingContent() {
                         {/* Slight bottom dark gradient to blend with the rest of the page globally */}
                         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#050505] to-transparent z-10 pointer-events-none" />
                         
-                        <img 
-                            src={salon.hero_image ? assetUrl(salon.hero_image)! : "/images/salon_hero.png"} 
-                            className="w-full h-full object-cover grayscale brightness-[60%] lg:brightness-75 object-center" 
-                            alt="Hero Background" 
-                        />
+                        {salon.hero_type === "video" && resolveMediaUrl(salon.hero_video) ? (
+                            <video
+                                src={resolveMediaUrl(salon.hero_video)}
+                                className="w-full h-full object-cover grayscale brightness-[60%] lg:brightness-75 object-center"
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                            />
+                        ) : (
+                            <img
+                                src={resolveMediaUrl(salon.hero_image) || "/images/salon_hero.png"}
+                                className="w-full h-full object-cover grayscale brightness-[60%] lg:brightness-75 object-center"
+                                alt="Hero Background"
+                            />
+                        )}
                     </div>
 
                     {/* Content Container */}
@@ -510,7 +610,7 @@ function BookingContent() {
                         >
                             {/* Main Background Image - Anchored Top-Right */}
                             <div className="absolute top-0 right-0 w-[80%] h-[75%] lg:h-[80%] overflow-hidden bg-[#111]">
-                                <img src={salon.about_image_1 || "/images/barber_action.png"} alt="Salon Vibe" className="w-full h-full object-cover grayscale opacity-60 hover:opacity-80 transition-opacity duration-700 mix-blend-lighten" loading="lazy" />
+                                <img src={resolveMediaUrl(salon.about_image_1) || "/images/barber_action.png"} alt="Salon Vibe" className="w-full h-full object-cover grayscale opacity-60 hover:opacity-80 transition-opacity duration-700 mix-blend-lighten" loading="lazy" />
                             </div>
                             
                             {/* Overlay Image - Anchored Bottom-Left */}
@@ -521,7 +621,7 @@ function BookingContent() {
                                 transition={{ duration: 0.8, delay: 0.3 }} 
                                 className="absolute bottom-0 left-0 w-[60%] h-[50%] lg:h-[55%] border-[12px] sm:border-[16px] border-[#050505] overflow-hidden bg-[#111]"
                             >
-                                <img src={salon.about_image_2 || "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600"} alt="Master Barber" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+                                <img src={resolveMediaUrl(salon.about_image_2) || "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600"} alt="Master Barber" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
                             </motion.div>
                         </motion.div>
 
@@ -627,16 +727,32 @@ function BookingContent() {
                                     <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.05] bg-[#050505] p-2.5 sm:p-3 shadow-2xl">
                                         <div className="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-[1.5rem]">
                                             <AnimatePresence mode="wait">
-                                                <motion.img
-                                                    key={serviceCards[activeServiceIndex].img}
-                                                    src={serviceCards[activeServiceIndex].img}
-                                                    alt={serviceCards[activeServiceIndex].name}
-                                                    className="absolute inset-0 w-full h-full object-cover grayscale opacity-70"
-                                                    initial={{ opacity: 0, scale: 1.05 }}
-                                                    animate={{ opacity: 0.7, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    transition={{ duration: 0.5, ease: "easeOut" }}
-                                                />
+                                                {activeServiceCard?.video ? (
+                                                    <motion.video
+                                                        key={activeServiceCard.video}
+                                                        src={activeServiceCard.video}
+                                                        className="absolute inset-0 w-full h-full object-cover opacity-75"
+                                                        autoPlay
+                                                        muted
+                                                        loop
+                                                        playsInline
+                                                        initial={{ opacity: 0, scale: 1.05 }}
+                                                        animate={{ opacity: 0.75, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.95 }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                    />
+                                                ) : (
+                                                    <motion.img
+                                                        key={activeServiceCard?.img || activeServiceCard?.fallbackImg}
+                                                        src={activeServiceCard?.img || activeServiceCard?.fallbackImg}
+                                                        alt={activeServiceCard?.name}
+                                                        className="absolute inset-0 w-full h-full object-cover grayscale opacity-70"
+                                                        initial={{ opacity: 0, scale: 1.05 }}
+                                                        animate={{ opacity: 0.7, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.95 }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                    />
+                                                )}
                                             </AnimatePresence>
 
                                             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/20 to-transparent" />
@@ -655,8 +771,14 @@ function BookingContent() {
                                                     خدمة مختارة
                                                 </p>
                                                 <h3 className="text-3xl sm:text-4xl font-black leading-none text-white mb-6" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
-                                                    {serviceCards[activeServiceIndex].name}
+                                                    {activeServiceCard?.name}
                                                 </h3>
+                                                {(activeServiceCard?.price || activeServiceCard?.duration) && (
+                                                    <p className="mb-6 text-sm text-white/60 flex items-center gap-4">
+                                                        {activeServiceCard?.price && <span>{Number(activeServiceCard.price).toFixed(2)} د.أ</span>}
+                                                        {activeServiceCard?.duration && <span>{activeServiceCard.duration} دقيقة</span>}
+                                                    </p>
+                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsBookingOpen(true)}
@@ -686,7 +808,13 @@ function BookingContent() {
                                                     onClick={() => setActiveServiceIndex(i)}
                                                     aria-label={`عرض ${s.name}`}
                                                 >
-                                                    <img src={s.img} alt="" className="absolute inset-0 h-full w-full object-cover grayscale opacity-50" />
+                                                    {s.img ? (
+                                                        <img src={s.img} alt="" className="absolute inset-0 h-full w-full object-cover grayscale opacity-50" />
+                                                    ) : s.video ? (
+                                                        <video src={s.video} className="absolute inset-0 h-full w-full object-cover grayscale opacity-50" muted playsInline />
+                                                    ) : (
+                                                        <img src={s.fallbackImg} alt="" className="absolute inset-0 h-full w-full object-cover grayscale opacity-50" />
+                                                    )}
                                                     <div className={["absolute inset-0 transition-opacity bg-black", isActive ? "opacity-0" : "opacity-40"].join(" ")} />
                                                 </button>
                                             );
@@ -715,6 +843,11 @@ function BookingContent() {
                                     <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
                                         {salon.team_title || "فريقنا من المبدعين"}
                                     </h2>
+                                    {salon.team_description && (
+                                        <p className="mt-6 max-w-2xl text-white/45 text-sm sm:text-base leading-8">
+                                            {salon.team_description}
+                                        </p>
+                                    )}
                                 </motion.div>
                             </div>
                             
@@ -745,13 +878,13 @@ function BookingContent() {
                             <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
                                 <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
                                 <span className="text-white/40 text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.3em]" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
-                                    الفيديو والصور
+                                    {salon.gallery_subtitle || "\u0627\u0644\u0641\u064a\u062f\u064a\u0648 \u0648\u0627\u0644\u0635\u0648\u0631"}
                                 </span>
                                 <div className="w-8 sm:w-10 h-[1px] bg-white/10" />
                             </motion.div>
 
                             <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-3xl sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
-                                فلسفة <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, paddingRight: "0.1em" }}>المظهر</span>
+                                {salon.gallery_title || "\u0641\u0644\u0633\u0641\u0629 \u0627\u0644\u0645\u0638\u0647\u0631"}
                             </motion.h2>
                         </div>
                     </div>
@@ -762,59 +895,51 @@ function BookingContent() {
                         <div className="absolute inset-y-0 right-0 w-32 sm:w-64 lg:w-96 z-10 pointer-events-none bg-gradient-to-l from-[#070707] via-[#070707]/80 to-transparent" />
 
                         {/* Row 1 (Moving to Right) */}
-                        <div className="flex animate-marquee-slow-reverse whitespace-nowrap hover:[animation-play-state:paused] mb-10 lg:mb-16">
-                            {[...mockGallery, ...mockGallery].map((item, i) => (
-                                <div key={`t1-${i}`} 
-                                    className="inline-block shrink-0 w-[75vw] lg:w-[40vw] mx-3 lg:mx-5 overflow-hidden group rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03] relative" 
-                                    style={{ aspectRatio: i % 2 === 0 ? "16/10" : "4/5" }}
-                                    onMouseEnter={(e) => { const v = e.currentTarget.querySelector("video"); if(v) v.play(); }}
-                                    onMouseLeave={(e) => { const v = e.currentTarget.querySelector("video"); if(v) { v.pause(); v.currentTime = 0; } }}
-                                >
-                                    {item.type === "video" ? (
-                                        <video 
-                                            src={item.url} 
-                                            loop muted playsInline 
-                                            className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <img src={item.url} className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105" alt="" />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/20 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
-                                    {item.type === "video" && (
-                                        <div className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:scale-0 transition-transform duration-500">
-                                            <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-white border-b-[5px] border-b-transparent translate-x-0.5" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                        <div className="marquee-lane mb-10 lg:mb-16 hover:[&_.marquee-strip]:[animation-play-state:paused]">
+                            <div className="marquee-strip marquee-strip-right-primary">
+                                {galleryRowOne.map((item, i) =>
+                                    renderGalleryCard(
+                                        item,
+                                        `row-1-primary-${i}`,
+                                        "w-[68vw] sm:w-[54vw] lg:w-[30vw] xl:w-[26vw]",
+                                        i % 2 === 0 ? "16/10" : "4/5"
+                                    )
+                                )}
+                            </div>
+                            <div className="marquee-strip marquee-strip-right-secondary" aria-hidden="true">
+                                {galleryRowOne.map((item, i) =>
+                                    renderGalleryCard(
+                                        item,
+                                        `row-1-secondary-${i}`,
+                                        "w-[68vw] sm:w-[54vw] lg:w-[30vw] xl:w-[26vw]",
+                                        i % 2 === 0 ? "16/10" : "4/5"
+                                    )
+                                )}
+                            </div>
                         </div>
 
                         {/* Row 2 (Moving to Left) */}
-                        <div className="flex animate-marquee-slow whitespace-nowrap hover:[animation-play-state:paused]">
-                            {[...mockGallery.reverse(), ...mockGallery].map((item, i) => (
-                                <div key={`t2-${i}`} 
-                                    className="inline-block shrink-0 w-[65vw] lg:w-[35vw] mx-3 lg:mx-5 overflow-hidden group rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03] relative" 
-                                    style={{ aspectRatio: i % 3 === 0 ? "1/1" : "3/2" }}
-                                    onMouseEnter={(e) => { const v = e.currentTarget.querySelector("video"); if(v) v.play(); }}
-                                    onMouseLeave={(e) => { const v = e.currentTarget.querySelector("video"); if(v) { v.pause(); v.currentTime = 0; } }}
-                                >
-                                    {item.type === "video" ? (
-                                        <video 
-                                            src={item.url} 
-                                            loop muted playsInline 
-                                            className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <img src={item.url} className="w-full h-full object-cover grayscale transition-all duration-[1.2s] group-hover:grayscale-0 group-hover:scale-105" alt="" />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/20 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
-                                    {item.type === "video" && (
-                                        <div className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:scale-0 transition-transform duration-500">
-                                            <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-white border-b-[5px] border-b-transparent translate-x-0.5" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                        <div className="marquee-lane hover:[&_.marquee-strip]:[animation-play-state:paused]">
+                            <div className="marquee-strip marquee-strip-left-primary">
+                                {galleryRowTwo.map((item, i) =>
+                                    renderGalleryCard(
+                                        item,
+                                        `row-2-primary-${i}`,
+                                        "w-[60vw] sm:w-[46vw] lg:w-[24vw] xl:w-[20vw]",
+                                        i % 3 === 0 ? "1/1" : "3/2"
+                                    )
+                                )}
+                            </div>
+                            <div className="marquee-strip marquee-strip-left-secondary" aria-hidden="true">
+                                {galleryRowTwo.map((item, i) =>
+                                    renderGalleryCard(
+                                        item,
+                                        `row-2-secondary-${i}`,
+                                        "w-[60vw] sm:w-[46vw] lg:w-[24vw] xl:w-[20vw]",
+                                        i % 3 === 0 ? "1/1" : "3/2"
+                                    )
+                                )}
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -833,7 +958,7 @@ function BookingContent() {
                             <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
                                 <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
                                 <span className="text-[#C3D809] text-[10px] sm:text-[11px] uppercase font-bold tracking-widest opacity-80" style={{ fontFamily: "'Space Mono', 'Tajawal', monospace" }}>
-                                    آراء عمـلائنا
+                                    {salon.reviews_subtitle || "\u0622\u0631\u0627\u0621 \u0639\u0645\u0644\u0627\u0626\u0646\u0627"}
                                 </span>
                                 <div className="w-8 sm:w-10 h-[1px] bg-white/20" />
                             </motion.div>
@@ -841,14 +966,14 @@ function BookingContent() {
                             {/* Headline */}
                             <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14 sm:mb-20">
                                 <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
-                                    ماذا يقول عنّا <span className="text-[#C3D809]" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 700, paddingRight: "0.1em" }}>العملاء</span>
+                                    {salon.reviews_title || "\u0645\u0627\u0630\u0627 \u064a\u0642\u0648\u0644 \u0639\u0646\u0651\u0627 \u0627\u0644\u0639\u0645\u0644\u0627\u0621"}
                                 </h2>
                             </motion.div>
 
                             <div className="relative w-full">
                                 <AnimatePresence mode="wait">
                                     <motion.div 
-                                        key={step % (mockReviews.length || 1)} 
+                                        key={activeReviewIndex} 
                                         initial={{ opacity: 0, y: 15 }} 
                                         animate={{ opacity: 1, y: 0 }} 
                                         exit={{ opacity: 0, y: -15 }} 
@@ -862,16 +987,16 @@ function BookingContent() {
                                         
                                         {/* Review Paragraph */}
                                         <p className="leading-[1.9] text-[#E0E0E0] italic mb-12 max-w-3xl mx-auto" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.1rem, 3.5vw, 1.8rem)", fontWeight: 400 }}>
-                                            &ldquo;{mockReviews[step % (mockReviews.length || 1)]?.comment}&rdquo;
+                                            &ldquo;{currentReview?.comment}&rdquo;
                                         </p>
                                         
                                         {/* Footer / Author */}
                                         <div className="flex flex-col items-center gap-1.5 mt-4">
                                             <h4 className="text-white text-[11px] sm:text-[12px] font-black uppercase tracking-[0.15em]" style={{ fontFamily: "'Space Mono', 'Noto Sans Arabic', monospace" }}>
-                                                {mockReviews[step % (mockReviews.length || 1)]?.customer_name}
+                                                {currentReview?.customer_name}
                                             </h4>
                                             <span className="text-[#C3D809]/60 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.25em] font-mono">
-                                                عميل دائم
+                                                {currentReview?.role || "\u0639\u0645\u064a\u0644 \u062f\u0627\u0626\u0645"}
                                             </span>
                                         </div>
                                     </motion.div>
@@ -881,9 +1006,9 @@ function BookingContent() {
                             {/* Pagination Dots */}
                             <div className="flex items-center gap-3 mt-16 sm:mt-24">
                                 {mockReviews.map((_, i) => {
-                                    const active = (step % (mockReviews.length || 1)) === i;
+                                    const active = activeReviewIndex === i;
                                     return (
-                                        <button key={i} onClick={() => setStep(i)} className="p-2.5 group outline-none" aria-label={`التقييم ${i + 1}`}>
+                                        <button key={i} onClick={() => setActiveReviewIndex(i)} className="p-2.5 group outline-none" aria-label={`\u0627\u0644\u062a\u0642\u064a\u064a\u0645 ${i + 1}`}>
                                             <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${active ? "bg-[#C3D809] border-[1.5px] border-[#C3D809]" : "bg-transparent border-[1.5px] border-white/20 group-hover:border-white/50"}`} />
                                         </button>
                                     );

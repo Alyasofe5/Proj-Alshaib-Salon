@@ -10,9 +10,11 @@ const spring = { type: "spring" as const, stiffness: 120, damping: 22 };
 const C = {
   bg:        "var(--color-background)",   // Charcoal black
   surface:   "#222022",   // Elevated cards
+  surface2:  "#171618",
   border:    "rgba(255,255,255,0.08)",
   text:      "var(--color-text-primary)",   // White text
   muted:     "rgba(255,255,255,0.4)",
+  soft:      "rgba(255,255,255,0.22)",
   subtle:    "rgba(255,255,255,0.08)",
   lime:      "#C3D809",   // Brand accent
   limeBg:    "rgba(195,216,9,0.08)",
@@ -75,7 +77,7 @@ export default function BookingModal({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[100]"
-            style={{ background: "rgba(10,10,10,0.7)", backdropFilter: "blur(16px)" }}
+            style={{ background: "radial-gradient(circle at top, rgba(195,216,9,0.08), rgba(10,10,10,0.86) 32%, rgba(5,5,5,0.94) 100%)", backdropFilter: "blur(18px)" }}
             onClick={onClose}
           />
 
@@ -91,34 +93,34 @@ export default function BookingModal({
                 direction: "rtl",
                 maxWidth: 680,
                 maxHeight: "92vh",
-                background: C.bg,
+                background: "linear-gradient(180deg, rgba(23,22,24,0.98) 0%, rgba(12,12,13,0.98) 100%)",
                 borderRadius: "20px 20px 0 0",
                 border: `1px solid ${C.border}`,
-                boxShadow: "0 -8px 48px rgba(0,0,0,0.2), 0 32px 80px rgba(0,0,0,0.25)",
+                boxShadow: "0 -8px 48px rgba(0,0,0,0.32), 0 32px 120px rgba(0,0,0,0.45)",
                 overflow: "hidden",
                 // On desktop: centered with all rounded corners
                 ...(typeof window !== "undefined" && window.innerWidth >= 640 ? {
-                  borderRadius: 20,
-                  boxShadow: "0 32px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.8) inset",
+                  borderRadius: 28,
+                  boxShadow: "0 42px 120px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset, 0 1px 0 rgba(255,255,255,0.08) inset",
                 } : {}),
               }}
               onClick={e => e.stopPropagation()}
             >
               {/* Gold top accent */}
-              <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${C.lime} 40%, transparent)`, flexShrink: 0 }} />
+              <div style={{ height: 4, background: `linear-gradient(90deg, transparent 0%, rgba(195,216,9,0.35) 20%, ${C.lime} 50%, rgba(195,216,9,0.35) 80%, transparent 100%)`, flexShrink: 0 }} />
 
               {/* ── HEADER ── */}
-              <div className="flex items-start justify-between px-5 sm:px-8 pt-5 pb-4" style={{ flexShrink: 0, background: C.headerBg, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border}` }}>
+              <div className="flex items-start justify-between px-5 sm:px-8 pt-5 pb-4" style={{ flexShrink: 0, background: "linear-gradient(180deg, rgba(26,26,26,0.96) 0%, rgba(18,18,18,0.92) 100%)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${C.border}` }}>
                 {step < 5 ? (
                   <div>
-                    <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.45rem", letterSpacing: "0.35em", color: C.lime, marginBottom: 4, textTransform: "uppercase" }}>
+                    <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.45rem", letterSpacing: "0.35em", color: C.lime, marginBottom: 6, textTransform: "uppercase", opacity: 0.95 }}>
                       {salon.name}
                     </p>
                     <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(1.3rem, 5vw, 1.75rem)", fontStyle: "italic", color: C.text, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
                       احجز <span style={{ color: C.lime }}>موعدك</span>
                     </h2>
                     {selSrvs.length > 0 && (
-                      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", color: C.muted, letterSpacing: "0.08em", marginTop: 4 }}>
+                      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", color: "rgba(255,255,255,0.28)", letterSpacing: "0.08em", marginTop: 8 }}>
                         {selSrvs.length} {selSrvs.length === 1 ? "خدمة" : "خدمات"} · {totalPrice} ر.س
                       </p>
                     )}
@@ -137,17 +139,17 @@ export default function BookingModal({
 
               {/* ── STEP BAR ── */}
               {step < 5 && (
-                <div style={{ flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ flexShrink: 0, background: "linear-gradient(180deg, rgba(31,30,31,0.98) 0%, rgba(21,20,21,0.98) 100%)", borderBottom: `1px solid ${C.border}` }}>
                   {/* Animated progress line */}
-                  <div style={{ height: 2, background: "rgba(0,0,0,0.04)", position: "relative" }}>
+                  <div style={{ height: 3, background: "rgba(255,255,255,0.05)", position: "relative" }}>
                     <motion.div
                       animate={{ width: `${((step - 1) / 3) * 100}%` }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
-                      style={{ position: "absolute", top: 0, right: 0, height: "100%", background: C.lime }}
+                      style={{ position: "absolute", top: 0, right: 0, height: "100%", background: `linear-gradient(90deg, ${C.lime} 0%, #e3ff4f 100%)`, boxShadow: `0 0 18px rgba(195,216,9,0.35)` }}
                     />
                   </div>
                   {/* Labels */}
-                  <div className="flex px-4 sm:px-8 py-2.5 gap-0">
+                  <div className="flex px-4 sm:px-8 py-3 gap-0">
                     {STEPS.map((label, i) => {
                       const num = i + 1;
                       const done = num < step;
@@ -157,22 +159,23 @@ export default function BookingModal({
                           <div className="flex items-center gap-1.5">
                             <div className="flex items-center justify-center rounded-full shrink-0 transition-all duration-400"
                               style={{
-                                width: 20, height: 20,
-                                background: done ? C.lime : active ? C.limeBg : "rgba(0,0,0,0.04)",
-                                border: done ? "none" : active ? `1.5px solid ${C.lime}` : `1.5px solid rgba(0,0,0,0.1)`,
+                                width: 24, height: 24,
+                                background: done ? C.lime : active ? "rgba(195,216,9,0.14)" : "rgba(255,255,255,0.03)",
+                                border: done ? "none" : active ? `1.5px solid ${C.lime}` : `1.5px solid rgba(255,255,255,0.08)`,
+                                boxShadow: active ? `0 0 0 4px rgba(195,216,9,0.08)` : "none",
                               }}>
                               {done
-                                ? <Check size={10} strokeWidth={3} style={{ color: "#fff" }} />
-                                : <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.45rem", fontWeight: 700, color: active ? C.lime : "rgba(0,0,0,0.25)" }}>{num}</span>
+                                ? <Check size={11} strokeWidth={3} style={{ color: "#111" }} />
+                                : <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", fontWeight: 700, color: active ? C.lime : "rgba(255,255,255,0.28)" }}>{num}</span>
                               }
                             </div>
                             <span style={{
                               fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.65rem, 2vw, 0.72rem)",
                               fontWeight: active ? 700 : 400,
-                              color: active ? C.text : done ? C.muted : "rgba(0,0,0,0.3)",
+                              color: active ? C.text : done ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.3)",
                             }}>{label}</span>
                           </div>
-                          {num < 4 && <div className="flex-1 mx-1.5 sm:mx-2" style={{ height: 1, background: done ? C.limeBrd : "rgba(0,0,0,0.07)" }} />}
+                          {num < 4 && <div className="flex-1 mx-1.5 sm:mx-2" style={{ height: 1, background: done ? C.limeBrd : "rgba(255,255,255,0.07)" }} />}
                         </div>
                       );
                     })}
@@ -181,7 +184,7 @@ export default function BookingModal({
               )}
 
               {/* ── SCROLLABLE CONTENT ── */}
-              <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-5 hide-scroll" style={{ minHeight: 0, background: C.bg }}>
+              <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-5 hide-scroll" style={{ minHeight: 0, background: "linear-gradient(180deg, rgba(14,14,15,0.98) 0%, rgba(10,10,10,1) 100%)" }}>
                 <AnimatePresence mode="wait">
 
                   {/* STEP 1 — Services */}
@@ -191,6 +194,12 @@ export default function BookingModal({
                         اختر الخدمات
                       </p>
                       <div className="space-y-2">
+                        {services.length === 0 && (
+                          <div className="p-4 rounded-xl"
+                            style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, textAlign: "center" }}>
+                            لا توجد خدمات مفعلة حاليًا في إعدادات الحجز.
+                          </div>
+                        )}
                         {services.map(s => {
                           const active = sel.service_ids.includes(s.id);
                           return (
@@ -233,6 +242,12 @@ export default function BookingModal({
                         اختر الحلاق
                       </p>
                       <div className="space-y-2">
+                        {employees.length === 0 && (
+                          <div className="p-4 rounded-xl"
+                            style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, textAlign: "center" }}>
+                            لا يوجد حلاقون مفعّلون حاليًا في إعدادات الحجز.
+                          </div>
+                        )}
                         {/* Any available */}
                         <div onClick={() => { setSel(p => ({ ...p, employee_id: 0 })); setStep(3); }}
                           className="flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
@@ -451,11 +466,11 @@ export default function BookingModal({
               {/* ── FOOTER ── */}
               {step < 5 && (
                 <div className="flex-shrink-0 px-8 py-4 flex items-center justify-between gap-4"
-                  style={{ borderTop: `1px solid ${C.border}`, background: C.footerBg, backdropFilter: "blur(8px)" }}>
+                  style={{ borderTop: `1px solid ${C.border}`, background: "linear-gradient(180deg, rgba(19,19,19,0.96) 0%, rgba(12,12,12,0.98) 100%)", backdropFilter: "blur(14px)" }}>
                   {step > 1 ? (
                     <button onClick={() => setStep(p => p - 1)}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 hover:bg-black/6 shrink-0"
-                      style={{ border: `1.5px solid ${C.border}`, color: C.muted }}>
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105 shrink-0"
+                      style={{ border: `1.5px solid ${C.border}`, color: C.muted, background: "rgba(255,255,255,0.03)" }}>
                       <ArrowLeft size={16} />
                     </button>
                   ) : <div />}
@@ -470,14 +485,14 @@ export default function BookingModal({
                     <button
                       onClick={() => { if (!canProceed) return; if (step === 4) submitBooking(); else setStep(p => p + 1); }}
                       disabled={!canProceed || submitting}
-                      className="flex items-center gap-2 px-7 py-2.5 rounded-xl font-bold transition-all duration-200"
+                      className="flex items-center gap-2 px-7 py-3 rounded-2xl font-bold transition-all duration-200"
                       style={{
-                        background: canProceed && !submitting ? C.text : "rgba(0,0,0,0.06)",
-                        color: canProceed && !submitting ? "#F5F2EC" : "rgba(0,0,0,0.25)",
+                        background: canProceed && !submitting ? `linear-gradient(135deg, ${C.lime} 0%, #d9f231 100%)` : "rgba(255,255,255,0.05)",
+                        color: canProceed && !submitting ? "#111" : "rgba(255,255,255,0.24)",
                         fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "0.9rem",
                         cursor: !canProceed || submitting ? "not-allowed" : "pointer",
                         minWidth: 110, justifyContent: "center",
-                        boxShadow: canProceed && !submitting ? "0 4px 16px rgba(0,0,0,0.15)" : "none",
+                        boxShadow: canProceed && !submitting ? "0 10px 30px rgba(195,216,9,0.22)" : "none",
                       }}>
                       {submitting
                         ? <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(245,242,236,0.3)", borderTopColor: "#F5F2EC" }} />

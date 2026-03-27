@@ -20,6 +20,8 @@ interface ServiceItem {
     name: string;
     price: string;
     image_path: string | null;
+    video_path?: string | null;
+    duration_minutes?: number | null;
     is_active: number;
 }
 
@@ -66,11 +68,17 @@ interface SalonSettings {
     team_title: string;
     team_subtitle: string;
     team_description: string;
+    gallery_title: string;
+    gallery_subtitle: string;
+    reviews_title?: string;
+    reviews_subtitle?: string;
+    reviews?: { customer_name: string; comment: string; rating: number; role?: string }[];
 }
 
 interface FaqItem { id: string; question: string; answer: string; order: number; }
+interface GalleryItem { id: number; file_path: string; file_type: "image" | "video"; order_num?: number; url: string; created_at?: string; }
 
-type TabId = 'general' | 'content' | 'media' | 'services' | 'employees' | 'booking' | 'faq' | 'link';
+type TabId = 'general' | 'content' | 'media' | 'gallery' | 'services' | 'employees' | 'booking' | 'faq' | 'link';
 const TABS: { id: TabId; label: string; icon: any }[] = [
     { id: 'general', label: 'عام', icon: Settings },
     { id: 'content', label: 'المحتوى', icon: Palette },
@@ -115,17 +123,21 @@ export default function BookingSettingsPage() {
     const [editingService, setEditingService] = useState<number | null>(null);
     const [editName, setEditName] = useState("");
     const [editPrice, setEditPrice] = useState("");
+    const [editDuration, setEditDuration] = useState("");
     const [savingService, setSavingService] = useState(false);
 
     // Add new service
     const [showAdd, setShowAdd] = useState(false);
     const [newName, setNewName] = useState("");
     const [newPrice, setNewPrice] = useState("");
+    const [newDuration, setNewDuration] = useState("");
     const [addingService, setAddingService] = useState(false);
 
     // Delete confirmation
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const [galleryUploading, setGalleryUploading] = useState(false);
 
     // ── Employees (Barbers) state ──
     const [employees, setEmployees] = useState<EmployeeItem[]>([]);
@@ -155,11 +167,12 @@ export default function BookingSettingsPage() {
     const loadData = async () => {
         try {
             const auth = { headers: { Authorization: `Bearer ${Cookies.get("token")}` } };
-            const [servRes, settRes, empRes, faqRes] = await Promise.all([
+            const [servRes, settRes, empRes, faqRes, galleryRes] = await Promise.all([
                 servicesAPI.getAll(),
                 axios.get(`${API_BASE}/salon/settings.php`, auth),
                 axios.get(`${API_BASE}/employees`, auth),
                 axios.get(`${API_BASE}/salon/faq.php`, auth),
+                axios.get(`${API_BASE}/salon/gallery.php`, auth),
             ]);
             setServices(servRes.data.data || []);
             const settData = settRes.data.data || null;
@@ -167,6 +180,7 @@ export default function BookingSettingsPage() {
             if (settData?.logo) setCurrentLogo(settData.logo);
             setEmployees(empRes.data.data || []);
             setFaqs(faqRes.data.data || []);
+            setGalleryItems(galleryRes.data.data?.items || []);
         } catch (e) { console.error(e); }
     };
 
@@ -327,6 +341,64 @@ export default function BookingSettingsPage() {
         finally { setUploading(null); }
     };
 
+    const handleVideoUpload = async (serviceId: number, file: File) => {
+        setUploading(serviceId);
+        try {
+            await servicesAPI.uploadVideo(serviceId, file);
+            await loadData();
+        } catch (e) { console.error(e); }
+        finally { setUploading(null); }
+    };
+
+    const deleteServiceVideo = async (serviceId: number) => {
+        setUploading(serviceId);
+        try {
+            await servicesAPI.deleteVideo(serviceId);
+            await loadData();
+        } catch (e) { console.error(e); }
+        finally { setUploading(null); }
+    };
+
+    const uploadGalleryFiles = async (files: FileList | null) => {
+        if (!files?.length) return;
+        setGalleryUploading(true);
+        try {
+            const fd = new FormData();
+            Array.from(files).forEach((file) => fd.append("files[]", file));
+            await axios.post(`${API_BASE}/salon/gallery-upload.php`, fd, {
+                headers: { ...authH(), "Content-Type": "multipart/form-data" },
+            });
+            await loadData();
+        } catch (e) { console.error(e); }
+        finally { setGalleryUploading(false); }
+    };
+
+    const deleteGalleryItem = async (id: number) => {
+        try {
+            await axios.delete(`${API_BASE}/salon/gallery.php?id=${id}`, { headers: authH() });
+            await loadData();
+        } catch (e) { console.error(e); }
+    };
+
+    const reorderGalleryItem = async (id: number, direction: "up" | "down") => {
+        const idx = galleryItems.findIndex(item => item.id === id);
+        if (idx === -1) return;
+        const nextIdx = direction === "up" ? idx - 1 : idx + 1;
+        if (nextIdx < 0 || nextIdx >= galleryItems.length) return;
+
+        const reordered = [...galleryItems];
+        const [moved] = reordered.splice(idx, 1);
+        reordered.splice(nextIdx, 0, moved);
+        setGalleryItems(reordered);
+
+        try {
+            await axios.put(`${API_BASE}/salon/gallery.php`, { order: reordered.map(item => item.id) }, { headers: authH() });
+        } catch (e) {
+            console.error(e);
+            await loadData();
+        }
+    };
+
 
     const handleSaveSettings = async () => {
         if (!settings) return;
@@ -350,19 +422,25 @@ export default function BookingSettingsPage() {
         setEditingService(s.id);
         setEditName(s.name);
         setEditPrice(s.price);
+        setEditDuration(s.duration_minutes ? String(s.duration_minutes) : "");
     };
 
     const cancelEdit = () => {
         setEditingService(null);
         setEditName("");
         setEditPrice("");
+        setEditDuration("");
     };
 
     const saveServiceEdit = async () => {
         if (!editingService || !editName.trim()) return;
         setSavingService(true);
         try {
-            await servicesAPI.update(editingService, { name: editName.trim(), price: parseFloat(editPrice) || 0 });
+            await servicesAPI.update(editingService, {
+                name: editName.trim(),
+                price: parseFloat(editPrice) || 0,
+                duration_minutes: editDuration ? parseInt(editDuration, 10) || null : null,
+            });
             cancelEdit();
             await loadData();
         } catch (e) { console.error(e); }
@@ -373,9 +451,14 @@ export default function BookingSettingsPage() {
         if (!newName.trim()) return;
         setAddingService(true);
         try {
-            await servicesAPI.create({ name: newName.trim(), price: parseFloat(newPrice) || 0 });
+            await servicesAPI.create({
+                name: newName.trim(),
+                price: parseFloat(newPrice) || 0,
+                duration_minutes: newDuration ? parseInt(newDuration, 10) || null : null,
+            });
             setNewName("");
             setNewPrice("");
+            setNewDuration("");
             setShowAdd(false);
             await loadData();
         } catch (e) { console.error(e); }
@@ -682,6 +765,65 @@ export default function BookingSettingsPage() {
                         <div className="mt-6">
                             <InputField label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholder="مثال: شكراً لحجزك في صالوننا! سننتظرك في الموعد." />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t border-white/5">
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم المعرض</h3>
+                                <InputField label="عنوان المعرض الصغير" value={settings.gallery_subtitle} onChange={v => setSettings({ ...settings, gallery_subtitle: v })} gold={gold} />
+                                <InputField label="عنوان المعرض الكبير" value={settings.gallery_title} onChange={v => setSettings({ ...settings, gallery_title: v })} gold={gold} />
+                            </div>
+                            <div className="rounded-2xl p-5 flex items-center justify-center text-center text-xs leading-7 text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--border-subtle)]">
+                                تظهر هذه الحقول مباشرة فوق معرض الصور والفيديو في صفحة الحجز العامة.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="flex items-center justify-between mb-6 gap-4">
+                            <div>
+                                <h2 className="text-lg font-bold">معرض الصور والفيديو</h2>
+                                <p className="text-[11px] text-[var(--color-text-muted)] mt-1">هذه العناصر تظهر داخل قسم المعرض في صفحة الحجز.</p>
+                            </div>
+                            <label className="btn-outline-lime flex items-center gap-2 h-10 px-5 cursor-pointer">
+                                <FaPlus size={10} /> {galleryUploading ? "جارٍ الرفع..." : "رفع ملفات"}
+                                <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple className="hidden"
+                                    onChange={e => { uploadGalleryFiles(e.target.files); e.currentTarget.value = ""; }} />
+                            </label>
+                        </div>
+
+                        {galleryItems.length === 0 ? (
+                            <div className="rounded-2xl p-8 text-center text-sm text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--border-subtle)]">
+                                لا توجد عناصر في المعرض بعد. ارفع صورًا أو فيديوهات لتظهر في صفحة الحجز.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {galleryItems.map((item, idx) => (
+                                    <div key={item.id} className="rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--color-surface)]">
+                                        <div className="aspect-[4/3] bg-black/20">
+                                            {item.file_type === "video" ? (
+                                                <video src={item.url} controls playsInline className="w-full h-full object-cover" />
+                                            ) : (
+                                                <img src={item.url} alt="" className="w-full h-full object-cover" />
+                                            )}
+                                        </div>
+                                        <div className="p-4 flex items-center justify-between gap-2">
+                                            <div className="text-[11px] text-[var(--color-text-muted)]">
+                                                {item.file_type === "video" ? "فيديو" : "صورة"} #{idx + 1}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button type="button" onClick={() => reorderGalleryItem(item.id, "up")} disabled={idx === 0}
+                                                    className="w-8 h-8 rounded-lg bg-white/5 text-xs disabled:opacity-30">↑</button>
+                                                <button type="button" onClick={() => reorderGalleryItem(item.id, "down")} disabled={idx === galleryItems.length - 1}
+                                                    className="w-8 h-8 rounded-lg bg-white/5 text-xs disabled:opacity-30">↓</button>
+                                                <button type="button" onClick={() => deleteGalleryItem(item.id)}
+                                                    className="w-8 h-8 rounded-lg text-red-400 hover:bg-red-500/10 transition-all">
+                                                    <FaTrash size={10} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </motion.div>}
 
@@ -813,6 +955,66 @@ export default function BookingSettingsPage() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <FaCheckCircle size={16} />
+                            </div>
+                            <h2 className="text-lg font-bold">قسم آراء العملاء</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <InputField label="العنوان الصغير" value={settings.reviews_subtitle ?? ""} onChange={v => setSettings({ ...settings, reviews_subtitle: v })} gold={gold} />
+                            <InputField label="العنوان الكبير" value={settings.reviews_title ?? ""} onChange={v => setSettings({ ...settings, reviews_title: v })} gold={gold} />
+                        </div>
+                        <div className="space-y-4">
+                            {(settings.reviews ?? []).map((review, index) => (
+                                <div key={index} className="rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border-subtle)] space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <InputField label={`اسم العميل ${index + 1}`} value={review.customer_name} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, customer_name: v } : item) })} gold={gold} />
+                                        <InputField label="الصفة" value={review.role ?? ""} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, role: v } : item) })} gold={gold} />
+                                        <div>
+                                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">التقييم</label>
+                                            <select value={review.rating ?? 5} onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, rating: Number(e.target.value) } : item) })}
+                                                className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all cursor-pointer appearance-none"
+                                                style={{ border: "1.5px solid var(--border-subtle)" }}>
+                                                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} نجوم</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">نص التقييم</label>
+                                        <textarea
+                                            value={review.comment}
+                                            onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, comment: e.target.value } : item) })}
+                                            rows={3}
+                                            className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                                            style={{ border: "1.5px solid var(--border-subtle)" }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings({ ...settings, reviews: (settings.reviews ?? []).filter((_, i) => i !== index) })}
+                                            className="btn-outline-red h-10 px-4 flex items-center gap-2"
+                                        >
+                                            <FaTrash size={10} /> حذف التقييم
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => setSettings({
+                                    ...settings,
+                                    reviews: [...(settings.reviews ?? []), { customer_name: "", role: "", rating: 5, comment: "" }]
+                                })}
+                                className="btn-outline-lime h-11 px-5 flex items-center gap-2"
+                            >
+                                <FaPlus size={10} /> إضافة تقييم
+                            </button>
+                        </div>
+                    </div>
                 </motion.div>}
 
 
@@ -907,7 +1109,7 @@ export default function BookingSettingsPage() {
                                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                     className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
                                     <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>تفاصيل الخدمة الجديدة</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الخدمة</label>
                                             <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="مثال: حلاقة كلاسيكية"
@@ -918,12 +1120,17 @@ export default function BookingSettingsPage() {
                                             <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="0.00" type="number" step="0.01" dir="ltr"
                                                 className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
                                         </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">المدة (دقيقة)</label>
+                                            <input value={newDuration} onChange={e => setNewDuration(e.target.value)} placeholder="30" type="number" min="1" dir="ltr"
+                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-3 mt-6">
                                         <button onClick={addService} disabled={addingService || !newName.trim()} className="btn-lime min-w-[120px]">
                                             {addingService ? <div className="spinner-sm mx-auto" /> : "تأكيد الإضافة"}
                                         </button>
-                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); }}
+                                        <button onClick={() => { setShowAdd(false); setNewName(""); setNewPrice(""); setNewDuration(""); }}
                                             className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
                                     </div>
                                 </motion.div>
@@ -938,14 +1145,18 @@ export default function BookingSettingsPage() {
                                     isEditing={editingService === service.id}
                                     editName={editName}
                                     editPrice={editPrice}
+                                    editDuration={editDuration}
                                     onEditName={setEditName}
                                     onEditPrice={setEditPrice}
+                                    onEditDuration={setEditDuration}
                                     onStartEdit={() => startEdit(service)}
                                     onCancelEdit={cancelEdit}
                                     onSaveEdit={saveServiceEdit}
                                     savingEdit={savingService}
                                     uploading={uploading === service.id}
                                     onImageUpload={(file) => handleImageUpload(service.id, file)}
+                                    onVideoUpload={(file) => handleVideoUpload(service.id, file)}
+                                    onDeleteVideo={() => deleteServiceVideo(service.id)}
                                     onToggle={() => toggleService(service.id)}
                                     onDelete={() => setDeleteId(service.id)}
                                     gold={gold}
@@ -1205,15 +1416,16 @@ function InputField({ label, value, onChange, gold, dir, placeholder }: {
 }
 
 /* ═══════ Service Row Component ═══════ */
-function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEditPrice, onStartEdit, onCancelEdit, onSaveEdit, savingEdit, uploading, onImageUpload, onToggle, onDelete, gold, baseUrl }: {
-    service: ServiceItem; isEditing: boolean; editName: string; editPrice: string;
-    onEditName: (v: string) => void; onEditPrice: (v: string) => void;
+function ServiceRow({ service, isEditing, editName, editPrice, editDuration, onEditName, onEditPrice, onEditDuration, onStartEdit, onCancelEdit, onSaveEdit, savingEdit, uploading, onImageUpload, onVideoUpload, onDeleteVideo, onToggle, onDelete, gold, baseUrl }: {
+    service: ServiceItem; isEditing: boolean; editName: string; editPrice: string; editDuration: string;
+    onEditName: (v: string) => void; onEditPrice: (v: string) => void; onEditDuration: (v: string) => void;
     onStartEdit: () => void; onCancelEdit: () => void; onSaveEdit: () => void; savingEdit: boolean;
-    uploading: boolean; onImageUpload: (file: File) => void;
+    uploading: boolean; onImageUpload: (file: File) => void; onVideoUpload: (file: File) => void; onDeleteVideo: () => void;
     onToggle: () => void; onDelete: () => void;
     gold: string; baseUrl: string;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
 
     // Fallback images for services without custom uploads (same mapping as booking page)
     const fallbackImages: Record<string, string> = {
@@ -1227,8 +1439,10 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
     };
     const defaultImg = '/services/haircut.webp';
     const imageUrl = assetUrl(service.image_path) || fallbackImages[service.name] || defaultImg;
+    const videoUrl = assetUrl(service.video_path || null);
 
     return (
+        <>
         <div className={`rounded-2xl p-3 md:p-4 flex flex-row items-center gap-3 md:gap-4 transition-all ${!service.is_active ? "opacity-40" : ""}`}
             style={{ background: "var(--color-cards)", border: isEditing ? `1px solid ${gold}40` : "1px solid var(--border-subtle)" }}>
 
@@ -1264,6 +1478,10 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                     <div className="flex flex-col sm:flex-row gap-2">
                         <input value={editName} onChange={e => onEditName(e.target.value)} autoFocus
                             className="flex-1 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
+                            style={{ border: `1px solid ${gold}30` }}
+                            onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
+                        <input value={editDuration} onChange={e => onEditDuration(e.target.value)} type="number" min="1" dir="ltr" placeholder="30"
+                            className="w-24 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm text-center"
                             style={{ border: `1px solid ${gold}30` }}
                             onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
                         <input value={editPrice} onChange={e => onEditPrice(e.target.value)} type="number" step="0.01" dir="ltr"
@@ -1310,7 +1528,33 @@ function ServiceRow({ service, isEditing, editName, editPrice, onEditName, onEdi
                     </>
                 )}
             </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <button type="button" onClick={() => !uploading && inputRef.current?.click()}
+                    className="h-8 px-3 rounded-lg text-[11px] font-bold transition-all"
+                    style={{ background: `${gold}12`, color: gold, border: `1px solid ${gold}25` }}>
+                    صورة
+                </button>
+                <button type="button" onClick={() => !uploading && videoInputRef.current?.click()}
+                    className="h-8 px-3 rounded-lg text-[11px] font-bold transition-all bg-white/5 text-[var(--color-text-primary)] border border-[var(--border-subtle)]">
+                    فيديو
+                </button>
+                {videoUrl && (
+                    <button type="button" onClick={onDeleteVideo}
+                        className="h-8 px-3 rounded-lg text-[11px] font-bold text-red-400 hover:bg-red-500/10 transition-all">
+                        حذف الفيديو
+                    </button>
+                )}
+                <input ref={videoInputRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) onVideoUpload(f); e.target.value = ""; }} />
+            </div>
         </div>
+        {videoUrl && (
+            <div className="mt-4 rounded-xl overflow-hidden border border-white/5 bg-black/20">
+                <video src={videoUrl} controls playsInline className="w-full max-h-56 object-cover" />
+            </div>
+        )}
+        </>
     );
 }
 

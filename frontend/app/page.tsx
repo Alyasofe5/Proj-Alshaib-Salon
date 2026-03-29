@@ -186,13 +186,14 @@ export default function LandingPage() {
                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
                   <Image
-                    src="/images/logo_new.png"
+                    src="/images/logo_black_bg.png"
                     alt="Maqass Logo"
-                    width={56}
-                    height={56}
+                    width={128}
+                    height={128}
                     priority
-                    sizes="(max-width: 768px) 48px, 56px"
-                    className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale-[0.2] scale-110"
+                    quality={100}
+                    sizes="(max-width: 768px) 96px, 112px"
+                    className="w-full h-full object-contain rounded-full"
                   />
                 </div>
               </div>
@@ -737,13 +738,14 @@ export default function LandingPage() {
                     style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
                       <Image
-                        src="/images/logo_new.png"
+                        src="/images/logo_black_bg.png"
                         alt="Maqass Logo"
-                        width={56}
-                        height={56}
+                        width={128}
+                        height={128}
                         loading="lazy"
-                        sizes="(max-width: 768px) 48px, 56px"
-                        className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale-[0.2] scale-110"
+                        quality={100}
+                        sizes="(max-width: 768px) 96px, 112px"
+                        className="w-full h-full object-contain rounded-full"
                       />
                     </div>
                   </div>

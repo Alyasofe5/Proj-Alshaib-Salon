@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "سياسة الخصوصية | Maqass — حماية بياناتك أولويتنا",
+  title: "سياسة الخصوصية — بيانات صالونك على مقص Maqass",
   description:
-    "اطّلع على سياسة الخصوصية الخاصة بمنصة مقص. نحمي بيانات صالونك وعملائك بأعلى معايير الأمان والتشفير.",
+    "سياسة الخصوصية لمنصة مقص: كيف نحمي بيانات صالونك وعملائك والتزاماتنا أمام القانون.",
   alternates: {
-    canonical: "https://maqas.site/privacy",
+    canonical: "https://maqas.site/privacy/",
   },
   openGraph: {
-    title: "سياسة الخصوصية | Maqass",
-    description:
-      "نحمي بيانات صالونك وعملائك بأعلى معايير الأمان والتشفير.",
-    url: "https://maqas.site/privacy",
+    siteName: "Maqass",
+    title: "سياسة الخصوصية | مقص Maqass",
+    description: "حماية بيانات صالونك وعملائك على منصة مقص.",
+    url: "https://maqas.site/privacy/",
   },
 };
 

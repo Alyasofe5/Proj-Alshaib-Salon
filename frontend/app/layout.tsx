@@ -18,10 +18,12 @@ const notoSansArabic = Noto_Sans_Arabic({
 // ─────────────────────────────────────────────
 
 const SITE_URL = "https://maqas.site";
-const SITE_NAME = "Maqass | مقص";
-const DEFAULT_TITLE = "Maqass — مقص | منصة إدارة الصالونات في الأردن";
+/** اسم العلامة الظاهر في نتائج Google (og:site_name، WebSite schema، التبويب) */
+const BRAND_NAME = "Maqass";
+const DEFAULT_TITLE =
+  "مقص Maqass — منصة إدارة صالونات وحجوزات أونلاين في الأردن | برنامج صالون وحلاقة";
 const DEFAULT_DESCRIPTION =
-  "منصة متكاملة لإدارة الحجوزات والموظفين والتقارير المالية لصالونات الحلاقة في الأردن. رابط حجز ذكي، تقارير يومية، وإدارة محترفة بلمسة واحدة. جرّب مجاناً.";
+  "منصة مقص Maqass: إدارة صالون حلاقة، حجوزات أونلاين 24/7، موظفين، تقارير مالية، وربط حجز ذكي — مصمم لصالونات الأردن وعمان. جرّب مجاناً.";
 
 export const metadata: Metadata = {
   // ── Core ──────────────────────────────────
@@ -29,30 +31,35 @@ export const metadata: Metadata = {
 
   title: {
     default: DEFAULT_TITLE,
-    template: `%s | ${SITE_NAME}`,
+    template: `%s | ${BRAND_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
 
   keywords: [
+    "مقص",
+    "maqass",
+    "Maqass",
     "صالون حلاقة",
     "إدارة صالون",
+    "إدارة صالونات",
+    "مقص صالون",
     "حجوزات أونلاين",
     "نظام حجز صالون",
     "برنامج صالون",
-    "مقص",
-    "maqass",
-    "salon booking jordan",
-    "salon management system",
+    "برنامج إدارة صالون",
     "حجز موعد حلاقة",
+    "صالون عمان",
+    "حجوزات صالون عمان",
     "تطبيق صالون الأردن",
     "نظام إدارة الصالونات",
     "برنامج إدارة صالون حلاقة",
-    "حجوزات صالون عمان",
     "إدارة موظفين صالون",
     "تقارير صالون",
     "منصة صالونات",
-    "salon software arabic",
+    "salon booking jordan",
+    "salon management system",
     "barber shop management",
+    "salon software arabic",
     "salon SaaS jordan",
   ],
 
@@ -67,7 +74,7 @@ export const metadata: Metadata = {
     locale: "ar_JO",
     alternateLocale: "en_US",
     url: SITE_URL,
-    siteName: SITE_NAME,
+    siteName: BRAND_NAME,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     images: [
@@ -93,10 +100,10 @@ export const metadata: Metadata = {
 
   // ── Canonical & Alternates ────────────────
   alternates: {
-    canonical: SITE_URL,
+    canonical: `${SITE_URL}/`,
     languages: {
-      "ar-JO": SITE_URL,
-      "ar": SITE_URL,
+      "ar-JO": `${SITE_URL}/`,
+      "ar": `${SITE_URL}/`,
     },
   },
 
@@ -117,21 +124,20 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/icon-192.png",
   },
 
   // ── Apple PWA ─────────────────────────────
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "مقص",
+    title: BRAND_NAME,
     startupImage: "/apple-touch-icon.png",
   },
 
@@ -142,7 +148,7 @@ export const metadata: Metadata = {
   },
 
   // ── Other ─────────────────────────────────
-  applicationName: "مقص — Maqass",
+  applicationName: BRAND_NAME,
   referrer: "origin-when-cross-origin",
   formatDetection: {
     email: false,
@@ -169,69 +175,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={notoSansArabic.variable} suppressHydrationWarning>
       <head>
-        {/* ── Structured Data (JSON-LD) — helps Google understand the page ── */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              name: "مقص — Maqass",
-              alternateName: "Maqass Salon Platform",
-              url: SITE_URL,
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web, iOS, Android",
-              description: DEFAULT_DESCRIPTION,
-              offers: [
-                {
-                  "@type": "Offer",
-                  price: "0",
-                  priceCurrency: "JOD",
-                  name: "الباقة المجانية",
-                },
-                {
-                  "@type": "Offer",
-                  price: "15",
-                  priceCurrency: "JOD",
-                  name: "الباقة الاحترافية",
-                },
-              ],
-              publisher: {
-                "@type": "Organization",
-                name: "WR Technologies",
-                url: "https://wr-technologies.net",
-                logo: {
-                  "@type": "ImageObject",
-                  url: `${SITE_URL}/icon-192.png`,
-                },
-                contactPoint: {
-                  "@type": "ContactPoint",
-                  telephone: "+962-78-171-7990",
-                  contactType: "customer support",
-                  areaServed: "JO",
-                  availableLanguage: ["Arabic", "English"],
-                },
-                address: {
-                  "@type": "PostalAddress",
-                  addressCountry: "JO",
-                  addressLocality: "عمّان",
-                },
-              },
-              featureList: [
-                "حجوزات أونلاين ذكية 24/7",
-                "إدارة الموظفين والعمولات",
-                "تقارير مالية يومية وشهرية",
-                "رابط حجز مخصص لكل صالون",
-                "إشعارات واتساب تلقائية",
-              ],
-              inLanguage: "ar",
-              isAccessibleForFree: true,
-              screenshot: `${SITE_URL}/og-image.png`,
-            }),
-          }}
-        />
-
-        {/* ── JSON-LD: WebSite + SiteNavigationElement (helps Google generate Sitelinks) ── */}
+        {/* ── JSON-LD: Organization + WebSite + SoftwareApplication + روابط رئيسية (إشارات لسيتلينكس والعلامة) ── */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -239,36 +183,100 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@graph": [
                 {
-                  "@type": "WebSite",
-                  name: SITE_NAME,
-                  alternateName: "Maqass",
-                  url: SITE_URL,
-                  inLanguage: "ar",
-                  publisher: {
-                    "@type": "Organization",
-                    name: "Maqass",
-                    url: SITE_URL,
+                  "@type": "Organization",
+                  "@id": `${SITE_URL}/#organization`,
+                  name: BRAND_NAME,
+                  alternateName: ["مقص", "Maqass Salon Platform", "maqas.site"],
+                  url: `${SITE_URL}/`,
+                  logo: {
+                    "@type": "ImageObject",
+                    url: `${SITE_URL}/icon-512.png`,
+                    width: 512,
+                    height: 512,
                   },
+                  image: `${SITE_URL}/images/logo_new.png`,
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    telephone: "+962-78-171-7990",
+                    contactType: "customer support",
+                    areaServed: "JO",
+                    availableLanguage: ["Arabic", "English"],
+                  },
+                  address: {
+                    "@type": "PostalAddress",
+                    addressCountry: "JO",
+                    addressLocality: "عمّان",
+                  },
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${SITE_URL}/#website`,
+                  url: `${SITE_URL}/`,
+                  name: BRAND_NAME,
+                  alternateName: ["مقص", "مقص صالون", "إدارة صالونات", "maqas.site"],
+                  description: DEFAULT_DESCRIPTION,
+                  inLanguage: "ar-JO",
+                  publisher: { "@id": `${SITE_URL}/#organization` },
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  name: `مقص — ${BRAND_NAME}`,
+                  alternateName: "Maqass Salon Platform",
+                  url: `${SITE_URL}/`,
+                  applicationCategory: "BusinessApplication",
+                  operatingSystem: "Web, iOS, Android",
+                  description: DEFAULT_DESCRIPTION,
+                  offers: [
+                    {
+                      "@type": "Offer",
+                      price: "0",
+                      priceCurrency: "JOD",
+                      name: "الباقة المجانية",
+                    },
+                    {
+                      "@type": "Offer",
+                      price: "15",
+                      priceCurrency: "JOD",
+                      name: "الباقة الاحترافية",
+                    },
+                  ],
+                  provider: { "@id": `${SITE_URL}/#organization` },
+                  publisher: { "@id": `${SITE_URL}/#organization` },
+                  featureList: [
+                    "حجوزات أونلاين ذكية 24/7",
+                    "إدارة الموظفين والعمولات",
+                    "تقارير مالية يومية وشهرية",
+                    "رابط حجز مخصص لكل صالون",
+                    "إشعارات واتساب تلقائية",
+                  ],
+                  inLanguage: "ar",
+                  isAccessibleForFree: true,
+                  screenshot: `${SITE_URL}/og-image.png`,
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  name: "حجز صالون أونلاين",
+                  url: `${SITE_URL}/book/`,
                 },
                 {
                   "@type": "SiteNavigationElement",
                   name: "تواصل معنا",
-                  url: `${SITE_URL}/contact`,
+                  url: `${SITE_URL}/contact/`,
                 },
                 {
                   "@type": "SiteNavigationElement",
                   name: "سياسة الخصوصية",
-                  url: `${SITE_URL}/privacy`,
+                  url: `${SITE_URL}/privacy/`,
                 },
                 {
                   "@type": "SiteNavigationElement",
                   name: "الشروط والأحكام",
-                  url: `${SITE_URL}/terms`,
+                  url: `${SITE_URL}/terms/`,
                 },
                 {
                   "@type": "SiteNavigationElement",
                   name: "تسجيل الدخول",
-                  url: `${SITE_URL}/login`,
+                  url: `${SITE_URL}/login/`,
                 },
               ],
             }),

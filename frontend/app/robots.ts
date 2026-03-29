@@ -5,7 +5,7 @@ import type { MetadataRoute } from "next";
 // NOTE: With output: 'export', this generates a static robots.txt file
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = "https://www.maqas.site";
+  const siteUrl = "https://maqas.site";
 
   return {
     rules: [

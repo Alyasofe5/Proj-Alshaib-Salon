@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.maqas.site" }],
+      "destination": "https://maqas.site/:path*",
+      "permanent": true
+    }
+  ]
+}

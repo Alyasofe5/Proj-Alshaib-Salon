@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "الشروط والأحكام | Maqass — اتفاقية الاستخدام",
+  title: "الشروط والأحكام — استخدام منصة مقص Maqass",
   description:
-    "اقرأ شروط وأحكام استخدام منصة مقص لإدارة الصالونات. تعرّف على حقوقك والتزاماتك كمستخدم للمنصة.",
+    "شروط وأحكام استخدام منصة مقص لإدارة صالونات الحلاقة والحجوزات. حقوقك والتزاماتك كمستخدم.",
   alternates: {
-    canonical: "https://maqas.site/terms",
+    canonical: "https://maqas.site/terms/",
   },
   openGraph: {
-    title: "الشروط والأحكام | Maqass",
-    description:
-      "شروط وأحكام استخدام منصة مقص لإدارة الصالونات.",
-    url: "https://maqas.site/terms",
+    siteName: "Maqass",
+    title: "الشروط والأحكام | مقص Maqass",
+    description: "شروط استخدام منصة إدارة الصالونات مقص في الأردن.",
+    url: "https://maqas.site/terms/",
   },
 };
 

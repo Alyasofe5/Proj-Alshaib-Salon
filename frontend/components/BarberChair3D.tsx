@@ -5,8 +5,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
-// Preload GLB immediately — starts fetching before component mounts
-useGLTF.preload("/barber_chair.glb");
+// Intentionally no useGLTF.preload: the GLB is very large; load only when this
+// component mounts (after hero deferral) to avoid blocking the main thread / network.
 
 // ─── 3D Chair Model ───────────────────────────────────────────
 function ChairModel({ onLoaded }: { onLoaded: () => void }) {

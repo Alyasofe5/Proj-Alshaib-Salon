@@ -24,6 +24,12 @@
     "three": "^0.183.2",
     "zustand": "^5.0.11"
   },
+  "browserslist": [
+    "chrome >= 92",
+    "edge >= 92",
+    "firefox >= 92",
+    "safari >= 15.4"
+  ],
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",

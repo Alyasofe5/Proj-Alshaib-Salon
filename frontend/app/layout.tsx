@@ -1,6 +1,16 @@
 import type { Metadata, Viewport } from "next";
+import { Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import ScrollToTop from "@/components/ScrollToTop";
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-noto",
+  adjustFontFallback: true,
+  preload: true,
+});
 
 // ─────────────────────────────────────────────
 //  ENTERPRISE-GRADE SEO CONFIG — Maqass Platform
@@ -103,18 +113,18 @@ export const metadata: Metadata = {
     },
   },
 
-  // ── Icons & Manifest ──────────────────────
+  // ── Icons & Manifest (favicon.ico + app/icon.* from /app take precedence in Next.js) ──
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/images/logo_new.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/images/logo_new.png",
+    shortcut: "/favicon.ico",
   },
 
   // ── Apple PWA ─────────────────────────────
@@ -157,7 +167,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={notoSansArabic.variable} suppressHydrationWarning>
       <head>
         {/* ── Structured Data (JSON-LD) — helps Google understand the page ── */}
         <script
@@ -268,24 +278,8 @@ export default function RootLayout({
         {/* ── W3C PWA capable (suppresses browser deprecation warning for apple-mobile-web-app-capable) ── */}
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* ── Preconnect to speed up font loading ── */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          as="style"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
       </head>
-      <body className="font-noto antialiased" suppressHydrationWarning>
+      <body className={`${notoSansArabic.className} antialiased`} suppressHydrationWarning>
         <ScrollToTop />
         {children}
       </body>

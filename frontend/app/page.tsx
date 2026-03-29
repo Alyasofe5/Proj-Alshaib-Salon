@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
   CalendarCheck, BarChart3, Users, Wallet,
@@ -33,6 +34,46 @@ const BarberChair3D = dynamic(() => import("@/components/BarberChair3D"), {
     </div>
   ),
 });
+
+/** Loads Three.js + GLB only after hero is near/in view + idle — cuts TBT on first paint. */
+function DeferredBarberChair3D() {
+  const [load, setLoad] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        const run = () => setLoad(true);
+        if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+          window.requestIdleCallback(run, { timeout: 2200 });
+        } else {
+          setTimeout(run, 450);
+        }
+      },
+      { rootMargin: "200px", threshold: 0.02 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={wrapRef} className="relative z-10 w-full min-h-[280px] sm:min-h-[350px] md:min-h-[450px] flex items-center justify-center">
+      {load ? <BarberChair3D /> : (
+        <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] flex items-center justify-center">
+          <div className="absolute inset-0 blur-[100px] opacity-20" style={{ background: "radial-gradient(circle, var(--color-accent), transparent 60%)" }} />
+          <div className="absolute inset-[10%] rounded-full border opacity-15" style={{ borderColor: "var(--color-accent)" }} />
+          <div className="absolute inset-[5%] rounded-full border opacity-8 animate-spin" style={{ borderColor: "var(--color-accent-hover)", animationDuration: "30s", animationTimingFunction: "linear" }} />
+          {SPARKLE_LOADING.map((pos, i) => (
+            <div key={i} className="absolute w-1.5 h-1.5 rounded-full animate-ping" style={{ ...pos, background: "var(--color-accent)", opacity: 0.5 }} />
+          ))}
+          <div className="w-10 h-10 rounded-full border-2 border-transparent border-t-[var(--color-accent)] border-r-[var(--color-accent)] animate-spin z-10" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ===== Animated Counter =====
 function Counter({ value, suffix }: { value: number; suffix: string }) {
@@ -120,7 +161,7 @@ export default function LandingPage() {
   return (
     <div
       className="min-h-screen overflow-x-hidden"
-      style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Noto Sans Arabic', 'Noto Sans Arabic', sans-serif" }}
+      style={{ background: "var(--off-white)", color: "var(--text-main)" }}
     >
 
       {/* ==================== NAVBAR ==================== */}
@@ -144,8 +185,15 @@ export default function LandingPage() {
               <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
-                  <img src="/images/logo_new.png" alt="Maqass Logo"
-                    className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale([0.2]) scale-110" />
+                  <Image
+                    src="/images/logo_new.png"
+                    alt="Maqass Logo"
+                    width={56}
+                    height={56}
+                    priority
+                    sizes="(max-width: 768px) 48px, 56px"
+                    className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale-[0.2] scale-110"
+                  />
                 </div>
               </div>
             </div>
@@ -221,7 +269,15 @@ export default function LandingPage() {
 
         {/* ── Cinematic Background Image ── */}
         <div className="absolute inset-0 z-0">
-          <img src="/images/herosection_new.png" alt="" className="absolute inset-0 w-full h-full object-cover" style={{ filter: "brightness(0.35) saturate(1.2)" }} />
+          <Image
+            src="/images/herosection_new.png"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            style={{ filter: "brightness(0.35) saturate(1.2)" }}
+          />
           {/* Multi-layer overlay for depth */}
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(16,17,21,0.7) 0%, rgba(16,17,21,0.4) 40%, rgba(16,17,21,0.85) 100%)" }} />
           {/* Gold vignette glow */}
@@ -235,7 +291,6 @@ export default function LandingPage() {
           @keyframes hero-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
           @keyframes hero-float-delay { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
           @keyframes hero-pulse-glow { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
-          @keyframes hero-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
           @keyframes hero-line-grow { 0%{width:0} 100%{width:80px} }
           @keyframes dash-progress { 0%{width:0} 100%{width:100%} }
           @keyframes dash-count { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
@@ -271,18 +326,16 @@ export default function LandingPage() {
 
                 {/* Main Heading */}
                 <motion.h1
-                  initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 1, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
                   className="hero-h1 text-[42px] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.05] mb-6 sm:mb-8"
                   style={{ color: "var(--color-text-primary)", letterSpacing: "-0.04em" }}>
                   أدِر صالونك <br />
                   <span className="relative inline-block mt-1">
                     <span style={{
-                      background: "linear-gradient(90deg, var(--color-accent), var(--color-accent-hover), var(--color-accent), var(--color-accent-hover))",
-                      backgroundSize: "200% 100%",
+                      background: "linear-gradient(90deg, var(--color-accent), var(--color-accent-hover), var(--color-accent))",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                       backgroundClip: "text",
-                      animation: "hero-shimmer 4s linear infinite",
                     }}>
                       كالمحترفين.
                     </span>
@@ -341,7 +394,7 @@ export default function LandingPage() {
               >
                 {/* 3D Chair */}
                 <div className="relative z-10">
-                  <BarberChair3D />
+                  <DeferredBarberChair3D />
                 </div>
 
                 {/* Floating glass micro-cards around the chair */}
@@ -683,7 +736,15 @@ export default function LandingPage() {
                   <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                     style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
-                      <img src="/images/logo_new.png" alt="Maqass Logo" className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale([0.2]) scale-110" />
+                      <Image
+                        src="/images/logo_new.png"
+                        alt="Maqass Logo"
+                        width={56}
+                        height={56}
+                        loading="lazy"
+                        sizes="(max-width: 768px) 48px, 56px"
+                        className="w-full h-full object-cover rounded-full filter invert-[0.95] brightness-[1.5] contrast-[1.2] grayscale-[0.2] scale-110"
+                      />
                     </div>
                   </div>
                 </div>

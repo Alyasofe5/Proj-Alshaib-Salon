@@ -34,7 +34,7 @@ const config: Config = {
         info: "#2196F3",
       },
       fontFamily: {
-        noto: ["'Noto Sans Arabic'", "sans-serif"],
+        noto: ["var(--font-noto)", "system-ui", "sans-serif"],
       },
       screens: {
         'sm': '480px',    // Small phone → large phone

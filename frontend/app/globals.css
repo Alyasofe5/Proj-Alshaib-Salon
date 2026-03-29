@@ -1,4 +1,4 @@
-/* Font loaded via preload in layout.tsx */
+/* Primary font: next/font (Noto Sans Arabic) via layout.tsx — --font-noto */
 
 @tailwind base;
 @tailwind components;

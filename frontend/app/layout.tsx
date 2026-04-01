@@ -6,10 +6,32 @@ import ScrollToTop from "@/components/ScrollToTop";
 const notoSansArabic = Noto_Sans_Arabic({
   subsets: ["arabic"],
   display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["100", "400", "700", "900"],
   variable: "--font-noto",
-  adjustFontFallback: true,
-  preload: true,
+});
+
+import { Playfair_Display, Tajawal, Space_Mono } from "next/font/google";
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+});
+
+const tajawal = Tajawal({
+  subsets: ["arabic"],
+  display: "swap",
+  weight: ["400", "500", "700", "800", "900"],
+  variable: "--font-tajawal",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
 });
 
 // ─────────────────────────────────────────────
@@ -173,7 +195,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={notoSansArabic.variable} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${notoSansArabic.variable} ${playfairDisplay.variable} ${tajawal.variable} ${spaceMono.variable}`} suppressHydrationWarning>
       <head>
         {/* ── JSON-LD: Organization + WebSite + SoftwareApplication + روابط رئيسية (إشارات لسيتلينكس والعلامة) ── */}
         <script
@@ -283,9 +305,10 @@ export default function RootLayout({
           }}
         />
 
-        {/* ── W3C PWA capable (suppresses browser deprecation warning for apple-mobile-web-app-capable) ── */}
+        {/* ── W3C PWA capable ── */}
         <meta name="mobile-web-app-capable" content="yes" />
 
+        {/* Google Fonts now optimized via next/font/google in layout.tsx */}
       </head>
       <body className={`${notoSansArabic.className} antialiased`} suppressHydrationWarning>
         <ScrollToTop />

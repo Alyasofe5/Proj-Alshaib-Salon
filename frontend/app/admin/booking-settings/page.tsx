@@ -6,7 +6,7 @@ import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp } from "react-icons/fa";
-import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2 } from "lucide-react";
+import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
@@ -36,6 +36,7 @@ interface EmployeeItem {
 
 
 interface SalonSettings {
+    id: number;
     name: string;
     slug: string;
     description: string;
@@ -73,6 +74,10 @@ interface SalonSettings {
     reviews_title?: string;
     reviews_subtitle?: string;
     reviews?: { customer_name: string; comment: string; rating: number; role?: string }[];
+    // Stats fields
+    stats_years: string;
+    stats_clients: string;
+    stats_experts: string;
 }
 
 interface FaqItem { id: string; question: string; answer: string; order: number; }
@@ -404,16 +409,18 @@ export default function BookingSettingsPage() {
         if (!settings) return;
         setSaving(true);
         try {
-            await axios.put(`${API_BASE}/salon/settings.php`, settings, {
+            const res = await axios.put(`${API_BASE}/salon/settings.php`, settings, {
                 headers: {
                     Authorization: `Bearer ${Cookies.get("token")}`,
                     "Content-Type": "application/json",
                 },
             });
-            // Re-fetch from server to confirm data was actually saved
-            await loadData();
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2500);
+
+            if (res.data.success) {
+                await loadData();
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2500);
+            }
         } catch (e) { console.error(e); }
         finally { setSaving(false); }
     };
@@ -748,6 +755,25 @@ export default function BookingSettingsPage() {
                             <InputField label="واتساب (اختياري)" value={settings.whatsapp} onChange={v => setSettings({ ...settings, whatsapp: v })} gold={gold} placeholder="00962..." />
                             <InputField label="فيسبوك (اختياري)" value={settings.facebook} onChange={v => setSettings({ ...settings, facebook: v })} gold={gold} placeholder="facebook.com/..." />
                         </div>
+
+                        {/* --- Stats Section --- */}
+                        <div className="mt-8 pt-8 border-t border-white/5">
+                             <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent-lime/10 text-accent-lime">
+                                    <Sparkles size={14} />
+                                </div>
+                                <h3 className="text-sm font-bold">إحصائيات الصالون (الأرقام في الموقع)</h3>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <InputField label="سنوات الخبرة" value={settings.stats_years ?? ""} onChange={v => setSettings({ ...settings, stats_years: v })} gold={gold} placeholder="مثال: 7+" />
+                                <InputField label="عدد العملاء" value={settings.stats_clients ?? ""} onChange={v => setSettings({ ...settings, stats_clients: v })} gold={gold} placeholder="مثال: 15K+" />
+                                <InputField label="عدد الخبراء" value={settings.stats_experts ?? ""} onChange={v => setSettings({ ...settings, stats_experts: v })} gold={gold} placeholder="مثال: 6" />
+                            </div>
+                            <p className="mt-4 text-[10px] text-[var(--color-text-muted)] italic leading-relaxed">
+                                تظهر هذه الأرقام في قسم الإحصائيات بصفحة الحجز الرئيسية لتعزيز ثقة الزبائن.
+                            </p>
+                        </div>
+
                         <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
                             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون الرئيسي (يظهر في الواجهة العليا)</label>
                             <textarea value={settings.description ?? ""} onChange={e => setSettings({ ...settings, description: e.target.value })} rows={4}

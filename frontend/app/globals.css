@@ -1,5 +1,9 @@
 /* Primary font: next/font (Noto Sans Arabic) via layout.tsx — --font-noto */
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Tajawal:wght@400;500;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -104,62 +108,36 @@
 .glass-card-3 { animation: glassCardIn 0.4s ease both 0.19s; }
 
 /* ===== Brand Shimmer — MAQASS logo text ===== */
-@keyframes marquee-left-primary {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(-100% - var(--marquee-gap))); }
+/* ═══ Unified & Seamless Marquee ═══ */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - (var(--marquee-gap) / 2))); }
 }
 
-@keyframes marquee-left-secondary {
-  from { transform: translateX(calc(100% + var(--marquee-gap))); }
-  to { transform: translateX(0); }
+@keyframes marquee-right {
+  0% { transform: translateX(calc(-50% - (var(--marquee-gap) / 2))); }
+  100% { transform: translateX(0); }
 }
 
-@keyframes marquee-right-primary {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(100% + var(--marquee-gap))); }
+.animate-marquee-left {
+  animation: marquee-left 40s linear infinite;
+  will-change: transform;
 }
 
-@keyframes marquee-right-secondary {
-  from { transform: translateX(calc(-100% - var(--marquee-gap))); }
-  to { transform: translateX(0); }
+.animate-marquee-right {
+  animation: marquee-right 40s linear infinite;
+  will-change: transform;
 }
 
 .marquee-lane {
-  --marquee-gap: 0.75rem;
-  position: relative;
-  display: grid;
+  --marquee-gap: 1.5rem;
   width: 100%;
   overflow: hidden;
 }
 
-.marquee-strip {
-  grid-area: 1 / 1;
-  display: flex;
-  width: max-content;
-  flex-wrap: nowrap;
-  gap: var(--marquee-gap);
-  will-change: transform;
-}
-
-.marquee-strip-left-primary {
-  animation: marquee-left-primary 36s linear infinite;
-}
-
-.marquee-strip-left-secondary {
-  animation: marquee-left-secondary 36s linear infinite;
-}
-
-.marquee-strip-right-primary {
-  animation: marquee-right-primary 42s linear infinite;
-}
-
-.marquee-strip-right-secondary {
-  animation: marquee-right-secondary 42s linear infinite;
-}
-
 @media (min-width: 1024px) {
   .marquee-lane {
-    --marquee-gap: 1.25rem;
+    --marquee-gap: 2rem;
   }
 }
 

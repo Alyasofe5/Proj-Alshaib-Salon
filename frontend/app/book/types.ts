@@ -8,7 +8,7 @@ export interface SalonInfo {
     hero_video?: string | null;
     hero_type?: string;
     gallery?: string[];
-    reviews?: { id: number; customer_name: string; rating: number; comment: string; }[];
+    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; }[];
     faqs?: { id: number; question: string; answer: string; }[];
     // New Content Fields
     hero_subtitle?: string;
@@ -26,10 +26,14 @@ export interface SalonInfo {
     team_description?: string;
     gallery_title?: string;
     gallery_subtitle?: string;
-    reviews_title?: string;
-    reviews_subtitle?: string;
-    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; }[];
-}
+        reviews_title?: string;
+        reviews_subtitle?: string;
+        stats_years?: string;
+        stats_clients?: string;
+        stats_experts?: string;
+        faq_title?: string;
+        faq_subtitle?: string;
+    }
 
 export interface BookingSel {
     service_ids: number[];
@@ -43,5 +47,5 @@ export interface BookingSel {
 
 export const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 export const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-export const fmt12 = (t: string) => { const [h, m] = t.split(":").map(Number); return `${h > 12 ? h - 12 : h === 0 ? 12 : h}:${String(m).padStart(2, "0")} ${h >= 12 ? "م" : "ص"}`; };
+export const fmt12 = (t: string) => { const [h, m] = t.split(":").map(Number); const displayH = h % 12 === 0 ? 12 : h % 12; const ampm = h >= 12 ? "م" : "ص"; return `${displayH}:${String(m).padStart(2, "0")} ${ampm}`; };
 export const API = process.env.NEXT_PUBLIC_API_URL || "/api";

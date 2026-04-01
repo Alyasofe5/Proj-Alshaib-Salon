@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scissors, Calendar, Clock, UserCircle, X, Sparkles, AlertCircle, Check, CheckCircle2, ArrowLeft } from "lucide-react";
 import { assetUrl } from "@/lib/assets";
@@ -6,21 +7,16 @@ import { Service, Employee, SalonInfo, BookingSel, dayNames, monthNames, fmt12 }
 
 const spring = { type: "spring" as const, stiffness: 120, damping: 22 };
 
-// Light theme palette (matching page sections)
 const C = {
-  bg:        "var(--color-background)",   // Charcoal black
-  surface:   "#222022",   // Elevated cards
-  surface2:  "#171618",
+  bg:        "var(--color-background)",
+  surface:   "#171618",
+  surface2:  "#222022",
   border:    "rgba(255,255,255,0.08)",
-  text:      "var(--color-text-primary)",   // White text
+  text:      "var(--color-text-primary)",
   muted:     "rgba(255,255,255,0.4)",
-  soft:      "rgba(255,255,255,0.22)",
-  subtle:    "rgba(255,255,255,0.08)",
-  lime:      "#C3D809",   // Brand accent
+  lime:      "#C3D809",
   limeBg:    "rgba(195,216,9,0.08)",
   limeBrd:   "rgba(195,216,9,0.25)",
-  headerBg:  "rgba(26,26,26,0.95)",
-  footerBg:  "rgba(26,26,26,0.97)",
 };
 
 interface BookingModalProps {
@@ -34,7 +30,7 @@ interface BookingModalProps {
   sel: BookingSel;
   setSel: (v: BookingSel | ((p: BookingSel) => BookingSel)) => void;
   dates: string[];
-  bookedSlots: { booking_time: string; employee_id: number }[];
+  bookedSlots: any[];
   fetchBooked: (empId: number, date: string) => void;
   genTimes: () => string[];
   totalPrice: number;
@@ -54,6 +50,12 @@ export default function BookingModal({
   submitting, error, submitBooking, toggleSrv,
 }: BookingModalProps) {
 
+  useEffect(() => {
+    if (isOpen && sel.booking_date) {
+      fetchBooked(sel.employee_id, sel.booking_date);
+    }
+  }, [isOpen, sel.booking_date, sel.employee_id, fetchBooked]);
+
   const resetAndClose = () => {
     onClose();
     setTimeout(() => {
@@ -72,439 +74,268 @@ export default function BookingModal({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[100]"
-            style={{ background: "radial-gradient(circle at top, rgba(195,216,9,0.08), rgba(10,10,10,0.86) 32%, rgba(5,5,5,0.94) 100%)", backdropFilter: "blur(18px)" }}
+            style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(18px)" }}
             onClick={onClose}
           />
 
-          {/* Dialog — bottom-sheet on mobile, centered on desktop */}
           <div className="fixed inset-0 z-[101] flex items-end sm:items-center justify-center sm:p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: 24 }}
+              initial={{ opacity: 0, scale: 0.98, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: 24 }}
+              exit={{ opacity: 0, scale: 0.98, y: 30 }}
               transition={spring}
-              className="pointer-events-auto w-full flex flex-col"
+              className="pointer-events-auto w-full flex flex-col overflow-hidden"
               style={{
                 direction: "rtl",
-                maxWidth: 680,
-                maxHeight: "92vh",
-                background: "linear-gradient(180deg, rgba(23,22,24,0.98) 0%, rgba(12,12,13,0.98) 100%)",
-                borderRadius: "20px 20px 0 0",
-                border: `1px solid ${C.border}`,
-                boxShadow: "0 -8px 48px rgba(0,0,0,0.32), 0 32px 120px rgba(0,0,0,0.45)",
-                overflow: "hidden",
-                // On desktop: centered with all rounded corners
-                ...(typeof window !== "undefined" && window.innerWidth >= 640 ? {
-                  borderRadius: 28,
-                  boxShadow: "0 42px 120px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset, 0 1px 0 rgba(255,255,255,0.08) inset",
-                } : {}),
+                maxWidth: 720,
+                maxHeight: "88vh",
+                background: "#0c0c0c",
+                borderRadius: "2.5rem 2.5rem 0 0",
+                border: "1px solid rgba(255,255,255,0.06)",
+                boxShadow: "0 50px 150px rgba(0,0,0,0.7)",
+                ...(typeof window !== "undefined" && window.innerWidth >= 640 ? { borderRadius: "2.5rem" } : {}),
               }}
               onClick={e => e.stopPropagation()}
             >
-              {/* Gold top accent */}
-              <div style={{ height: 4, background: `linear-gradient(90deg, transparent 0%, rgba(195,216,9,0.35) 20%, ${C.lime} 50%, rgba(195,216,9,0.35) 80%, transparent 100%)`, flexShrink: 0 }} />
-
-              {/* ── HEADER ── */}
-              <div className="flex items-start justify-between px-5 sm:px-8 pt-5 pb-4" style={{ flexShrink: 0, background: "linear-gradient(180deg, rgba(26,26,26,0.96) 0%, rgba(18,18,18,0.92) 100%)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${C.border}` }}>
-                {step < 5 ? (
-                  <div>
-                    <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.45rem", letterSpacing: "0.35em", color: C.lime, marginBottom: 6, textTransform: "uppercase", opacity: 0.95 }}>
-                      {salon.name}
-                    </p>
-                    <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(1.3rem, 5vw, 1.75rem)", fontStyle: "italic", color: C.text, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
-                      احجز <span style={{ color: C.lime }}>موعدك</span>
-                    </h2>
-                    {selSrvs.length > 0 && (
-                      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", color: "rgba(255,255,255,0.28)", letterSpacing: "0.08em", marginTop: 8 }}>
-                        {selSrvs.length} {selSrvs.length === 1 ? "خدمة" : "خدمات"} · {totalPrice} ر.س
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "clamp(1.3rem, 5vw, 1.75rem)", fontStyle: "italic", color: C.text }}>
-                    تم التأكيد<span style={{ color: C.lime }}>.</span>
-                  </h2>
-                )}
-                <button onClick={onClose} aria-label="إغلاق"
-                  className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-black/8"
-                  style={{ border: `1px solid ${C.border}`, color: C.muted, marginTop: 2 }}>
-                  <X size={15} />
+              {/* Header */}
+              <div className="flex items-center justify-between px-8 py-7 bg-white/[0.01]">
+                <div>
+                   <span className="text-[#C3D809] text-[9px] font-black tracking-[0.5em] uppercase opacity-60 block mb-1" style={{ fontFamily: "'Space Mono', monospace" }}>Reservations</span>
+                   <h2 className="text-white text-2xl" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900 }}>احجز موعدك</h2>
+                </div>
+                <button onClick={onClose} className="w-11 h-11 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all bg-white/5">
+                   <X size={20} />
                 </button>
               </div>
 
-              {/* ── STEP BAR ── */}
-              {step < 5 && (
-                <div style={{ flexShrink: 0, background: "linear-gradient(180deg, rgba(31,30,31,0.98) 0%, rgba(21,20,21,0.98) 100%)", borderBottom: `1px solid ${C.border}` }}>
-                  {/* Animated progress line */}
-                  <div style={{ height: 3, background: "rgba(255,255,255,0.05)", position: "relative" }}>
-                    <motion.div
-                      animate={{ width: `${((step - 1) / 3) * 100}%` }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                      style={{ position: "absolute", top: 0, right: 0, height: "100%", background: `linear-gradient(90deg, ${C.lime} 0%, #e3ff4f 100%)`, boxShadow: `0 0 18px rgba(195,216,9,0.35)` }}
-                    />
-                  </div>
-                  {/* Labels */}
-                  <div className="flex px-4 sm:px-8 py-3 gap-0">
-                    {STEPS.map((label, i) => {
-                      const num = i + 1;
-                      const done = num < step;
-                      const active = num === step;
-                      return (
-                        <div key={num} className="flex items-center flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className="flex items-center justify-center rounded-full shrink-0 transition-all duration-400"
-                              style={{
-                                width: 24, height: 24,
-                                background: done ? C.lime : active ? "rgba(195,216,9,0.14)" : "rgba(255,255,255,0.03)",
-                                border: done ? "none" : active ? `1.5px solid ${C.lime}` : `1.5px solid rgba(255,255,255,0.08)`,
-                                boxShadow: active ? `0 0 0 4px rgba(195,216,9,0.08)` : "none",
-                              }}>
-                              {done
-                                ? <Check size={11} strokeWidth={3} style={{ color: "#111" }} />
-                                : <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", fontWeight: 700, color: active ? C.lime : "rgba(255,255,255,0.28)" }}>{num}</span>
-                              }
-                            </div>
-                            <span style={{
-                              fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(0.65rem, 2vw, 0.72rem)",
-                              fontWeight: active ? 700 : 400,
-                              color: active ? C.text : done ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.3)",
-                            }}>{label}</span>
-                          </div>
-                          {num < 4 && <div className="flex-1 mx-1.5 sm:mx-2" style={{ height: 1, background: done ? C.limeBrd : "rgba(255,255,255,0.07)" }} />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* Steps (Tabs) */}
+              <div className="px-8 pb-4 flex items-center justify-between gap-3 overflow-x-auto hide-scroll">
+                {STEPS.map((label, i) => {
+                  const active = (i + 1) === step;
+                  const done = (i + 1) < step;
+                  return (
+                    <div key={label} className="flex-1 flex flex-col gap-2 min-w-[70px]">
+                      <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                        <motion.div animate={{ width: done ? "100%" : active ? "100%" : "0%" }} transition={{ duration: 0.6 }} className="h-full bg-[#C3D809]" />
+                      </div>
+                      <span className={`text-[10px] text-center font-bold transition-colors ${active ? "text-[#C3D809]" : "text-white/20"}`} style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
 
-              {/* ── SCROLLABLE CONTENT ── */}
-              <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-5 hide-scroll" style={{ minHeight: 0, background: "linear-gradient(180deg, rgba(14,14,15,0.98) 0%, rgba(10,10,10,1) 100%)" }}>
+              {/* Content Panel */}
+              <div className="flex-1 overflow-y-auto px-8 py-6 hide-scroll" style={{ minHeight: 0 }}>
                 <AnimatePresence mode="wait">
-
-                  {/* STEP 1 — Services */}
                   {step === 1 && (
-                    <motion.div key="s1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={spring}>
-                      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.35em", color: C.muted, textTransform: "uppercase", marginBottom: 14 }}>
-                        اختر الخدمات
-                      </p>
-                      <div className="space-y-2">
-                        {services.length === 0 && (
-                          <div className="p-4 rounded-xl"
-                            style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, textAlign: "center" }}>
-                            لا توجد خدمات مفعلة حاليًا في إعدادات الحجز.
-                          </div>
-                        )}
-                        {services.map(s => {
-                          const active = sel.service_ids.includes(s.id);
-                          return (
-                            <motion.div key={s.id} whileTap={{ scale: 0.99 }} onClick={() => toggleSrv(s.id)}
-                              className="flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                              style={{
-                                background: active ? C.limeBg : C.surface,
-                                border: `1.5px solid ${active ? C.lime : C.border}`,
-                                boxShadow: active ? `0 0 0 1px ${C.lime}1A` : "0 1px 4px rgba(0,0,0,0.04)",
-                              }}>
-                              <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 flex items-center justify-center"
-                                style={{ background: active ? C.limeBg : "rgba(0,0,0,0.03)" }}>
-                                {s.image
-                                  ? <img src={assetUrl(s.image)!} alt={s.name} className="w-full h-full object-cover" />
-                                  : <Scissors size={16} style={{ color: active ? C.lime : "rgba(0,0,0,0.2)" }} />
-                                }
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: C.text }}>{s.name}</h4>
-                                <div className="flex items-center gap-3 mt-0.5">
-                                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: C.lime, fontWeight: 700 }}>{s.price} ر.س</span>
-                                  {s.duration_minutes && <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", color: C.muted }}>{s.duration_minutes} د</span>}
+                    <motion.div key="s1" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {services.map(s => {
+                        const active = sel.service_ids.includes(s.id);
+                        return (
+                          <motion.div key={s.id} whileTap={{ scale: 0.98 }} onClick={() => toggleSrv(s.id)}
+                            className="group flex flex-col p-5 rounded-[2rem] cursor-pointer transition-all duration-500"
+                            style={{
+                              background: active ? "rgba(195,216,9,0.12)" : "rgba(255,255,255,0.03)",
+                              border: `1px solid ${active ? "rgba(195,216,9,0.3)" : "rgba(255,255,255,0.06)"}`,
+                            }}>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-black/40 border border-white/5 shrink-0">
+                                  {s.image ? <img src={assetUrl(s.image)!} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center opacity-10"><Scissors /></div>}
                                 </div>
-                              </div>
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
-                                style={{ background: active ? C.lime : "transparent", border: `1.5px solid ${active ? C.lime : "rgba(0,0,0,0.15)"}` }}>
-                                <Check size={10} strokeWidth={3} style={{ color: active ? "#fff" : "transparent" }} />
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* STEP 2 — Barber */}
-                  {step === 2 && (
-                    <motion.div key="s2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={spring}>
-                      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.35em", color: C.muted, textTransform: "uppercase", marginBottom: 14 }}>
-                        اختر الحلاق
-                      </p>
-                      <div className="space-y-2">
-                        {employees.length === 0 && (
-                          <div className="p-4 rounded-xl"
-                            style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, textAlign: "center" }}>
-                            لا يوجد حلاقون مفعّلون حاليًا في إعدادات الحجز.
-                          </div>
-                        )}
-                        {/* Any available */}
-                        <div onClick={() => { setSel(p => ({ ...p, employee_id: 0 })); setStep(3); }}
-                          className="flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                          style={{ background: sel.employee_id === 0 ? C.limeBg : C.surface, border: `1.5px solid ${sel.employee_id === 0 ? C.lime : C.border}`, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                          <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-                            style={{ background: C.limeBg, border: `1px solid ${C.limeBrd}` }}>
-                            <Sparkles size={16} style={{ color: C.lime }} />
-                          </div>
-                          <div className="flex-1">
-                            <h4 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: C.text }}>أي حلاق متاح</h4>
-                            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", color: C.muted, marginTop: 2 }}>سيتم تخصيص أفضل حلاق لك</p>
-                          </div>
-                          {sel.employee_id === 0 && <CheckCircle2 size={16} style={{ color: C.lime }} />}
-                        </div>
-                        {employees.map(emp => (
-                          <div key={emp.id} onClick={() => { setSel(p => ({ ...p, employee_id: emp.id })); setStep(3); fetchBooked(emp.id, sel.booking_date || dates[0]); }}
-                            className="flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                            style={{ background: sel.employee_id === emp.id ? C.limeBg : C.surface, border: `1.5px solid ${sel.employee_id === emp.id ? C.lime : C.border}`, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                            {emp.avatar
-                              ? <img src={assetUrl(emp.avatar)!} alt={emp.name} className="w-11 h-11 rounded-full object-cover shrink-0" />
-                              : <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: C.subtle, fontWeight: 700, color: C.muted, fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "1rem" }}>{emp.name.charAt(0)}</div>
-                            }
-                            <div className="flex-1">
-                              <h4 style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: C.text }}>{emp.name}</h4>
-                              <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", color: C.muted, marginTop: 2 }}>{emp.role || "حلاق نخبة"}</p>
+                                <h4 className="text-white text-base font-black leading-tight" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{s.name}</h4>
                             </div>
-                            {sel.employee_id === emp.id && <CheckCircle2 size={16} style={{ color: C.lime }} />}
-                          </div>
-                        ))}
-                      </div>
+                            <div className="flex items-end justify-between mt-auto pt-2">
+                               <div className="flex flex-col">
+                                  <span className="text-[#C3D809] text-xl font-black">{s.price} JOD</span>
+                                  <span className="text-white/20 text-[10px] font-bold tracking-widest">{s.duration_minutes || 0} دقيقة</span>
+                               </div>
+                               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${active ? "bg-[#C3D809] text-black shadow-[0_0_20px_rgba(195,216,9,0.4)]" : "bg-white/5 text-white/5 border border-white/5"}`}>
+                                  <Check size={14} strokeWidth={4} />
+                               </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
                   )}
 
-                  {/* STEP 3 — Date & Time */}
+                  {step === 2 && (
+                    <motion.div key="s2" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <motion.div whileTap={{ scale: 0.98 }} onClick={() => { setSel(p => ({ ...p, employee_id: 0, booking_date: p.booking_date || dates[0] })); setStep(3); }}
+                        className="flex items-center gap-5 p-5 rounded-[2.5rem] cursor-pointer transition-all duration-500"
+                        style={{
+                           background: sel.employee_id === 0 ? "rgba(195,216,9,0.14)" : "rgba(255,255,255,0.03)",
+                           border: `1px solid ${sel.employee_id === 0 ? "rgba(195,216,9,0.35)" : "rgba(255,255,255,0.06)"}`
+                        }}>
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${sel.employee_id === 0 ? "bg-[#C3D809] text-black shadow-[0_0_30px_rgba(195,216,9,0.3)]" : "bg-white/5 text-[#C3D809]"}`}>
+                           <Sparkles size={24} />
+                        </div>
+                        <h4 className="text-white text-lg font-black" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>أي حلاق متاح</h4>
+                      </motion.div>
+                      {employees.map(emp => {
+                        const active = sel.employee_id === emp.id;
+                        return (
+                          <motion.div key={emp.id} whileTap={{ scale: 0.98 }} onClick={() => { setSel(p => ({ ...p, employee_id: emp.id, booking_date: p.booking_date || dates[0] })); setStep(3); }}
+                            className="flex items-center gap-5 p-5 rounded-[2.5rem] cursor-pointer transition-all duration-500"
+                            style={{
+                              background: active ? "rgba(195,216,9,0.14)" : "rgba(255,255,255,0.03)",
+                              border: `1px solid ${active ? "rgba(195,216,9,0.35)" : "rgba(255,255,255,0.06)"}`
+                            }}>
+                            <div className={`w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 transition-all p-0.5 ${active ? "border-[#C3D809] shadow-[0_0_25px_rgba(195,216,9,0.2)]" : "border-white/10"}`}>
+                               {emp.avatar ? <img src={assetUrl(emp.avatar)!} className="w-full h-full rounded-full object-cover" /> : <div className="w-full h-full rounded-full bg-white/10" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                               <h4 className="text-white text-lg font-black truncate" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{emp.name}</h4>
+                               <span className="text-white/20 text-[10px] uppercase font-bold tracking-widest">{emp.role || "Elite Barber"}</span>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+
                   {step === 3 && (
-                    <motion.div key="s3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={spring} className="space-y-7">
-                      <div>
-                        <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.35em", color: C.muted, textTransform: "uppercase", marginBottom: 14 }}>اختر التاريخ</p>
-                        <div className="flex gap-2 overflow-x-auto pb-2 hide-scroll">
+                    <motion.div key="s3" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }} className="space-y-10">
+                       <div className="flex gap-4 overflow-x-auto pb-4 hide-scroll justify-start">
                           {dates.map((d, i) => {
                             const dateObj = new Date(d);
                             const isSel = sel.booking_date === d;
                             return (
-                              <button key={d} onClick={() => { setSel(p => ({ ...p, booking_date: d, booking_time: "" })); fetchBooked(sel.employee_id, d); }}
-                                className="shrink-0 flex flex-col items-center gap-1 py-3.5 px-3 rounded-xl transition-all duration-200"
+                              <button key={d} onClick={() => setSel(p => ({ ...p, booking_date: d, booking_time: "" }))}
+                                className="shrink-0 flex flex-col items-center gap-1 py-5 px-5 rounded-[2rem] transition-all min-w-[70px]"
                                 style={{
-                                  minWidth: 64,
-                                  background: isSel ? C.lime : C.surface,
-                                  border: `1.5px solid ${isSel ? C.lime : C.border}`,
-                                  boxShadow: isSel ? `0 4px 16px ${C.lime}30` : "0 1px 4px rgba(0,0,0,0.04)",
+                                  background: isSel ? "#C3D809" : "rgba(255,255,255,0.03)",
+                                  border: `1px solid ${isSel ? "#C3D809" : "rgba(255,255,255,0.06)"}`,
+                                  color: isSel ? "#000" : "#fff",
+                                  boxShadow: isSel ? "0 10px 30px rgba(195,216,9,0.3)" : "none"
                                 }}>
-                                <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.6rem", fontWeight: 700, color: isSel ? "rgba(255,255,255,0.85)" : C.muted }}>
-                                  {i === 0 ? "اليوم" : dayNames[dateObj.getDay()]}
-                                </span>
-                                <span style={{ fontSize: "1.3rem", fontWeight: 800, color: isSel ? "#fff" : C.text, lineHeight: 1 }}>{dateObj.getDate()}</span>
-                                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.48rem", color: isSel ? "rgba(255,255,255,0.75)" : C.lime, fontWeight: 700 }}>
-                                  {monthNames[dateObj.getMonth()]}
-                                </span>
+                                <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">{i === 0 ? "اليوم" : dayNames[dateObj.getDay()]}</span>
+                                <span className="text-3xl font-black">{dateObj.getDate()}</span>
+                                <span className="text-[9px] font-bold opacity-40 uppercase">{monthNames[dateObj.getMonth()]}</span>
                               </button>
                             );
                           })}
-                        </div>
-                      </div>
-                      {sel.booking_date && (
-                        <div>
-                          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.35em", color: C.muted, textTransform: "uppercase", marginBottom: 14 }}>الأوقات المتاحة</p>
-                          <div className="grid grid-cols-4 gap-2">
-                            {genTimes().map(t => {
-                              const isBooked = bookedSlots.some(b => b.booking_time === t);
-                              const isSel = sel.booking_time === t;
-                              return (
-                                <button key={t} disabled={isBooked} onClick={() => setSel(p => ({ ...p, booking_time: t }))}
-                                  className="py-2.5 rounded-lg transition-all duration-200"
-                                  style={{
-                                    fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", fontWeight: 700,
-                                    background: isSel ? C.lime : isBooked ? "rgba(0,0,0,0.02)" : C.surface,
-                                    color: isSel ? "#fff" : isBooked ? "rgba(0,0,0,0.15)" : C.text,
-                                    border: `1.5px solid ${isSel ? C.lime : isBooked ? "rgba(0,0,0,0.04)" : C.border}`,
-                                    textDecoration: isBooked ? "line-through" : "none",
-                                    cursor: isBooked ? "not-allowed" : "pointer",
-                                    boxShadow: isSel ? `0 4px 12px ${C.lime}25` : "none",
-                                  }}>
-                                  {fmt12(t)}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                       </div>
+
+                       {sel.booking_date && (
+                         <div className="space-y-4">
+                            {genTimes().length > 0 ? (
+                              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                 {genTimes().map(t => {
+                                   // Robust matching logic
+                                   const isBooked = bookedSlots.some(b => {
+                                     const bTime = (typeof b === "string" ? b : b?.booking_time);
+                                     if (!bTime) return false;
+                                     const [bh, bm] = bTime.split(":").map(Number);
+                                     const [th, tm] = t.split(":").map(Number);
+                                     return bh === th && bm === tm;
+                                   });
+                                   const isSel = sel.booking_time === t;
+
+                                   return (
+                                     <button key={t} disabled={isBooked} onClick={() => setSel(p => ({ ...p, booking_time: t }))}
+                                       className="relative py-4 rounded-2xl text-[13px] font-bold transition-all flex items-center justify-center"
+                                       style={{
+                                         background: isSel ? "#C3D809" : isBooked ? "rgba(220,38,38,0.06)" : "rgba(255,255,255,0.03)",
+                                         color: isSel ? "#000" : isBooked ? "rgba(239,68,68,0.5)" : "#fff",
+                                         border: `1px solid ${isSel ? "#C3D809" : isBooked ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.06)"}`,
+                                         opacity: isBooked ? 1 : 1,
+                                         cursor: isBooked ? "not-allowed" : "pointer",
+                                         boxShadow: isSel ? "0 8px 25px rgba(195,216,9,0.25)" : "none"
+                                       }}>
+                                       {isBooked && (
+                                         <motion.div initial={{ width: 0 }} animate={{ width: "70%" }} className="absolute h-[1.5px] bg-red-500/40" />
+                                       )}
+                                       <span className={isBooked ? "opacity-40" : ""}>{fmt12(t)}</span>
+                                     </button>
+                                   );
+                                 })}
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center py-10 opacity-30">
+                                 <Clock size={40} className="mb-3" />
+                                 <p className="font-bold text-sm">عذراً، لا يوجد مواعيد متاحة لهذا اليوم</p>
+                              </div>
+                            )}
+                         </div>
+                       )}
                     </motion.div>
                   )}
 
-                  {/* STEP 4 — Details */}
                   {step === 4 && (
-                    <motion.div key="s4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={spring}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {/* Form */}
-                        <div className="space-y-4">
-                          {error && (
-                            <div className="flex items-center gap-2 p-3 rounded-lg text-xs" style={{ background: "rgba(244,67,54,0.06)", border: "1px solid rgba(244,67,54,0.18)", color: "#c62828" }}>
-                              <AlertCircle size={13} /> {error}
-                            </div>
-                          )}
+                    <motion.div key="s4" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }} className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                       <div className="lg:col-span-3 space-y-6">
+                          {error && <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs text-center font-bold">{error}</div>}
                           {[
-                            { label: "الاسم الكريم", field: "customer_name", type: "text", placeholder: "اكتب اسمك" },
-                            { label: "رقم الجوال", field: "customer_phone", type: "tel", placeholder: "05XXXXXXXX" },
-                          ].map(({ label, field, type, placeholder }) => (
-                            <div key={field}>
-                              <label style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.25em", color: C.muted, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
-                                {label}
-                              </label>
-                              <input
-                                type={type}
-                                dir={field === "customer_phone" ? "ltr" : "rtl"}
-                                value={(sel as any)[field]}
-                                onChange={e => setSel(p => ({ ...p, [field]: e.target.value }))}
-                                placeholder={placeholder}
-                                className="w-full px-4 py-3 rounded-xl outline-none transition-all duration-200"
-                                style={{
-                                  background: C.surface, border: `1.5px solid ${C.border}`,
-                                  fontFamily: field === "customer_phone" ? "'Space Mono', monospace" : "'Noto Sans Arabic', sans-serif",
-                                  fontSize: "0.9rem", color: C.text, textAlign: field === "customer_phone" ? "left" : "right",
-                                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                                }}
-                                onFocus={e => { e.target.style.borderColor = C.lime; e.target.style.boxShadow = `0 0 0 3px ${C.lime}15`; }}
-                                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; }}
-                              />
+                             { label: "الأسم الكريم", field: "customer_name", type: "text", pl: "أدخل اسمك الكامل" },
+                             { label: "رقم الجوال بالأرقام", field: "customer_phone", type: "tel", pl: "07XXXXXXXX" }
+                          ].map(f => (
+                            <div key={f.field}>
+                              <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-2 block">{f.label}</label>
+                              <input type={f.type} value={(sel as any)[f.field]} onChange={e => setSel(p => ({ ...p, [f.field]: e.target.value }))} placeholder={f.pl}
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809] focus:outline-none transition-all font-bold" />
                             </div>
                           ))}
                           <div>
-                            <label style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.25em", color: C.muted, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
-                              ملاحظات (اختياري)
-                            </label>
-                            <textarea
-                              value={sel.notes}
-                              onChange={e => setSel(p => ({ ...p, notes: e.target.value }))}
-                              rows={3}
-                              placeholder="أي طلبات خاصة..."
-                              className="w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 resize-none"
-                              style={{
-                                background: C.surface, border: `1.5px solid ${C.border}`,
-                                fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.88rem", color: C.text,
-                                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                              }}
-                              onFocus={e => { e.target.style.borderColor = C.lime; e.target.style.boxShadow = `0 0 0 3px ${C.lime}15`; }}
-                              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; }}
-                            />
+                             <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-2 block">ملاحظات للجلسة</label>
+                             <textarea value={sel.notes} onChange={e => setSel(p => ({ ...p, notes: e.target.value }))} rows={3} placeholder="اكتب ملاحظاتك هنا..."
+                               className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809] focus:outline-none transition-all font-bold resize-none" />
                           </div>
-                        </div>
-
-                        {/* Booking Summary */}
-                        <div className="p-5 rounded-xl flex flex-col gap-3"
-                          style={{ background: C.surface, border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                          <div style={{ height: 3, background: C.lime, borderRadius: 2, marginBottom: 8 }} />
-                          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.35em", color: C.lime, textTransform: "uppercase", marginBottom: 4 }}>ملخص الحجز</p>
-                          <div className="space-y-2.5 flex-1">
-                            {selSrvs.map(s => (
-                              <div key={s.id} className="flex justify-between items-center">
-                                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: C.lime, fontWeight: 700 }}>{s.price} ر.س</span>
-                                <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "0.85rem", color: C.text, fontWeight: 600 }}>{s.name}</span>
-                              </div>
-                            ))}
+                       </div>
+                       <div className="lg:col-span-2 bg-[#C3D809]/[0.03] border border-[#C3D809]/10 rounded-[2.5rem] p-7 flex flex-col">
+                          <span className="text-[10px] font-black text-[#C3D809] tracking-[0.4em] uppercase mb-6 block">ملخص النهائي</span>
+                          <div className="space-y-3 flex-1">
+                             {selSrvs.map(s => (
+                               <div key={s.id} className="flex justify-between items-center bg-white/[0.02] p-4 rounded-2xl">
+                                  <span className="text-white text-sm font-bold">{s.name}</span>
+                                  <span className="text-[#C3D809] font-black">{s.price} JOD</span>
+                               </div>
+                             ))}
                           </div>
-                          <div className="pt-3 flex justify-between items-center" style={{ borderTop: `1px solid ${C.border}` }}>
-                            <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "1.15rem", color: C.lime }}>{totalPrice} ر.س</span>
-                            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: C.muted }}>الإجمالي</span>
+                          <div className="pt-6 mt-6 border-t border-white/10 space-y-4">
+                             <div className="flex justify-between items-center">
+                                <span className="text-white/20 text-[10px] font-black uppercase">Schedule</span>
+                                <span className="text-white text-sm font-black">{sel.booking_date} · {fmt12(sel.booking_time)}</span>
+                             </div>
+                             <div className="flex justify-between items-end">
+                                <span className="text-white/20 text-xs font-black uppercase">TOTAL</span>
+                                <span className="text-3xl text-[#C3D809] font-black leading-none tracking-tighter">{totalPrice} <small className="text-xs">JOD</small></span>
+                             </div>
                           </div>
-                          {sel.booking_date && sel.booking_time && (
-                            <div className="flex justify-between items-center pt-2" style={{ borderTop: `1px solid ${C.border}` }}>
-                              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", color: C.muted, direction: "ltr" }}>{sel.booking_date} · {fmt12(sel.booking_time)}</span>
-                              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: "rgba(0,0,0,0.2)" }}>الموعد</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                       </div>
                     </motion.div>
                   )}
 
-                  {/* STEP 5 — Confirmed */}
                   {step === 5 && (
-                    <motion.div key="s5" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-8 text-center">
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
-                        className="w-20 h-20 rounded-full flex items-center justify-center mb-7"
-                        style={{ background: C.limeBg, border: `2px solid ${C.limeBrd}` }}>
-                        <Check size={34} strokeWidth={2.5} style={{ color: C.lime }} />
-                      </motion.div>
-                      <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: "2rem", fontStyle: "italic", color: C.text, marginBottom: 10 }}>
-                        تم التأكيد<span style={{ color: C.lime }}>.</span>
-                      </h2>
-                      <p style={{ color: C.muted, maxWidth: 280, marginBottom: 28, lineHeight: 1.8, fontSize: "0.9rem" }}>
-                        نتطلع لاستقبالكم في {salon.name}
-                      </p>
-                      <div className="w-full p-5 rounded-xl text-right mb-6 space-y-3 relative overflow-hidden"
-                        style={{ background: C.surface, border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                        <div className="absolute top-0 right-0 w-1 h-full" style={{ background: C.lime }} />
-                        <div className="flex justify-between items-center">
-                          <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 700, color: C.text, fontSize: "0.9rem" }}>{sel.booking_date} · {sel.booking_time && fmt12(sel.booking_time)}</span>
-                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: C.muted }}>التاريخ والوقت</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-3" style={{ borderTop: `1px solid ${C.border}` }}>
-                          <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "1.15rem", color: C.lime }}>{totalPrice} ر.س</span>
-                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: C.muted }}>الإجمالي</span>
-                        </div>
-                      </div>
-                      <button onClick={resetAndClose}
-                        className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90"
-                        style={{ background: C.text, color: "#F5F2EC", fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "1rem" }}>
-                        العودة للرئيسية
-                      </button>
+                    <motion.div key="s5" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center py-10 text-center">
+                       <div className="w-24 h-24 rounded-[2rem] bg-[#C3D809] flex items-center justify-center text-black mb-8 shadow-[0_0_60px_rgba(195,216,9,0.4)]">
+                          <Check size={40} strokeWidth={5} />
+                       </div>
+                       <h2 className="text-4xl text-white mb-4" style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900 }}>نعيماً مقدماً!</h2>
+                       <p className="text-white/40 max-w-sm mb-10 leading-relaxed">تم تسجيل موعدك بنجاح في {salon.name}. يرجى الحضور قبل الموعد بـ 5 دقائق.</p>
+                       <button onClick={resetAndClose} className="bg-white text-black px-14 py-5 rounded-[2rem] font-black hover:scale-105 active:scale-95 transition-all text-lg shadow-xl shadow-white/5">العودة للرئيسية</button>
                     </motion.div>
                   )}
-
                 </AnimatePresence>
               </div>
 
-              {/* ── FOOTER ── */}
+              {/* Action Bar */}
               {step < 5 && (
-                <div className="flex-shrink-0 px-8 py-4 flex items-center justify-between gap-4"
-                  style={{ borderTop: `1px solid ${C.border}`, background: "linear-gradient(180deg, rgba(19,19,19,0.96) 0%, rgba(12,12,12,0.98) 100%)", backdropFilter: "blur(14px)" }}>
-                  {step > 1 ? (
-                    <button onClick={() => setStep(p => p - 1)}
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105 shrink-0"
-                      style={{ border: `1.5px solid ${C.border}`, color: C.muted, background: "rgba(255,255,255,0.03)" }}>
-                      <ArrowLeft size={16} />
-                    </button>
-                  ) : <div />}
-
-                  <div className="flex items-center gap-5 flex-1 justify-end">
-                    {totalPrice > 0 && (
-                      <div className="text-right">
-                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.48rem", color: C.muted, letterSpacing: "0.15em", display: "block" }}>الإجمالي</span>
-                        <span style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "1.15rem", color: C.lime }}>{totalPrice} ر.س</span>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => { if (!canProceed) return; if (step === 4) submitBooking(); else setStep(p => p + 1); }}
-                      disabled={!canProceed || submitting}
-                      className="flex items-center gap-2 px-7 py-3 rounded-2xl font-bold transition-all duration-200"
-                      style={{
-                        background: canProceed && !submitting ? `linear-gradient(135deg, ${C.lime} 0%, #d9f231 100%)` : "rgba(255,255,255,0.05)",
-                        color: canProceed && !submitting ? "#111" : "rgba(255,255,255,0.24)",
-                        fontFamily: "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "0.9rem",
-                        cursor: !canProceed || submitting ? "not-allowed" : "pointer",
-                        minWidth: 110, justifyContent: "center",
-                        boxShadow: canProceed && !submitting ? "0 10px 30px rgba(195,216,9,0.22)" : "none",
-                      }}>
-                      {submitting
-                        ? <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(245,242,236,0.3)", borderTopColor: "#F5F2EC" }} />
-                        : step === 4 ? "تأكيد الحجز" : "التالي"
-                      }
-                      {!submitting && step < 4 && (
-                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m15 18-6-6 6-6" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
+                <div className="px-8 py-7 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
+                   {step > 1 ? (
+                     <button onClick={() => setStep(p => p - 1)} className="w-14 h-14 rounded-[1.5rem] border border-white/10 flex items-center justify-center text-white/30 hover:text-white transition-all hover:bg-white/5">
+                        <ArrowLeft size={22} />
+                     </button>
+                   ) : <div />}
+                   <button onClick={() => { if(!canProceed) return; if(step === 4) submitBooking(); else setStep(p => p + 1); }}
+                     disabled={!canProceed || submitting}
+                     className={`px-12 py-5 rounded-[2rem] font-black text-base transition-all flex items-center gap-3 ${canProceed && !submitting ? "bg-[#C3D809] text-black shadow-[0_15px_45px_rgba(195,216,9,0.3)] active:scale-95" : "bg-white/5 text-white/10 cursor-not-allowed"}`}>
+                     {submitting ? "جاري الحجز..." : step === 4 ? "تأكيد الموعد النهائي" : "الخطوة التالية"}
+                     {!submitting && <ArrowLeft size={18} className="translate-y-[1px] rotate-180" />}
+                   </button>
                 </div>
               )}
             </motion.div>

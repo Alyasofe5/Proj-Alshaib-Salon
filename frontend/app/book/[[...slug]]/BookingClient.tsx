@@ -42,7 +42,8 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 
 function BookingContent({ params }: { params: { slug: string } }) {
     const searchParams = useSearchParams();
-    const slug = params.slug || searchParams.get("s") || searchParams.get("salon") || "";
+    const slugFromPath = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean).pop() : "";
+    const slug = (params.slug || searchParams.get("s") || searchParams.get("salon") || slugFromPath || "").toLowerCase();
 
     const [salon, setSalon] = useState<SalonInfo | null>(null);
     const [services, setServices] = useState<Service[]>([]);

@@ -60,12 +60,20 @@ DirectoryIndex index.php index.html
     RewriteRule ^uploads/(.+)$ /api/file-server.php?path=$1 [QSA,L]
 </IfModule>
 
-# ── SPA Fallback: serve index.html for frontend routes ──
+# ── SPA Fallback: serve specific index.html for sub-routes ──
 <IfModule mod_rewrite.c>
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} !^/api/
     RewriteCond %{REQUEST_URI} !^/uploads/
+    
+    # Specific fallbacks for catch-all routes
+    RewriteRule ^book/ /book/index.html [L]
+    RewriteRule ^admin/ /admin/index.html [L]
+    RewriteRule ^employee/ /employee/index.html [L]
+    RewriteRule ^superadmin/ /superadmin/index.html [L]
+    
+    # General fallback
     RewriteRule ^(.*)$ /index.html [L]
 </IfModule>
 

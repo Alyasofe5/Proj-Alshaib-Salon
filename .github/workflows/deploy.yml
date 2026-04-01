@@ -112,7 +112,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           local-dir: ./deploy_combined/
-          protocol: ftp
+          protocol: ftps
           dangerous-clean-slate: false
           exclude: |
             **/.git*

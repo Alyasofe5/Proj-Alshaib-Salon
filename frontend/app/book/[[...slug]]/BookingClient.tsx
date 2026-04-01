@@ -43,7 +43,8 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 function BookingContent({ params }: { params: { slug: string } }) {
     const searchParams = useSearchParams();
     const slugFromPath = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean).pop() : "";
-    const slug = (params.slug || searchParams.get("s") || searchParams.get("salon") || slugFromPath || "").toLowerCase();
+    const rawSlug = params.slug || searchParams.get("s") || searchParams.get("salon") || slugFromPath || "";
+    const slug = (Array.isArray(rawSlug) ? rawSlug[0] : rawSlug).toLowerCase();
 
     const [salon, setSalon] = useState<SalonInfo | null>(null);
     const [services, setServices] = useState<Service[]>([]);
@@ -157,7 +158,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
         // If end time is 00:00 (Midnight) OR 12:00 (common UI interpretation for Midnight end)
         // AND it's less than or equal to start time (or just 12:00 generally for salons)
-        if (endTimeInMinutes === 0) {
+        if (endTimeInMinutes === 0 || (eh === 12 && ch >= 10)) {
             endTimeInMinutes = 24 * 60; 
         }
         

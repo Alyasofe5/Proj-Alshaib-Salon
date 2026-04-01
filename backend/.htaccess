@@ -62,18 +62,27 @@ DirectoryIndex index.php index.html
 
 # ── SPA Fallback: serve specific index.html for sub-routes ──
 <IfModule mod_rewrite.c>
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} !^/api/
-    RewriteCond %{REQUEST_URI} !^/uploads/
+    # 1. If it's a physical file, directory, or an API/Uploads route, stop processing SPA rules here.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_URI} ^/(api|uploads)/
+    RewriteRule ^ - [L]
     
-    # Specific fallbacks for catch-all routes
-    RewriteRule ^book/ /book/index.html [L]
-    RewriteRule ^admin/ /admin/index.html [L]
-    RewriteRule ^employee/ /employee/index.html [L]
-    RewriteRule ^superadmin/ /superadmin/index.html [L]
+    # 2. Redirect dynamic routes to use query strings (Next.js static export fix)
+    # Next.js App Router static exports crash on unbuilt catch-all URLs when fetching RSC payloads.
+    # We redirect them to the root of the exported page, which handles the query param purely client-side.
+    RewriteRule ^book/([^/]+)/?$ /book/?s=$1 [R=301,L,QSA]
+    RewriteRule ^admin/([^/]+)/?$ /admin/?s=$1 [R=301,L,QSA]
+    RewriteRule ^employee/([^/]+)/?$ /employee/?s=$1 [R=301,L,QSA]
+    RewriteRule ^superadmin/([^/]+)/?$ /superadmin/?s=$1 [R=301,L,QSA]
     
-    # General fallback
+    # 3. Serve specific index.html for base routes
+    RewriteRule ^book/?$ /book/index.html [L]
+    RewriteRule ^admin/?$ /admin/index.html [L]
+    RewriteRule ^employee/?$ /employee/index.html [L]
+    RewriteRule ^superadmin/?$ /superadmin/index.html [L]
+    
+    # 3. Everything else goes to the main app index.html
     RewriteRule ^(.*)$ /index.html [L]
 </IfModule>
 

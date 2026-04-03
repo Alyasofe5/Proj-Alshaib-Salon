@@ -141,21 +141,25 @@ export default function Sidebar({ role }: SidebarProps) {
             <aside className={`sidebar ${isOpen ? "open" : ""}`}>
                 <div className="sidebar-logo">
                     {assetUrl(salonLogo) ? (
-                        <img
-                            src={assetUrl(salonLogo)!}
-                            alt={salonName}
-                            width={42}
-                            height={42}
-                            style={{ borderRadius: "100%", flexShrink: 0, objectFit: "cover", border: "1px solid var(--border-subtle)" }}
-                            onError={(e) => {
-                                // Hide the broken img, show fallback initial
-                                (e.target as HTMLImageElement).style.display = "none";
-                                const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                                if (fallback) fallback.style.display = "flex";
-                            }}
-                        />
+                        <div className="relative w-11 h-11 flex-shrink-0">
+                            <div className="absolute inset-0 rounded-full blur-[8px] opacity-20 bg-[var(--color-accent)]" />
+                            <img
+                                src={assetUrl(salonLogo)!}
+                                alt={salonName}
+                                className="relative z-10 w-full h-full rounded-full object-cover border-2 border-[#C3D809] bg-black shadow-[0_0_12px_rgba(195,216,9,0.3)]"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = "none";
+                                    const p = (e.target as HTMLImageElement).parentElement;
+                                    const fallback = p?.nextElementSibling as HTMLElement;
+                                    if (fallback) fallback.style.display = "flex";
+                                }}
+                            />
+                        </div>
                     ) : null}
-                    <div className="logo-icon" style={{ display: assetUrl(salonLogo) ? "none" : "flex" }}>{salonName.charAt(0)}</div>
+                    <div className="logo-icon flex items-center justify-center rounded-full border-2 border-[#C3D809] bg-black text-[#C3D809] shadow-[0_0_10px_rgba(195,216,9,0.2)]" 
+                         style={{ display: assetUrl(salonLogo) ? "none" : "flex", width: 42, height: 42 }}>
+                        {salonName.charAt(0)}
+                    </div>
                     <div>
                         <div className="salon-name">{salonName}</div>
                         <div className="salon-sub">{panelName}</div>

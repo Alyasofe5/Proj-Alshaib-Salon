@@ -562,19 +562,24 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                     {/* Center: Logo */}
                     <div className="flex justify-center">
-                        <a href={`/book/${slug}`} className="flex items-center gap-3 transition-transform hover:scale-105">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#C3D809] flex items-center justify-center border border-white/10 shadow-[0_4px_18px_rgba(195,216,9,0.22)]">
-                                {salon.logo ? (
-                                    <img
-                                        src={salon.logo}
-                                        alt={tData(salon.name, lang)}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <Scissors size={18} className="text-black" />
-                                )}
+                        <a href={`/book/${slug}`} className="flex items-center gap-3 transition-transform hover:scale-105 group/logo">
+                            <div className="relative w-[clamp(32px,5vw,40px)] h-[clamp(32px,5vw,40px)]">
+                                {/* Ambient Glow */}
+                                <div className="absolute inset-0 rounded-full blur-md opacity-20 bg-[#C3D809] animate-pulse" />
+                                
+                                <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-black flex items-center justify-center border-2 border-[#C3D809] shadow-[0_0_15px_rgba(195,216,9,0.3)]">
+                                    {salon.logo ? (
+                                        <img
+                                            src={salon.logo}
+                                            alt={tData(salon.name, lang)}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Scissors size={20} className="text-[#C3D809]" />
+                                    )}
+                                </div>
                             </div>
-                            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.2rem, 3vw, 1.6rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
+                            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
                                 {tData(salon.name, lang)}
                             </span>
                         </a>

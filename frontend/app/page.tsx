@@ -183,8 +183,8 @@ export default function LandingPage() {
               <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
 
               <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
-                style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
-                <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+                style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
+                <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
                   <Image
                     src="/images/logo_new.png"
                     alt="Maqass Logo"
@@ -735,8 +735,8 @@ export default function LandingPage() {
                   {/* Back Glow (Bloom) */}
                   <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
                   <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
-                    style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
-                    <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+                    style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
+                    <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
                       <Image
                         src="/images/logo_new.png"
                         alt="Maqass Logo"

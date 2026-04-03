@@ -114,7 +114,7 @@ function ContactPageInner() {
                         <div className="relative flex-shrink-0 transition-all duration-700 group-hover:scale-110 group-hover:rotate-[5deg]">
                             <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
                             <div className="relative w-11 h-11 rounded-full flex items-center justify-center p-[2px] overflow-hidden" 
-                                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
+                                 style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
                                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
                                     <MaqassLogoIcon size={32} />
                                 </div>

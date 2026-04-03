@@ -29,9 +29,6 @@ try {
     ");
 } catch (Exception $e) { /* ignore */ }
 
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/';
-
 // ── GET: List items ──
 if (getMethod() === 'GET') {
     $stmt = $pdo->prepare("
@@ -44,7 +41,7 @@ if (getMethod() === 'GET') {
     $items = $stmt->fetchAll();
 
     foreach ($items as &$item) {
-        $item['url'] = $baseUrl . $item['file_path'];
+        $item['url'] = $item['file_path'];
     }
     unset($item);
 

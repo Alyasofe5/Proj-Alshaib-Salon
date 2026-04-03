@@ -1,5 +1,5 @@
 export interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; video?: string | null; }
-export interface Employee { id: number; name: string; avatar?: string; role?: string; }
+export interface Employee { id: number; name: string; avatar?: string; role?: string; specialty?: string; }
 export interface SalonInfo {
     name: string; slug: string; logo: string | null; phone: string | null;
     description: string; secondary_description?: string; address: string; instagram: string;
@@ -33,6 +33,8 @@ export interface SalonInfo {
         stats_experts?: string;
         faq_title?: string;
         faq_subtitle?: string;
+        discount_active?: number;
+        discount_percentage?: string;
     }
 
 export interface BookingSel {
@@ -46,6 +48,8 @@ export interface BookingSel {
 }
 
 export const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+export const dayNamesEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-export const fmt12 = (t: string) => { const [h, m] = t.split(":").map(Number); const displayH = h % 12 === 0 ? 12 : h % 12; const ampm = h >= 12 ? "م" : "ص"; return `${displayH}:${String(m).padStart(2, "0")} ${ampm}`; };
+export const monthNamesEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const fmt12 = (t: string, lang?: string) => { const [h, m] = t.split(":").map(Number); const displayH = h % 12 === 0 ? 12 : h % 12; const isAm = h < 12; const ampm = lang === 'en' ? (isAm ? "AM" : "PM") : (isAm ? "ص" : "م"); return `${displayH}:${String(m).padStart(2, "0")} ${ampm}`; };
 export const API = process.env.NEXT_PUBLIC_API_URL || "/api";

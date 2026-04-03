@@ -184,16 +184,16 @@ export default function LandingPage() {
 
               <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                 style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
-                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
+                <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "var(--bg-dark)" }}>
                   <Image
-                    src="/images/logo_black_bg.png"
+                    src="/images/logo_new.png"
                     alt="Maqass Logo"
                     width={128}
                     height={128}
                     priority
                     quality={100}
                     sizes="(max-width: 768px) 96px, 112px"
-                    className="w-full h-full object-contain rounded-full"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </div>
               </div>
@@ -736,16 +736,16 @@ export default function LandingPage() {
                   <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
                   <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                     style={{ background: "linear-gradient(135deg, var(--color-accent) 0%, rgba(195,216,9,0.1) 100%)" }}>
-                    <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
+                    <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "var(--bg-dark)" }}>
                       <Image
-                        src="/images/logo_black_bg.png"
+                        src="/images/logo_new.png"
                         alt="Maqass Logo"
                         width={128}
                         height={128}
                         loading="lazy"
                         quality={100}
                         sizes="(max-width: 768px) 96px, 112px"
-                        className="w-full h-full object-contain rounded-full"
+                        className="w-full h-full object-cover rounded-full"
                       />
                     </div>
                   </div>

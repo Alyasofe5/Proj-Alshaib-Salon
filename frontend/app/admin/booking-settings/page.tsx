@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp } from "react-icons/fa";
-import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles } from "lucide-react";
+import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
@@ -78,6 +78,9 @@ interface SalonSettings {
     stats_years: string;
     stats_clients: string;
     stats_experts: string;
+    // Discount fields
+    discount_active: number;
+    discount_percentage: string;
 }
 
 interface FaqItem { id: string; question: string; answer: string; order: number; }
@@ -143,6 +146,13 @@ export default function BookingSettingsPage() {
     const [deleting, setDeleting] = useState(false);
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
     const [galleryUploading, setGalleryUploading] = useState(false);
+    const galleryRef = useRef<HTMLDivElement>(null);
+
+    const scrollGallery = (dir: 'l' | 'r') => {
+        if (!galleryRef.current) return;
+        const amt = 320;
+        galleryRef.current.scrollBy({ left: dir === 'r' ? amt : -amt, behavior: 'smooth' });
+    };
 
     // ── Employees (Barbers) state ──
     const [employees, setEmployees] = useState<EmployeeItem[]>([]);
@@ -286,7 +296,7 @@ export default function BookingSettingsPage() {
         setAddingEmp(true);
         try {
             await axios.post(`${API_BASE}/employees`,
-                { name: newEmpName.trim(), phone: newEmpPhone.trim() },
+                { name: newEmpName.trim(), phone: newEmpPhone.trim(), specialty: newEmpSpecialty.trim() },
                 { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
             );
             setNewEmpName(""); setNewEmpPhone(""); setNewEmpSpecialty(""); setShowAddEmp(false);
@@ -417,7 +427,19 @@ export default function BookingSettingsPage() {
             });
 
             if (res.data.success) {
-                await loadData();
+                // Merge saved_data from server with current settings to preserve all fields
+                // (especially discount_active which old server may not return)
+                const savedData = res.data.data?.saved_data || {};
+                const finalDiscountActive = settings.discount_active;
+                const finalDiscountPercentage = settings.discount_percentage;
+                
+                setSettings(prev => prev ? {
+                    ...prev,
+                    ...savedData,
+                    // Always keep what user had set in UI for these fields
+                    discount_active: finalDiscountActive,
+                    discount_percentage: finalDiscountPercentage,
+                } : prev);
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2500);
             }
@@ -748,9 +770,9 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">معلومات الصالون الأساسية</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField label="اسم الصالون" value={settings.name} onChange={v => setSettings({ ...settings, name: v })} gold={gold} />
+                            <BilingualInput label="اسم الصالون" value={settings.name} onChange={v => setSettings({ ...settings, name: v })} gold={gold} placeholderAr="اسم الصالون" placeholderEn="Salon Name" />
                             <InputField label="رقم الهاتف" value={settings.owner_phone} onChange={v => setSettings({ ...settings, owner_phone: v })} gold={gold} />
-                            <InputField label="العنوان" value={settings.address} onChange={v => setSettings({ ...settings, address: v })} gold={gold} />
+                            <BilingualInput label="العنوان" value={settings.address} onChange={v => setSettings({ ...settings, address: v })} gold={gold} placeholderAr="مثال: عمان، شارع الرينبو" placeholderEn="e.g. Amman, Rainbow St" />
                             <InputField label="انستقرام" value={settings.instagram} onChange={v => setSettings({ ...settings, instagram: v })} gold={gold} placeholder="@username" />
                             <InputField label="واتساب (اختياري)" value={settings.whatsapp} onChange={v => setSettings({ ...settings, whatsapp: v })} gold={gold} placeholder="00962..." />
                             <InputField label="فيسبوك (اختياري)" value={settings.facebook} onChange={v => setSettings({ ...settings, facebook: v })} gold={gold} placeholder="facebook.com/..." />
@@ -774,28 +796,67 @@ export default function BookingSettingsPage() {
                             </p>
                         </div>
 
-                        <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
-                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون الرئيسي (يظهر في الواجهة العليا)</label>
-                            <textarea value={settings.description ?? ""} onChange={e => setSettings({ ...settings, description: e.target.value })} rows={4}
-                                className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
-                                style={{ border: "1.5px solid var(--border-subtle)" }}
-                                placeholder="اكتب وصفاً مختصراً عن الصالون والخدمات..." />
+                        {/* --- Discount Section --- */}
+                        <div className="mt-8 pt-8 border-t border-white/5">
+                             <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent-lime/10 text-accent-lime">
+                                    <Sparkles size={14} />
+                                </div>
+                                <h3 className="text-sm font-bold">إعدادات عرض الخصم للموقع</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-bold text-[var(--color-text-muted)] block uppercase tracking-wider">الخصم للعملاء الجدد</label>
+                                    <select 
+                                        value={Number(settings.discount_active) === 1 ? "1" : "0"} 
+                                        onChange={e => setSettings({ ...settings, discount_active: e.target.value === "1" ? 1 : 0 })}
+                                        className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all focus:border-[var(--color-accent)]"
+                                        style={{ border: "1.5px solid var(--border-subtle)" }}
+                                    >
+                                        <option value="1">مفعل (يظهر في الموقع)</option>
+                                        <option value="0">غير مفعل (مخفي)</option>
+                                    </select>
+                                </div>
+                                <InputField label="نسبة الخصم (%)" type="number" value={settings.discount_percentage ?? "30"} onChange={v => setSettings({ ...settings, discount_percentage: v })} gold={gold} placeholder="مثال: 30" />
+
+                            </div>
+                            <p className="mt-4 text-[10px] text-[var(--color-text-muted)] italic leading-relaxed">
+                                نسبة الخصم للزوار الجدد (يظهر في أسفل الصفحة الرئيسية). اختر "غير مفعل" لإخفائه تماماً.
+                            </p>
                         </div>
+
                         <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
-                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف الصالون الفرعي (يظهر في أسفل الصفحة - Footer)</label>
-                            <textarea value={settings.secondary_description ?? ""} onChange={e => setSettings({ ...settings, secondary_description: e.target.value })} rows={3}
-                                className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
-                                style={{ border: "1.5px solid var(--border-subtle)" }}
-                                placeholder="اكتب وصفاً موجزاً للفوتر..." />
+                            <BilingualTextArea 
+                                label="وصف الصالون الرئيسي (يظهر في الواجهة العليا)" 
+                                value={settings.description} 
+                                onChange={v => setSettings({ ...settings, description: v })} 
+                                gold={gold} 
+                                placeholderAr="اكتب وصفاً مختصراً..." 
+                                placeholderEn="Write a brief description..." 
+                                rows={4} 
+                            />
                         </div>
+
+                        <div className="mt-6 pt-6 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+                            <BilingualTextArea 
+                                label="وصف الصالون الفرعي (يظهر في أسفل الصفحة - Footer)" 
+                                value={settings.secondary_description} 
+                                onChange={v => setSettings({ ...settings, secondary_description: v })} 
+                                gold={gold} 
+                                placeholderAr="اكتب وصفاً موجزاً للفوتر..." 
+                                placeholderEn="Footer description in English..." 
+                                rows={3} 
+                            />
+                        </div>
+
                         <div className="mt-6">
-                            <InputField label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholder="مثال: شكراً لحجزك في صالوننا! سننتظرك في الموعد." />
+                            <BilingualInput label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholderAr="مثال: شكراً لحجزك! سننتظرك في الموعد." placeholderEn="e.g. Thanks for booking! See you soon." />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t border-white/5">
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم المعرض</h3>
-                                <InputField label="عنوان المعرض الصغير" value={settings.gallery_subtitle} onChange={v => setSettings({ ...settings, gallery_subtitle: v })} gold={gold} />
-                                <InputField label="عنوان المعرض الكبير" value={settings.gallery_title} onChange={v => setSettings({ ...settings, gallery_title: v })} gold={gold} />
+                                <BilingualInput label="عنوان المعرض الصغير" value={settings.gallery_subtitle} onChange={v => setSettings({ ...settings, gallery_subtitle: v })} gold={gold} placeholderAr="الصور والفيديو" placeholderEn="Visual Gallery" />
+                                <BilingualInput label="عنوان المعرض الكبير" value={settings.gallery_title} onChange={v => setSettings({ ...settings, gallery_title: v })} gold={gold} placeholderAr="فلسفة المظهر" placeholderEn="Style Philosophy" />
                             </div>
                             <div className="rounded-2xl p-5 flex items-center justify-center text-center text-xs leading-7 text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--border-subtle)]">
                                 تظهر هذه الحقول مباشرة فوق معرض الصور والفيديو في صفحة الحجز العامة.
@@ -821,10 +882,20 @@ export default function BookingSettingsPage() {
                                 لا توجد عناصر في المعرض بعد. ارفع صورًا أو فيديوهات لتظهر في صفحة الحجز.
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {galleryItems.map((item, idx) => (
-                                    <div key={item.id} className="rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--color-surface)]">
-                                        <div className="aspect-[4/3] bg-black/20">
+                            <div className="relative group/gal px-2">
+                                {/* Left Arrow */}
+                                <button 
+                                    type="button"
+                                    onClick={() => scrollGallery('l')}
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--color-background)]/80 backdrop-blur-md border border-[var(--border-subtle)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/50 transition-all opacity-0 group-hover/gal:opacity-100 hidden sm:flex shadow-lg"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+
+                                <div ref={galleryRef} className="flex overflow-x-auto gap-4 pb-6 no-scrollbar px-2 px-2 scroll-smooth">
+                                    {galleryItems.map((item, idx) => (
+                                    <div key={item.id} className="w-40 flex-shrink-0 rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--color-surface)] transition-all hover:border-[var(--color-accent)]/50">
+                                        <div className="aspect-square bg-black/20 relative">
                                             {item.file_type === "video" ? (
                                                 <video src={item.url} controls playsInline className="w-full h-full object-cover" />
                                             ) : (
@@ -847,7 +918,17 @@ export default function BookingSettingsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                    ))}
+                                </div>
+
+                                {/* Right Arrow */}
+                                <button 
+                                    type="button"
+                                    onClick={() => scrollGallery('r')}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--color-background)]/80 backdrop-blur-md border border-[var(--border-subtle)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/50 transition-all opacity-0 group-hover/gal:opacity-100 hidden sm:flex shadow-lg"
+                                >
+                                    <ChevronRight size={20} />
+                                </button>
                             </div>
                         )}
                     </div>
@@ -928,9 +1009,9 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">نصوص الواجهة الرئيسية (Hero)</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField label="العنوان الصغير (أعلى الهيدر)" value={settings.hero_subtitle} onChange={v => setSettings({ ...settings, hero_subtitle: v })} gold={gold} placeholder="مثال: تأسس ٢٠٢٤ -- صالون فاخر" />
+                            <BilingualInput label="العنوان الصغير (أعلى الهيدر)" value={settings.hero_subtitle} onChange={v => setSettings({ ...settings, hero_subtitle: v })} gold={gold} placeholderAr="مثال: تأسس ٢٠٢٤ -- صالون فاخر" placeholderEn="Est. 2024 — Luxury Barber" />
                             <div className="md:col-span-2">
-                                <InputField label="العنوان الرئيسي للموقع" value={settings.hero_title} onChange={v => setSettings({ ...settings, hero_title: v })} gold={gold} placeholder="مثال: أين يلتقي الإبداع بالأناقة" />
+                                <BilingualInput label="العنوان الرئيسي للموقع" value={settings.hero_title} onChange={v => setSettings({ ...settings, hero_title: v })} gold={gold} placeholderAr="مثال: أين يلتقي الإبداع بالأناقة" placeholderEn="Where Craft Meets Elegance" />
                             </div>
                         </div>
                     </div>
@@ -944,15 +1025,20 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">قسم "قصتنا" (About)</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField label="عنوان القسم الصغير" value={settings.about_subtitle} onChange={v => setSettings({ ...settings, about_subtitle: v })} gold={gold} placeholder="لمسة من الإبداع" />
-                            <InputField label="العنوان الرئيسي للقسم" value={settings.about_title} onChange={v => setSettings({ ...settings, about_title: v })} gold={gold} placeholder="قصتنا" />
+                            <BilingualInput label="عنوان القسم الصغير" value={settings.about_subtitle} onChange={v => setSettings({ ...settings, about_subtitle: v })} gold={gold} placeholderAr="لمسة من الإبداع" placeholderEn="A Touch of Craft" />
+                            <BilingualInput label="العنوان الرئيسي للقسم" value={settings.about_title} onChange={v => setSettings({ ...settings, about_title: v })} gold={gold} placeholderAr="قصتنا" placeholderEn="Our Story" />
                             <div className="md:col-span-2">
-                                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">وصف القسم (قصة الصالون)</label>
-                                <textarea value={settings.about_description ?? ""} onChange={e => setSettings({ ...settings, about_description: e.target.value })} rows={5}
-                                    className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
-                                    style={{ border: "1.5px solid var(--border-subtle)" }}
-                                    placeholder="اكتب تاريخ الصالون ورجال الأعمال العاملين فيه..." />
+                                <BilingualTextArea 
+                                    label="وصف القسم (قصة الصالون)" 
+                                    value={settings.about_description} 
+                                    onChange={v => setSettings({ ...settings, about_description: v })} 
+                                    gold={gold} 
+                                    placeholderAr="اكتب تاريخ الصالون..." 
+                                    placeholderEn="Write salon history..." 
+                                    rows={5} 
+                                />
                             </div>
+
                             <InputField label="رابط الصورة الرئيسية (اختياري)" value={settings.about_image_1} onChange={v => setSettings({ ...settings, about_image_1: v })} gold={gold} placeholder="https://..." />
                             <InputField label="رابط الصورة الفرعية (اختياري)" value={settings.about_image_2} onChange={v => setSettings({ ...settings, about_image_2: v })} gold={gold} placeholder="https://..." />
                         </div>
@@ -969,15 +1055,15 @@ export default function BookingSettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم الخدمات</h3>
-                                <InputField label="عنوان الخدمات الصغير" value={settings.services_subtitle} onChange={v => setSettings({ ...settings, services_subtitle: v })} gold={gold} />
-                                <InputField label="عنوان الخدمات الكبير" value={settings.services_title} onChange={v => setSettings({ ...settings, services_title: v })} gold={gold} />
-                                <InputField label="وصف قسم الخدمات" value={settings.services_description} onChange={v => setSettings({ ...settings, services_description: v })} gold={gold} />
+                                <BilingualInput label="عنوان الخدمات الصغير" value={settings.services_subtitle} onChange={v => setSettings({ ...settings, services_subtitle: v })} gold={gold} placeholderAr="خدمات" placeholderEn="Services" />
+                                <BilingualInput label="عنوان الخدمات الكبير" value={settings.services_title} onChange={v => setSettings({ ...settings, services_title: v })} gold={gold} placeholderAr="ما نقدمه" placeholderEn="What We Offer" />
+                                <BilingualInput label="وصف قسم الخدمات" value={settings.services_description} onChange={v => setSettings({ ...settings, services_description: v })} gold={gold} placeholderAr="اكتب وصفاً..." placeholderEn="Write description..." />
                             </div>
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم فريق العمل</h3>
-                                <InputField label="عنوان الفريق الصغير" value={settings.team_subtitle} onChange={v => setSettings({ ...settings, team_subtitle: v })} gold={gold} />
-                                <InputField label="عنوان الفريق الكبير" value={settings.team_title} onChange={v => setSettings({ ...settings, team_title: v })} gold={gold} />
-                                <InputField label="وصف قسم الفريق" value={settings.team_description} onChange={v => setSettings({ ...settings, team_description: v })} gold={gold} />
+                                <BilingualInput label="عنوان الفريق الصغير" value={settings.team_subtitle} onChange={v => setSettings({ ...settings, team_subtitle: v })} gold={gold} placeholderAr="فريقنا" placeholderEn="Our Team" />
+                                <BilingualInput label="عنوان الفريق الكبير" value={settings.team_title} onChange={v => setSettings({ ...settings, team_title: v })} gold={gold} placeholderAr="الخبراء" placeholderEn="The Experts" />
+                                <BilingualInput label="وصف قسم الفريق" value={settings.team_description} onChange={v => setSettings({ ...settings, team_description: v })} gold={gold} placeholderAr="اكتب وصفاً..." placeholderEn="Write description..." />
                             </div>
                         </div>
                     </div>
@@ -990,15 +1076,15 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">قسم آراء العملاء</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <InputField label="العنوان الصغير" value={settings.reviews_subtitle ?? ""} onChange={v => setSettings({ ...settings, reviews_subtitle: v })} gold={gold} />
-                            <InputField label="العنوان الكبير" value={settings.reviews_title ?? ""} onChange={v => setSettings({ ...settings, reviews_title: v })} gold={gold} />
+                            <BilingualInput label="العنوان الصغير" value={settings.reviews_subtitle ?? ""} onChange={v => setSettings({ ...settings, reviews_subtitle: v })} gold={gold} placeholderAr="آراء العملاء" placeholderEn="Client Reviews" />
+                            <BilingualInput label="العنوان الكبير" value={settings.reviews_title ?? ""} onChange={v => setSettings({ ...settings, reviews_title: v })} gold={gold} placeholderAr="ماذا يقولون" placeholderEn="What They Say" />
                         </div>
                         <div className="space-y-4">
                             {(settings.reviews ?? []).map((review, index) => (
                                 <div key={index} className="rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border-subtle)] space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <InputField label={`اسم العميل ${index + 1}`} value={review.customer_name} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, customer_name: v } : item) })} gold={gold} />
-                                        <InputField label="الصفة" value={review.role ?? ""} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, role: v } : item) })} gold={gold} />
+                                        <BilingualInput label={`اسم العميل ${index + 1}`} value={review.customer_name} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, customer_name: v } : item) })} gold={gold} placeholderAr="اسم العميل" placeholderEn="Client Name" />
+                                        <BilingualInput label="الصفة" value={review.role ?? ""} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, role: v } : item) })} gold={gold} placeholderAr="مثال: عميل موثق" placeholderEn="e.g. Verified Client" />
                                         <div>
                                             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">التقييم</label>
                                             <select value={review.rating ?? 5} onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, rating: Number(e.target.value) } : item) })}
@@ -1009,15 +1095,17 @@ export default function BookingSettingsPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">نص التقييم</label>
-                                        <textarea
-                                            value={review.comment}
-                                            onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, comment: e.target.value } : item) })}
-                                            rows={3}
-                                            className="w-full py-4 px-5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
-                                            style={{ border: "1.5px solid var(--border-subtle)" }}
+                                        <BilingualTextArea 
+                                            label="نص التقييم" 
+                                            value={review.comment} 
+                                            onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, comment: v } : item) })} 
+                                            gold={gold} 
+                                            placeholderAr="اكتب التقييم بالعربي..." 
+                                            placeholderEn="Write review in English..." 
+                                            rows={3} 
                                         />
                                     </div>
+
                                     <div className="flex justify-end">
                                         <button
                                             type="button"
@@ -1136,10 +1224,24 @@ export default function BookingSettingsPage() {
                                     className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
                                     <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>تفاصيل الخدمة الجديدة</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1.5 sm:col-span-1">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الخدمة</label>
-                                            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="مثال: حلاقة كلاسيكية"
-                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="relative">
+                                                    <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
+                                                    <input value={newName.includes("||") ? newName.split("||")[0].trim() : newName} 
+                                                        onChange={e => { const en = newName.includes("||") ? newName.split("||")[1]?.trim() ?? "" : ""; setNewName(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                        placeholder="حلاقة" dir="rtl"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
+                                                    <input value={newName.includes("||") ? newName.split("||")[1]?.trim() ?? "" : ""} 
+                                                        onChange={e => { const ar = newName.includes("||") ? newName.split("||")[0].trim() : newName; setNewName(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                        placeholder="Haircut" dir="ltr"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">السعر (د.أ)</label>
@@ -1217,22 +1319,55 @@ export default function BookingSettingsPage() {
                                     className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
                                     <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>بيانات الحلاق الجديد</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1.5 sm:col-span-1">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">اسم الحلاق</label>
-                                            <input value={newEmpName} onChange={e => setNewEmpName(e.target.value)} placeholder="الاسم الكامل"
-                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="relative">
+                                                    <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
+                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[0].trim() : newEmpName} 
+                                                        onChange={e => { const en = newEmpName.includes("||") ? newEmpName.split("||")[1]?.trim() ?? "" : ""; setNewEmpName(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                        placeholder="الاسم بالعربي" dir="rtl"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
+                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[1]?.trim() ?? "" : ""} 
+                                                        onChange={e => { const ar = newEmpName.includes("||") ? newEmpName.split("||")[0].trim() : newEmpName; setNewEmpName(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                        placeholder="Name in EN" dir="ltr"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1.5 sm:col-span-1">
                                             <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">رقم الهاتف (اختياري)</label>
                                             <input value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="07XXXXXXXX" dir="ltr"
-                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
+                                                className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-mono" />
+                                        </div>
+                                        <div className="space-y-1.5 sm:col-span-2">
+                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">التخصص / المسمى الوظيفي</label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="relative">
+                                                    <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
+                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0].trim() : newEmpSpecialty} 
+                                                        onChange={e => { const en = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1]?.trim() ?? "" : ""; setNewEmpSpecialty(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                        placeholder="مثال: حلاق محترف" dir="rtl"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
+                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1]?.trim() ?? "" : ""} 
+                                                        onChange={e => { const ar = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0].trim() : newEmpSpecialty; setNewEmpSpecialty(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                        placeholder="e.g. Master Barber" dir="ltr"
+                                                        className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 mt-6">
                                         <button onClick={addEmployee} disabled={addingEmp || !newEmpName.trim()} className="btn-lime min-w-[120px]">
                                             {addingEmp ? <div className="spinner-sm mx-auto" /> : "إضافة الحلاق"}
                                         </button>
-                                        <button onClick={() => { setShowAddEmp(false); setNewEmpName(""); setNewEmpPhone(""); }}
+                                        <button onClick={() => { setShowAddEmp(false); setNewEmpName(""); setNewEmpPhone(""); setNewEmpSpecialty(""); }}
                                             className="text-xs font-bold text-[var(--color-text-muted)] px-4 py-2 hover:bg-white/5 rounded-lg transition-all">إلغاء</button>
                                     </div>
                                 </motion.div>
@@ -1289,16 +1424,29 @@ export default function BookingSettingsPage() {
                                     className="p-6 rounded-2xl mb-8" style={{ background: "var(--color-background)", border: `1.5px solid ${gold}30` }}>
                                     <h3 className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: gold }}>سؤال وجواب جديد</h3>
                                     <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">السؤال</label>
-                                            <input value={newFaqQ} onChange={e => setNewFaqQ(e.target.value)} placeholder="مثال: هل توجد مواقف للسيارات؟"
-                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm font-bold" />
+                                        <div>
+                                            <BilingualInput 
+                                                label="السؤال" 
+                                                value={newFaqQ} 
+                                                onChange={v => setNewFaqQ(v)} 
+                                                gold={gold} 
+                                                placeholderAr="مثال: هل توجد مواقف للسيارات؟" 
+                                                placeholderEn="e.g. Is parking available?" 
+                                            />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mr-1">الإجابة</label>
-                                            <textarea value={newFaqA} onChange={e => setNewFaqA(e.target.value)} placeholder="اكتب الإجابة هنا بوضوح..." rows={3}
-                                                className="w-full py-3 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm resize-none" />
+
+                                        <div>
+                                            <BilingualTextArea 
+                                                label="الإجابة" 
+                                                value={newFaqA} 
+                                                onChange={v => setNewFaqA(v)} 
+                                                gold={gold} 
+                                                placeholderAr="اكتب الإجابة بالعربي..." 
+                                                placeholderEn="Write answer in English..." 
+                                                rows={3} 
+                                            />
                                         </div>
+
                                     </div>
                                     <div className="flex items-center gap-3 mt-6">
                                         <button onClick={addFaq} disabled={addingFaq || !newFaqQ.trim() || !newFaqA.trim()} className="btn-lime min-w-[120px]">
@@ -1324,10 +1472,29 @@ export default function BookingSettingsPage() {
                                         style={{ background: "var(--color-surface)", border: editingFaq === faq.id ? `1.5px solid ${gold}` : "1.5px solid var(--border-subtle)" }}>
                                         {editingFaq === faq.id ? (
                                             <div className="space-y-4">
-                                                <input value={editFaqQ} onChange={e => setEditFaqQ(e.target.value)}
-                                                    className="w-full bg-transparent border-b border-[var(--color-accent)] pb-2 text-sm font-bold outline-none" />
-                                                <textarea value={editFaqA} onChange={e => setEditFaqA(e.target.value)} rows={3}
-                                                    className="w-full bg-transparent border border-[var(--border-subtle)] p-3 rounded-lg text-sm outline-none resize-none" />
+                                                <div>
+                                                    <BilingualInput 
+                                                        label="السؤال" 
+                                                        value={editFaqQ} 
+                                                        onChange={v => setEditFaqQ(v)} 
+                                                        gold={gold} 
+                                                        placeholderAr="السؤال بالعربي" 
+                                                        placeholderEn="Question in English" 
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <BilingualTextArea 
+                                                        label="الإجابة" 
+                                                        value={editFaqA} 
+                                                        onChange={v => setEditFaqA(v)} 
+                                                        gold={gold} 
+                                                        placeholderAr="الإجابة بالعربي" 
+                                                        placeholderEn="Answer in English" 
+                                                        rows={3} 
+                                                    />
+                                                </div>
+
                                                 <div className="flex gap-2">
                                                     <button onClick={saveFaq} className="btn-lime h-8 px-4 text-[10px]">حفظ</button>
                                                     <button onClick={() => setEditingFaq(null)} className="text-[10px] font-bold px-3">إلغاء</button>
@@ -1338,9 +1505,17 @@ export default function BookingSettingsPage() {
                                                 <div className="flex-1">
                                                     <h3 className="text-sm font-bold mb-2 flex items-center gap-2">
                                                         <span className="text-[var(--color-accent)] font-mono text-xs opacity-40">Q.</span>
-                                                        {faq.question}
+                                                        {faq.question?.includes("||") ? faq.question.split("||")[0].trim() : faq.question}
+                                                        {faq.question?.includes("||") && faq.question.split("||")[1]?.trim() && (
+                                                            <span className="text-[9px] text-white/30 font-mono"> / {faq.question.split("||")[1].trim()}</span>
+                                                        )}
                                                     </h3>
-                                                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">{faq.answer}</p>
+                                                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                                                        {faq.answer?.includes("||") ? faq.answer.split("||")[0].trim() : faq.answer}
+                                                        {faq.answer?.includes("||") && faq.answer.split("||")[1]?.trim() && (
+                                                            <span className="block mt-1 text-[var(--color-text-muted)]/40 italic" dir="ltr">{faq.answer.split("||")[1].trim()}</span>
+                                                        )}
+                                                    </p>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => { setEditingFaq(faq.id); setEditFaqQ(faq.question); setEditFaqA(faq.answer); }}
@@ -1420,28 +1595,110 @@ export default function BookingSettingsPage() {
     );
 }
 
-function InputField({ label, value, onChange, gold, dir, placeholder }: {
-    label: string; value: string; onChange: (v: string) => void; gold: string; dir?: string; placeholder?: string;
+function InputField({ label, value, onChange, gold, dir, placeholder, type = "text" }: {
+    label: string; value: string; onChange: (v: string) => void; gold: string; dir?: string; placeholder?: string; type?: string;
 }) {
     return (
         <div>
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">{label}</label>
-            <input value={value ?? ""} onChange={e => onChange(e.target.value)} dir={dir} placeholder={placeholder}
-                className="w-full py-3.5 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none text-sm transition-all"
-                style={{ border: "1.5px solid var(--border-subtle)" }}
-                onFocus={e => {
-                    e.currentTarget.style.borderColor = gold;
-                    e.currentTarget.style.backgroundColor = "var(--color-background)";
+            <input value={value ?? ""} onChange={e => onChange(e.target.value)} dir={dir} placeholder={placeholder} type={type}
+                className="w-full py-3.5 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none text-sm transition-all focus:border-[var(--color-accent)] focus:bg-[var(--color-background)]"
+                style={{ 
+                    border: "1.5px solid var(--border-subtle)",
+                    transition: "all 0.2s ease"
                 }}
-                onBlur={e => {
-                    e.currentTarget.style.borderColor = "var(--border-subtle)";
-                    e.currentTarget.style.backgroundColor = "black";
-                }} />
+            />
         </div>
     );
 }
 
-/* ═══════ Service Row Component ═══════ */
+/* ═══════ Bilingual Input — supports ar||en format ═══════ */
+function BilingualInput({ label, value, onChange, gold, placeholderAr, placeholderEn, compact = false }: {
+    label?: string; value: string; onChange: (v: string) => void; gold: string; placeholderAr?: string; placeholderEn?: string; compact?: boolean;
+}) {
+    const hasDelimiter = value?.includes("||");
+    const arVal = hasDelimiter ? value.split("||")[0].trim() : (value ?? "");
+    const enVal = hasDelimiter ? value.split("||")[1]?.trim() ?? "" : "";
+
+    const handleAr = (v: string) => onChange(enVal ? `${v}||${enVal}` : v);
+    const handleEn = (v: string) => onChange(v ? `${arVal}||${v}` : arVal);
+
+    return (
+        <div className={compact ? "" : "w-full"}>
+            {label && <label className="text-xs font-bold text-[var(--color-text-muted)] mb-3 block uppercase tracking-wider">{label}</label>}
+            <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                    <span className={`absolute ${compact ? "top-1 right-2 text-[7px]" : "top-2 right-3 text-[9px]"} font-black tracking-widest text-white/20 z-10`}>AR</span>
+                    <input
+                        value={arVal}
+                        onChange={e => handleAr(e.target.value)}
+                        dir="rtl"
+                        placeholder={placeholderAr}
+                        className={`w-full ${compact ? "pt-3.5 pb-1 px-3 rounded-lg text-[12px]" : "pt-6 pb-3 px-4 rounded-xl text-sm"} bg-black text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-accent)]`}
+                        style={{ border: "1.5px solid var(--border-subtle)" }}
+                    />
+                </div>
+                <div className="relative">
+                    <span className={`absolute ${compact ? "top-1 left-2 text-[7px]" : "top-2 left-3 text-[9px]"} font-black tracking-widest z-10`} style={{ color: gold }}>EN</span>
+                    <input
+                        value={enVal}
+                        onChange={e => handleEn(e.target.value)}
+                        dir="ltr"
+                        placeholder={placeholderEn}
+                        className={`w-full ${compact ? "pt-3.5 pb-1 px-3 rounded-lg text-[12px]" : "pt-6 pb-3 px-4 rounded-xl text-sm"} bg-black text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-accent)]`}
+                        style={{ border: `1.5px solid ${enVal ? gold + "40" : "var(--border-subtle)"}` }}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════ Bilingual TextArea — supports ar||en format ═══════ */
+function BilingualTextArea({ label, value, onChange, gold, placeholderAr, placeholderEn, rows = 3 }: {
+    label?: string; value: string; onChange: (v: string) => void; gold: string; placeholderAr?: string; placeholderEn?: string; rows?: number;
+}) {
+    const hasDelimiter = value?.includes("||");
+    const arVal = hasDelimiter ? value.split("||")[0].trim() : (value ?? "");
+    const enVal = hasDelimiter ? value.split("||")[1]?.trim() ?? "" : "";
+
+    const handleAr = (v: string) => onChange(enVal ? `${v}||${enVal}` : v);
+    const handleEn = (v: string) => onChange(v ? `${arVal}||${v}` : arVal);
+
+    return (
+        <div className="w-full">
+            {label && <label className="text-xs font-bold text-[var(--color-text-muted)] mb-3 block uppercase tracking-wider">{label}</label>}
+            <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                    <span className="absolute top-2 right-3 text-[9px] font-black tracking-widest text-white/20 z-10">AR</span>
+                    <textarea
+                        value={arVal}
+                        onChange={e => handleAr(e.target.value)}
+                        dir="rtl"
+                        rows={rows}
+                        placeholder={placeholderAr}
+                        className="w-full pt-6 pb-3 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                        style={{ border: "1.5px solid var(--border-subtle)" }}
+                    />
+                </div>
+                <div className="relative">
+                    <span className="absolute top-2 left-3 text-[9px] font-black tracking-widest z-10" style={{ color: gold }}>EN</span>
+                    <textarea
+                        value={enVal}
+                        onChange={e => handleEn(e.target.value)}
+                        dir="ltr"
+                        rows={rows}
+                        placeholder={placeholderEn}
+                        className="w-full pt-6 pb-3 px-4 rounded-xl bg-black text-[var(--color-text-primary)] outline-none resize-none text-sm transition-all focus:border-[var(--color-accent)]"
+                        style={{ border: `1.5px solid ${enVal ? gold + "40" : "var(--border-subtle)"}` }}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* Service Row Component */
 function ServiceRow({ service, isEditing, editName, editPrice, editDuration, onEditName, onEditPrice, onEditDuration, onStartEdit, onCancelEdit, onSaveEdit, savingEdit, uploading, onImageUpload, onVideoUpload, onDeleteVideo, onToggle, onDelete, gold, baseUrl }: {
     service: ServiceItem; isEditing: boolean; editName: string; editPrice: string; editDuration: string;
     onEditName: (v: string) => void; onEditPrice: (v: string) => void; onEditDuration: (v: string) => void;
@@ -1453,7 +1710,6 @@ function ServiceRow({ service, isEditing, editName, editPrice, editDuration, onE
     const inputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
 
-    // Fallback images for services without custom uploads (same mapping as booking page)
     const fallbackImages: Record<string, string> = {
         'حلاقة': '/services/haircut.webp',
         'قص شعر فاشن': '/services/haircut.webp',
@@ -1468,123 +1724,95 @@ function ServiceRow({ service, isEditing, editName, editPrice, editDuration, onE
     const videoUrl = assetUrl(service.video_path || null);
 
     return (
-        <>
-        <div className={`rounded-2xl p-3 md:p-4 flex flex-row items-center gap-3 md:gap-4 transition-all ${!service.is_active ? "opacity-40" : ""}`}
-            style={{ background: "var(--color-cards)", border: isEditing ? `1px solid ${gold}40` : "1px solid var(--border-subtle)" }}>
+        <div className={`rounded-2xl p-4 flex flex-col gap-4 transition-all ${!service.is_active ? "opacity-50" : ""}`}
+            style={{ background: "var(--color-cards)", border: isEditing ? `1.1px solid ${gold}50` : "1px solid var(--border-subtle)" }}>
+            
+            <div className="flex items-start gap-4">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group bg-black/40 border border-white/5"
+                    onClick={() => !uploading && inputRef.current?.click()}>
+                    <img src={imageUrl} alt="" className="w-full h-full object-cover group-hover:opacity-30 transition-opacity" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <FaCamera className="text-white" size={14} />
+                    </div>
+                </div>
 
-            {/* Image Thumbnail */}
-            <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group bg-card-dark"
-                onClick={() => !uploading && inputRef.current?.click()}>
-                <img
-                    src={imageUrl}
-                    alt={service.name}
-                    className="w-full h-full object-cover group-hover:opacity-40 transition-opacity"
-                    onError={(e) => {
-                        // If the uploaded image 404s, fall back to default
-                        const fallback = fallbackImages[service.name] || defaultImg;
-                        if ((e.target as HTMLImageElement).src !== fallback) {
-                            (e.target as HTMLImageElement).src = fallback;
-                        }
-                    }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
-                    {uploading ? (
-                        <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                        <div className="flex flex-col gap-3">
+                            <BilingualInput value={editName} onChange={onEditName} gold={gold} compact />
+                            <div className="grid grid-cols-2 gap-2">
+                                <input value={editPrice} onChange={e => onEditPrice(e.target.value)} type="number" step="0.01" dir="ltr"
+                                    className="w-full py-2 px-3 rounded-lg bg-black text-[var(--color-text-primary)] outline-none text-sm border border-white/10" />
+                                <input value={editDuration} onChange={e => onEditDuration(e.target.value)} type="number" min="1" dir="ltr"
+                                    className="w-full py-2 px-3 rounded-lg bg-black text-[var(--color-text-primary)] outline-none text-sm border border-white/10" />
+                            </div>
+                        </div>
                     ) : (
-                        <FaCamera className="text-[var(--color-text-primary)]" size={12} />
+                        <div className="py-0.5">
+                            <h3 className="font-bold text-[15px] truncate text-[var(--color-text-primary)]">
+                                {service.name?.includes("||") ? service.name.split("||")[0].trim() : service.name}
+                                {service.name?.includes("||") && service.name.split("||")[1]?.trim() && (
+                                    <span className="text-[10px] text-white/30 font-mono ml-2 lowercase">/ {service.name.split("||")[1].trim()}</span>
+                                )}
+                            </h3>
+                            <div className="flex items-center gap-3 mt-1.5">
+                                <span className="text-sm font-black" style={{ color: gold }}>{Number(service.price).toFixed(2)} د.أ</span>
+                                <span className="w-1 h-1 rounded-full bg-white/10" />
+                                <span className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-widest">{service.duration_minutes} MINS</span>
+                            </div>
+                        </div>
                     )}
                 </div>
-                <input ref={inputRef} type="file" accept="image/*" className="hidden"
-                    onChange={e => { const f = e.target.files?.[0]; if (f) onImageUpload(f); e.target.value = ""; }} />
+
+                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    {isEditing ? (
+                        <>
+                            <button onClick={onSaveEdit} disabled={savingEdit} className="w-9 h-9 rounded-xl flex items-center justify-center bg-lime-500/10 text-lime-400 border border-lime-500/20">
+                                {savingEdit ? <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <FaCheck size={14} />}
+                            </button>
+                            <button onClick={onCancelEdit} className="w-9 h-9 rounded-xl flex items-center justify-center text-white/20 hover:text-white bg-white/5 border border-white/10">
+                                <FaTimes size={14} />
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button onClick={onStartEdit} title="تعديل" className="w-8 h-8 rounded-lg flex items-center justify-center text-white/20 hover:text-white transition-all">
+                                <FaPen size={11} />
+                            </button>
+                            <button onClick={onToggle} title={service.is_active ? "تعطيل" : "تفعيل"} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${service.is_active ? "text-emerald-400 bg-emerald-400/5" : "text-red-400 bg-red-400/5"}`}>
+                                {service.is_active ? <FaEye size={11} /> : <FaEyeSlash size={11} />}
+                            </button>
+                            <button onClick={onDelete} title="حذف" className="w-8 h-8 rounded-lg flex items-center justify-center text-white/10 hover:text-red-400 transition-all">
+                                <FaTrash size={11} />
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
-            {/* Name & Price */}
-            <div className="flex-1 min-w-0">
-                {isEditing ? (
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <input value={editName} onChange={e => onEditName(e.target.value)} autoFocus
-                            className="flex-1 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
-                            style={{ border: `1px solid ${gold}30` }}
-                            onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
-                        <input value={editDuration} onChange={e => onEditDuration(e.target.value)} type="number" min="1" dir="ltr" placeholder="30"
-                            className="w-24 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm text-center"
-                            style={{ border: `1px solid ${gold}30` }}
-                            onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
-                        <input value={editPrice} onChange={e => onEditPrice(e.target.value)} type="number" step="0.01" dir="ltr"
-                            className="w-24 py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm text-center"
-                            style={{ border: `1px solid ${gold}30` }}
-                            onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
-                    </div>
-                ) : (
-                    <div>
-                        <p className="text-sm font-bold truncate">{service.name}</p>
-                        <p className="text-xs mt-1" style={{ color: gold }}>{Number(service.price).toFixed(2)} د.أ</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-                {isEditing ? (
-                    <>
-                        <button onClick={onSaveEdit} disabled={savingEdit}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50"
-                            style={{ background: `${gold}15`, color: gold }}>
-                            <FaSave size={12} />
-                        </button>
-                        <button onClick={onCancelEdit}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
-                            <FaTimes size={12} />
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button onClick={onStartEdit} title="تعديل"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/20 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
-                            <FaPen size={10} />
-                        </button>
-                        <button onClick={onToggle} title={service.is_active ? "تعطيل" : "تفعيل"}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs font-bold ${service.is_active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-white/5 text-[var(--color-text-primary)]/30 hover:bg-white/10"}`}>
-                            {service.is_active ? "✓" : "○"}
-                        </button>
-                        <button onClick={onDelete} title="حذف"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-primary)]/15 hover:text-red-400 hover:bg-red-500/10 transition-all">
-                            <FaTrash size={10} />
-                        </button>
-                    </>
-                )}
-            </div>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-                <button type="button" onClick={() => !uploading && inputRef.current?.click()}
-                    className="h-8 px-3 rounded-lg text-[11px] font-bold transition-all"
-                    style={{ background: `${gold}12`, color: gold, border: `1px solid ${gold}25` }}>
-                    صورة
-                </button>
-                <button type="button" onClick={() => !uploading && videoInputRef.current?.click()}
-                    className="h-8 px-3 rounded-lg text-[11px] font-bold transition-all bg-white/5 text-[var(--color-text-primary)] border border-[var(--border-subtle)]">
-                    فيديو
+            <div className="pt-3 border-t border-white/5 flex items-center gap-3">
+                <button type="button" onClick={() => !uploading && videoInputRef.current?.click()} className="text-[10px] uppercase font-bold tracking-widest text-white/30 hover:text-white">
+                    Video {service.video_path ? "✓" : "+"}
                 </button>
                 {videoUrl && (
-                    <button type="button" onClick={onDeleteVideo}
-                        className="h-8 px-3 rounded-lg text-[11px] font-bold text-red-400 hover:bg-red-500/10 transition-all">
-                        حذف الفيديو
+                    <button type="button" onClick={onDeleteVideo} className="text-[10px] uppercase font-bold tracking-widest text-red-500/40 hover:text-red-500">
+                        Remove
                     </button>
                 )}
-                <input ref={videoInputRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden"
-                    onChange={e => { const f = e.target.files?.[0]; if (f) onVideoUpload(f); e.target.value = ""; }} />
             </div>
+            
+            {videoUrl && (
+                <div className="mt-1 rounded-xl overflow-hidden bg-black/40 border border-white/5">
+                    <video src={videoUrl} controls playsInline className="w-full max-h-48 object-cover opacity-60" />
+                </div>
+            )}
+            
+            <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onImageUpload(f); e.target.value=""; }} />
+            <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onVideoUpload(f); e.target.value=""; }} />
         </div>
-        {videoUrl && (
-            <div className="mt-4 rounded-xl overflow-hidden border border-white/5 bg-black/20">
-                <video src={videoUrl} controls playsInline className="w-full max-h-56 object-cover" />
-            </div>
-        )}
-        </>
     );
 }
-
-/* ═══════ Employee Card Component ═══════ */
+/* Employee Card Component */
 function EmployeeCard({
     emp, isEditing, editName, editPhone, editSpecialty,
     onEditName, onEditPhone, onEditSpecialty,
@@ -1601,7 +1829,8 @@ function EmployeeCard({
 }) {
     const photoRef = useRef<HTMLInputElement>(null);
 
-    const initials = emp.name
+    const displayNameAr = emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name;
+    const initials = (displayNameAr || "??")
         .split(" ")
         .map(w => w[0])
         .slice(0, 2)
@@ -1611,105 +1840,85 @@ function EmployeeCard({
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.97 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="rounded-2xl p-5 flex flex-col gap-5 transition-all"
             style={{
                 background: "var(--color-cards)",
-                border: isEditing ? `1.5px solid ${gold}50` : "1px solid rgba(195,216,9,.15)",
-                boxShadow: isEditing ? `0 0 0 3px ${gold}10` : "none",
+                border: isEditing ? `1.5px solid ${gold}50` : "1px solid rgba(195,216,9,.1)",
+                boxShadow: isEditing ? `0 8px 30px ${gold}10` : "none",
             }}
         >
-            {/* Photo + Name Row */}
-            <div className="flex items-center gap-4">
-                {/* Avatar / Photo Upload */}
-                <div className="relative group cursor-pointer flex-shrink-0"
-                    onClick={() => !uploading && photoRef.current?.click()}>
-                    <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center bg-[#0d0d0d] shadow-lg"
-                        style={{ border: `2.5px solid ${assetUrl(emp.photo_path) ? `${gold}40` : "var(--border-subtle)"}` }}>
+            <div className="flex items-center gap-5">
+                <div className="relative flex-shrink-0 group cursor-pointer" onClick={() => !uploading && photoRef.current?.click()}>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-white/5 bg-black/40 flex items-center justify-center">
                         {uploading ? (
-                            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                                style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+                            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: gold }} />
                         ) : assetUrl(emp.photo_path) ? (
-                            <img src={assetUrl(emp.photo_path)!} alt={emp.name}
-                                className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                            <img src={assetUrl(emp.photo_path)!} alt="" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
                         ) : (
                             <span className="text-xl font-black" style={{ color: gold }}>{initials}</span>
                         )}
                     </div>
-                    {/* Hover overlay */}
-                    {!uploading && (
-                        <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
-                            <FaCamera className="text-[var(--color-text-primary)]" size={13} />
-                        </div>
-                    )}
-                    <input ref={photoRef} type="file" accept="image/*" className="hidden"
-                        onChange={e => { const f = e.target.files?.[0]; if (f) onPhotoUpload(f); e.target.value = ""; }} />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-full">
+                        <FaCamera className="text-white" size={14} />
+                    </div>
+                    <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onPhotoUpload(f); e.target.value=""; }} />
                 </div>
 
-                {/* Name & Specialty */}
                 <div className="flex-1 min-w-0">
                     {isEditing ? (
-                        <div className="space-y-2">
-                            <input value={editName} onChange={e => onEditName(e.target.value)} autoFocus
-                                placeholder="اسم الحلاق"
-                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
-                                style={{ border: `1px solid ${gold}30` }}
-                                onKeyDown={e => e.key === "Enter" && onSaveEdit()} />
-                            <input value={editPhone} onChange={e => onEditPhone(e.target.value)}
-                                placeholder="الهاتف"
-                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
-                                style={{ border: `1px solid ${gold}20` }} />
-                            <input value={editSpecialty} onChange={e => onEditSpecialty(e.target.value)}
-                                placeholder="التخصص (مثال: حلاقة، لحية)"
-                                className="w-full py-2 px-3 rounded-lg bg-card-dark text-[var(--color-text-primary)] outline-none text-sm"
-                                style={{ border: `1px solid ${gold}20` }} />
+                        <div className="flex flex-col gap-3">
+                            <BilingualInput value={editName} onChange={onEditName} gold={gold} compact />
+                            <div className="relative">
+                                <span className="absolute top-1 left-2 text-[7px] text-white/30 font-bold uppercase">Phone</span>
+                                <input value={editPhone} onChange={e => onEditPhone(e.target.value)} placeholder="079..." dir="ltr"
+                                    className="w-full pt-4 pb-1.5 px-3 rounded-lg bg-black/40 text-[var(--color-text-primary)] outline-none text-xs border border-white/10" />
+                            </div>
+                            <BilingualInput value={editSpecialty} onChange={onEditSpecialty} gold={gold} placeholderAr="التخصص" compact />
                         </div>
                     ) : (
-                        <div>
-                            <p className="font-bold text-sm text-[var(--color-text-primary)] truncate">{emp.name}</p>
+                        <div className="space-y-1">
+                            <h4 className="font-bold text-sm text-white truncate">
+                                {emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name}
+                                {emp.name?.includes("||") && emp.name.split("||")[1]?.trim() && (
+                                    <span className="text-[10px] text-white/20 font-mono ml-2">/ {emp.name.split("||")[1].trim()}</span>
+                                )}
+                            </h4>
                             {emp.specialty && (
-                                <p className="text-xs mt-0.5" style={{ color: gold }}>{emp.specialty}</p>
+                                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: gold }}>
+                                    {emp.specialty.includes("||") ? emp.specialty.split("||")[0].trim() : emp.specialty}
+                                    {emp.specialty.includes("||") && emp.specialty.split("||")[1]?.trim() && (
+                                        <span className="opacity-40 ml-1">({emp.specialty.split("||")[1].trim()})</span>
+                                    )}
+                                </p>
                             )}
                             {emp.phone && (
-                                <p className="text-xs text-[var(--color-text-primary)]/30 mt-0.5 font-mono" dir="ltr">{emp.phone}</p>
-                            )}
-                            {!emp.specialty && !emp.phone && (
-                                <p className="text-xs text-[var(--color-text-primary)]/20 mt-0.5">اضغط تعديل لإضافة التفاصيل</p>
+                                <p className="text-[10px] text-white/30 font-mono" dir="ltr">{emp.phone}</p>
                             )}
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Actions Row */}
             <div className="flex items-center gap-2 pt-1 border-t border-white/5">
                 {isEditing ? (
                     <>
-                        <button onClick={onSaveEdit} disabled={savingEdit}
-                            className="flex-1 h-9 rounded-xl text-xs font-bold transition-all hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                            style={{ background: `${gold}15`, color: gold }}>
-                            <FaSave size={11} /> {savingEdit ? "جاري الحفظ..." : "حفظ"}
+                        <button onClick={onSaveEdit} disabled={savingEdit} className="flex-1 h-9 rounded-xl flex items-center justify-center gap-2 bg-lime-500/10 text-lime-400 border border-lime-500/20 font-bold text-xs">
+                            <FaSave size={12} /> {savingEdit ? "جار الحفظ" : "حفظ"}
                         </button>
-                        <button onClick={onCancelEdit}
-                            className="h-9 w-9 rounded-xl flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all">
+                        <button onClick={onCancelEdit} className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-white/40 border border-white/10">
                             <FaTimes size={12} />
                         </button>
                     </>
                 ) : (
                     <>
-                        <button onClick={onStartEdit}
-                            className="flex-1 h-9 rounded-xl text-xs font-bold transition-all hover:scale-105 flex items-center justify-center gap-1.5 text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:bg-white/5">
-                            <FaPen size={10} /> تعديل
+                        <button onClick={onStartEdit} className="flex-1 h-9 rounded-xl flex items-center justify-center gap-2 bg-white/5 text-white/40 hover:text-white transition-all font-bold text-xs">
+                            <FaPen size={11} /> تعديل
                         </button>
-                        <button onClick={() => photoRef.current?.click()} disabled={uploading}
-                            className="h-9 px-3 rounded-xl text-xs transition-all hover:scale-105 flex items-center justify-center gap-1.5 text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)] hover:bg-white/5">
-                            <FaCamera size={11} /> صورة
-                        </button>
-                        <button onClick={onDelete}
-                            className="h-9 w-9 rounded-xl flex items-center justify-center text-[var(--color-text-primary)]/15 hover:text-red-400 hover:bg-red-500/10 transition-all">
-                            <FaTrash size={10} />
+                        <button onClick={onDelete} className="h-9 w-9 rounded-xl flex items-center justify-center text-white/10 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                            <FaTrash size={11} />
                         </button>
                     </>
                 )}
@@ -1717,6 +1926,7 @@ function EmployeeCard({
         </motion.div>
     );
 }
+
 
 function TimePicker12({ label, value, onChange, gold }: {
     label: string; value: string; onChange: (v: string) => void; gold: string;

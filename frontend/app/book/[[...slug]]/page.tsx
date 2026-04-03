@@ -2,7 +2,13 @@ import BookingClient from "./BookingClient";
 
 export async function generateStaticParams() {
     // Return an empty slug to allow the default /book route
-    return [{ slug: [] }]; 
+    // Also include common slugs to prevent missing param errors during Next.js 'output: export'
+    return [
+        { slug: [] },
+        { slug: ['alshayeb'] },
+        { slug: ['alshaib'] },
+        { slug: ['alhasan'] }
+    ]; 
 }
 
 export default function BookingPage({ params }: { params: { slug?: string[] } }) {

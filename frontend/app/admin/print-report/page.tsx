@@ -464,47 +464,52 @@ export default function AdminPrintReportPage() {
                         margin-right: 0 !important;
                         padding: 0 !important;
                         width: 100% !important;
+                        background: #fff !important;
                     }
 
-                    .print-area { padding: 20px !important; }
+                    .print-area { 
+                        padding: 0 !important; 
+                        background: #fff !important; 
+                    }
 
                     /* Full page white background */
                     html, body {
                         background: #fff !important;
-                        color: var(--color-cards) !important;
+                        color: #000 !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
                     
-                    /* Override dark theme for print */
-                    .stat-card {
-                        background: #f9f9f9 !important;
-                        border: 1px solid #ddd !important;
-                        break-inside: avoid;
-                    }
-                    .custom-table {
-                        background: #fff !important;
-                        border: 1px solid #ddd !important;
-                    }
-                    .custom-table th {
-                        background: #C3D809 !important;
+                    /* Force everything to be readable black text on white paper */
+                    .print-area * {
                         color: #000 !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
+                        text-shadow: none !important;
                     }
-                    .custom-table td {
-                        color: #333 !important;
-                        border-bottom: 1px solid #eee !important;
+
+                    /* Remove any dark bg from cards or inner containers */
+                    .stat-card, .custom-table, .print-area div[style*="background"] {
+                        background: #fff !important;
+                        border-color: #ccc !important;
                     }
-                    .stat-value { color: var(--color-cards) !important; }
-                    .stat-label { color: #555 !important; }
-                    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    
+                    .custom-table th, .custom-table td {
+                        color: #000 !important;
+                        border-bottom: 1px solid #ccc !important;
+                        background: transparent !important;
+                    }
+
+                    /* Badges */
+                    .badge { 
+                        border: 1px solid #999 !important; 
+                        background: transparent !important; 
+                        color: #000 !important; 
+                    }
 
                     /* Remove page margins */
                     @page {
-                        margin: 8mm;
+                        margin: 10mm;
                         size: A4 portrait;
                     }
                 }

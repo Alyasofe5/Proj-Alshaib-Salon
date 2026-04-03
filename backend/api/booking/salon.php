@@ -36,37 +36,28 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https'
 $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/';
 $settingsData = !empty($salon['settings']) ? (json_decode($salon['settings'], true) ?: []) : [];
 
-$hasImagePath = false;
-$hasVideoPath = false;
-$hasDuration = false;
 try {
-    $cols = $pdo->query("SHOW COLUMNS FROM services")->fetchAll();
-    foreach ($cols as $col) {
-        if ($col['Field'] === 'image_path') $hasImagePath = true;
-        if ($col['Field'] === 'video_path') $hasVideoPath = true;
-        if ($col['Field'] === 'duration_minutes') $hasDuration = true;
-    }
+    $servicesStmt = $pdo->prepare("
+        SELECT id, name, price, image_path, video_path, duration_minutes
+        FROM services
+        WHERE salon_id = ? AND is_active = 1
+        ORDER BY created_at DESC, id DESC
+    ");
 } catch (Exception $e) {
-    // Ignore schema inspection errors.
+    // Fallback if schema doesn't have media columns yet
+    $servicesStmt = $pdo->prepare("
+        SELECT id, name, price
+        FROM services
+        WHERE salon_id = ? AND is_active = 1
+        ORDER BY created_at DESC, id DESC
+    ");
 }
-
-$selectFields = "id, name, price";
-if ($hasImagePath) $selectFields .= ", image_path";
-if ($hasVideoPath) $selectFields .= ", video_path";
-if ($hasDuration) $selectFields .= ", duration_minutes";
-
-$servicesStmt = $pdo->prepare("
-    SELECT $selectFields
-    FROM services
-    WHERE salon_id = ? AND is_active = 1
-    ORDER BY created_at DESC, id DESC
-");
 $servicesStmt->execute([$salonId]);
 $servicesList = $servicesStmt->fetchAll();
 
 foreach ($servicesList as &$service) {
-    $service['image'] = !empty($service['image_path']) ? $baseUrl . $service['image_path'] : null;
-    $service['video'] = !empty($service['video_path']) ? $baseUrl . $service['video_path'] : null;
+    $service['image'] = $service['image_path'] ?? null;
+    $service['video'] = $service['video_path'] ?? null;
     if (!isset($service['duration_minutes'])) $service['duration_minutes'] = null;
     unset($service['image_path'], $service['video_path']);
 }
@@ -86,7 +77,7 @@ $empStmt = $pdo->prepare("
 $empStmt->execute([$salonId]);
 $employeesList = $empStmt->fetchAll();
 foreach ($employeesList as &$emp) {
-    $emp['avatar'] = !empty($emp['photo_path']) ? $baseUrl . $emp['photo_path'] : null;
+    $emp['avatar'] = $emp['photo_path'] ?? null;
     $emp['role'] = $emp['specialty'] ?? null;
     unset($emp['photo_path'], $emp['specialty']);
 }
@@ -104,26 +95,18 @@ try {
     $galStmt->execute([$salonId]);
     $galleryItems = $galStmt->fetchAll();
     foreach ($galleryItems as &$item) {
-        $item['url'] = $baseUrl . $item['file_path'];
+        $item['url'] = $item['file_path'];
     }
     unset($item);
 } catch (Exception $e) {
     // Gallery table may not exist yet.
 }
 
-$logoUrl = !empty($salon['logo_path']) ? $baseUrl . $salon['logo_path'] : null;
-$heroImageUrl = !empty($settingsData['hero_image']) ? $baseUrl . $settingsData['hero_image'] : null;
-$heroVideoUrl = !empty($settingsData['hero_video']) ? $baseUrl . $settingsData['hero_video'] : null;
-$aboutImage1Url = !empty($settingsData['about_image_1'])
-    ? ((preg_match('/^https?:\/\//', $settingsData['about_image_1']) || strpos($settingsData['about_image_1'], '/') === 0)
-        ? $settingsData['about_image_1']
-        : $baseUrl . $settingsData['about_image_1'])
-    : null;
-$aboutImage2Url = !empty($settingsData['about_image_2'])
-    ? ((preg_match('/^https?:\/\//', $settingsData['about_image_2']) || strpos($settingsData['about_image_2'], '/') === 0)
-        ? $settingsData['about_image_2']
-        : $baseUrl . $settingsData['about_image_2'])
-    : null;
+$logoUrl = $salon['logo_path'] ?? null;
+$heroImageUrl = $settingsData['hero_image'] ?? null;
+$heroVideoUrl = $settingsData['hero_video'] ?? null;
+$aboutImage1Url = $settingsData['about_image_1'] ?? null;
+$aboutImage2Url = $settingsData['about_image_2'] ?? null;
 
 sendSuccess([
     'salon' => [
@@ -163,6 +146,8 @@ sendSuccess([
         'stats_years' => $settingsData['stats_years'] ?? '7+',
         'stats_clients' => $settingsData['stats_clients'] ?? '15K+',
         'stats_experts' => $settingsData['stats_experts'] ?? '6',
+        'discount_active' => $settingsData['discount_active'] ?? 0,
+        'discount_percentage' => $settingsData['discount_percentage'] ?? '30',
     ],
     'services' => $servicesList,
     'employees' => $employeesList,

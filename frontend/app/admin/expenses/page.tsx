@@ -104,7 +104,7 @@ export default function ExpensesPage() {
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     <StatCard icon={<FaArrowTrendUp />} value={summary?.total_income?.toFixed(3) || "0"} label="إجمالي الدخل (د.أ)" sub={`${summary?.transactions_count || 0} عملية`} color="green" />
                     <StatCard icon={<FaArrowTrendDown />} value={summary?.total_expenses?.toFixed(3) || "0"} label="إجمالي المصاريف (د.أ)" sub={`${expenses.length} بند`} color="red" />
-                    <StatCard icon={<FaCoins />} value={Math.abs(summary?.net_profit ?? 0).toFixed(3)} label={`صافي ${isProfit ? "الربح" : "الخسارة"} (د.أ)`} sub={isProfit ? "● ربح" : "● خسارة"} color={isProfit ? "gold" : "red"} />
+                    <StatCard icon={<FaCoins />} value={Math.abs(summary?.net_profit ?? 0).toFixed(3)} label={`صافي ${isProfit ? "الربح" : "الخسارة"} (د.أ)`} sub={isProfit ? "● ربح" : "● خسارة"} color={isProfit ? "green" : "red"} />
                     <StatCard icon={<FaPercent />} value={`${summary?.total_income ? Math.abs(Math.round(((summary?.net_profit ?? 0) / summary.total_income) * 100)) : 0}%`} label={`هامش ${isProfit ? "الربح" : "الخسارة"}`} sub="من إجمالي الدخل" color={isProfit ? "green" : "red"} />
                 </div>
 
@@ -118,8 +118,8 @@ export default function ExpensesPage() {
                                 <XAxis dataKey="month" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} />
                                 <YAxis orientation="right" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} width={30} />
                                 <Tooltip contentStyle={{ background: "var(--color-surface)", border: "1px solid #333", borderRadius: 8, direction: "rtl" }} />
-                                <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
-                                <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} cursor={false as unknown as undefined} />
+                                <Bar dataKey="income" fill="rgba(46,204,113,0.7)" name="الدخل" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="expenses" fill="rgba(231,76,60,0.7)" name="المصاريف" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

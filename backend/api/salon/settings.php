@@ -78,12 +78,14 @@ if (getMethod() === 'GET') {
         'team_description' => $settings['team_description'] ?? 'خبراء محترفون يجمعون بين المهارة والإبداع لتقديم أفضل النتائج.',
         'gallery_title'   => $settings['gallery_title']   ?? 'معرض أعمالنا',
         'gallery_subtitle' => $settings['gallery_subtitle'] ?? 'لمحة عن إبداعاتنا وأعمالنا المميزة',
-        'reviews_title'   => $settings['reviews_title']   ?? 'Ù…Ø§Ø°Ø§ ÙŠÙ‚ÙˆÙ„ Ø¹Ù†Ù‘Ø§ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡',
-        'reviews_subtitle' => $settings['reviews_subtitle'] ?? 'Ø¢Ø±Ø§Ø¡ Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§',
+        'reviews_title'   => $settings['reviews_title']   ?? 'ماذا يقول عنا العملاء',
+        'reviews_subtitle' => $settings['reviews_subtitle'] ?? 'آراء عملائنا',
         'reviews'         => $settings['reviews']         ?? [],
         'stats_years'     => $settings['stats_years']     ?? '7+',
         'stats_clients'   => $settings['stats_clients']   ?? '15K+',
         'stats_experts'   => $settings['stats_experts']   ?? '6',
+        'discount_active'     => $settings['discount_active']     ?? 0,
+        'discount_percentage' => $settings['discount_percentage'] ?? '30',
     ]);
 }
 

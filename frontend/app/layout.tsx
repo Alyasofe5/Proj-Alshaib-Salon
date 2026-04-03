@@ -10,7 +10,7 @@ const notoSansArabic = Noto_Sans_Arabic({
   variable: "--font-noto",
 });
 
-import { Playfair_Display, Tajawal, Space_Mono } from "next/font/google";
+import { Playfair_Display, Tajawal, Space_Mono, Cormorant_Garamond, Oswald } from "next/font/google";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
@@ -18,6 +18,21 @@ const playfairDisplay = Playfair_Display({
   weight: ["400", "700", "900"],
   style: ["normal", "italic"],
   variable: "--font-playfair",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+});
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-oswald",
 });
 
 const tajawal = Tajawal({
@@ -195,7 +210,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${notoSansArabic.variable} ${playfairDisplay.variable} ${tajawal.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${notoSansArabic.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${oswald.variable} ${tajawal.variable} ${spaceMono.variable}`} suppressHydrationWarning>
       <head>
         {/* ── JSON-LD: Organization + WebSite + SoftwareApplication + روابط رئيسية (إشارات لسيتلينكس والعلامة) ── */}
         <script

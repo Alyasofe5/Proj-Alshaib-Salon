@@ -13,7 +13,7 @@ type FormFields = "salon_name" | "owner_name" | "phone";
 const RULES: Record<FormFields, { label: string; validate: (v: string) => string | null }> = {
     salon_name: { label: "اسم الصالون", validate: (v) => !v.trim() ? "اسم الصالون مطلوب" : v.trim().length < 2 ? "الاسم قصير جداً" : null },
     owner_name: { label: "اسم صاحب الصالون", validate: (v) => !v.trim() ? "اسم صاحب الصالون مطلوب" : v.trim().length < 2 ? "الاسم قصير جداً" : null },
-    phone: { label: "رقم الجوال", validate: (v) => !v.trim() ? "رقم الجوال مطلوب" : !/^[\d\s\+\-\(\)]{7,}$/.test(v) ? "رقم الجوال غير صحيح" : null },
+    phone: { label: "رقم الجوال", validate: (v) => !v.trim() ? "رقم الجوال مطلوب" : !/^07\d{8}$/.test(v) ? "الرقم يجب أن يكون أردنياً من 10 أرقام (يبدأ بـ 07)" : null },
 };
 
 export default function ContactPage() {
@@ -138,7 +138,7 @@ function ContactPageInner() {
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6"
-                        style={{ background: "var(--gold-bg)", border: "1px solid #D4EC0A", color: "var(--color-background)" }}>
+                        style={{ background: "var(--gold-bg)", border: "1px solid #D4EC0A", color: "var(--color-accent)" }}>
                         {badge}
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: "var(--text-main)" }}>
@@ -235,7 +235,8 @@ function ContactPageInner() {
                                                 onChange={e => handleChange("phone", e.target.value)}
                                                 onFocus={onFocusInput}
                                                 onBlur={e => onBlurInput(e, "phone")}
-                                                placeholder="+962781717990"
+                                                placeholder="0791234567"
+                                                maxLength={10}
                                                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                                                 style={{ ...inputErr("phone"), direction: "ltr", textAlign: "right" }} />
                                             <AnimatePresence>
@@ -273,7 +274,7 @@ function ContactPageInner() {
                                                     style={{
                                                         background: form.employees === opt ? "var(--gold-bg)" : "var(--off-white)",
                                                         border: `1px solid ${form.employees === opt ? "#C3D809" : "var(--border)"}`,
-                                                        color: form.employees === opt ? "var(--color-background)" : "var(--text-muted)",
+                                                        color: form.employees === opt ? "var(--color-accent)" : "var(--text-muted)",
                                                     }}>
                                                     {opt}
                                                 </button>
@@ -311,7 +312,7 @@ function ContactPageInner() {
 
                                 <button type="submit" disabled={loading}
                                     className="w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-base transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2 group overflow-hidden relative"
-                                    style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)", color: "#FFFFFF", boxShadow: "0 8px 30px rgba(195,216,9,0.25)" }}>
+                                    style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)", color: "var(--color-cta-text)", boxShadow: "0 8px 30px rgba(195,216,9,0.25)" }}>
                                     {loading ? <Loader2 size={18} className="animate-spin relative z-10" /> : null}
                                     {loading ? <span className="relative z-10">جاري الإرسال...</span> : (
                                         <>
@@ -331,7 +332,7 @@ function ContactPageInner() {
                             <div className="lg:col-span-2 space-y-5">
                                 {/* Why Maqass */}
                                 <div className="rounded-2xl p-6" style={{ background: "var(--gold-bg)", border: "1px solid #D4EC0A" }}>
-                                    <h3 className="font-bold mb-4" style={{ color: "var(--color-background)" }}>لماذا Maqass؟</h3>
+                                    <h3 className="font-bold mb-4" style={{ color: "var(--color-accent)" }}>لماذا Maqass؟</h3>
                                     <ul className="space-y-3 text-sm" style={{ color: "var(--text-mid)" }}>
                                         {["إعداد الحساب مجاناً", "رابط حجز فوري لزبائنك", "تقارير يومية وشهرية وسنوية", "إدارة الموظفين والعمولات", "دعم فني متواصل"].map((item, i) => (
                                             <li key={i} className="flex items-center gap-2">
@@ -353,7 +354,7 @@ function ContactPageInner() {
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" /><path d="M11.992 0C5.374 0 0 5.373 0 11.99c0 2.117.554 4.099 1.522 5.819L.057 24l6.304-1.654A11.945 11.945 0 0011.992 24c6.618 0 11.992-5.373 11.992-11.99C23.984 5.373 18.61 0 11.992 0z" /></svg>
                                         </div>
                                         <div>
-                                            <p className="font-bold text-sm" style={{ color: "#16a34a" }}>واتساب</p>
+                                            <p className="font-bold text-sm" style={{ color: "#25D366" }}>واتساب</p>
                                             <p className="text-xs" dir="ltr" style={{ color: "var(--text-mid)" }}>+962 78 171 7990</p>
                                         </div>
                                     </a>

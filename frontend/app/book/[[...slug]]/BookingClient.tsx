@@ -611,24 +611,25 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         {/* Book Now — sharp luxury CTA */}
                         <button
                             onClick={() => setIsBookingOpen(true)}
-                            className="relative overflow-hidden group flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-4 text-black font-black uppercase tracking-widest text-[11px] sm:text-[12px] min-h-[48px] sm:min-h-[52px]"
+                            className="relative overflow-hidden group flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 text-black font-black uppercase tracking-widest text-[10px] sm:text-[12px] min-h-[44px] sm:min-h-[52px]"
                             style={{
                                 fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif",
                                 background: '#C3D809',
-                                clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 100%, 12px 100%)',
+                                clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%)',
                             }}
                         >
-                            <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
-                                {lang === 'ar' ? 'احجز الآن' : 'Book Now'}
+                            <span className="relative z-10">
+                                {lang === 'ar' ? 'احجز' : 'Book'}
+                                <span className="hidden xs:inline ml-1">{lang === 'ar' ? 'الآن' : 'Now'}</span>
                             </span>
                             <span className="absolute inset-0 bg-white translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500 ease-out z-0" />
                         </button>
 
-                        {/* Hamburger — refined minimal */}
-                        <button className="flex flex-col gap-[5px] p-2.5 group min-h-[44px] min-w-[44px] items-center justify-center">
-                            <div className="w-5 h-[1px] bg-white/70 group-hover:bg-[#C3D809] group-hover:w-4 transition-all duration-300" />
-                            <div className="w-3.5 h-[1px] bg-white/40 group-hover:bg-[#C3D809] group-hover:w-5 transition-all duration-300" />
-                            <div className="w-4 h-[1px] bg-white/20 group-hover:bg-[#C3D809] group-hover:w-3 transition-all duration-300" />
+                        {/* Hamburger — refined minimal (Hidden on desktop if nav is visible) */}
+                        <button className="flex lg:hidden flex-col gap-[5px] p-2 group min-h-[44px] min-w-[44px] items-center justify-center">
+                            <div className="w-5 h-[1.5px] bg-white group-hover:bg-[#C3D809] transition-all duration-300" />
+                            <div className="w-4 h-[1.5px] bg-white/70 group-hover:bg-[#C3D809] transition-all duration-300 ml-auto" />
+                            <div className="w-5 h-[1.5px] bg-white/40 group-hover:bg-[#C3D809] transition-all duration-300" />
                         </button>
                     </div>
                 </div>
@@ -668,7 +669,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     </div>
 
                     {/* Content Container */}
-                    <div className="relative z-20 w-full max-w-[1500px] mx-auto grid grid-cols-1 lg:grid-cols-2 px-[clamp(16px,5vw,64px)] pt-[15vh] lg:pt-0 pb-12 my-auto">
+                    <div className="relative z-20 w-full max-w-[1500px] mx-auto grid grid-cols-1 lg:grid-cols-2 px-6 sm:px-12 lg:px-16 pt-[20vh] lg:pt-0 pb-20 my-auto">
                         
                         {/* Text Content: LTR=col1 (left), RTL=col1 (visually right) */}
                         <div className={`flex flex-col justify-end lg:justify-center w-full ${lang === 'en' ? 'text-left lg:pr-12 xl:pr-20' : 'text-right lg:pl-12 xl:pl-20'}`}>
@@ -717,9 +718,9 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         transition={{ duration: 0.8, delay: 0.2 }}
                                         className="text-white font-black leading-[1.05] mb-6 flex flex-col items-start gap-1"
                                     >
-                                        {line1 && <span className="text-[clamp(1.5rem,4vw,2.75rem)] text-[#C3D809]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line1}</span>}
-                                        {line2 && <span className="text-[clamp(2rem,6.5vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line2}</span>}
-                                        {line3 && <span className="text-[clamp(2rem,6.5vw,4.5rem)] opacity-30" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line3}</span>}
+                                        {line1 && <span className="text-[clamp(1.5rem,5vw,2.75rem)] text-[#C3D809]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line1}</span>}
+                                        {line2 && <span className="text-[clamp(2.5rem,9vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line2}</span>}
+                                        {line3 && <span className="text-[clamp(2.2rem,8vw,4.5rem)] opacity-30" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line3}</span>}
                                     </motion.h1>
                                 );
                             })()}
@@ -997,8 +998,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 })}
                             </div>
 
-                            {/* preview sticky framed image */}
-                            <div className="lg:sticky lg:top-32 mt-10 lg:mt-0">
+                            {/* preview sticky framed image — HIDE ON MOBILE to keep flow clean */}
+                            <div className="hidden lg:block lg:sticky lg:top-32">
                                 <div className="relative">
                                     <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.05] bg-[#050505] p-2.5 sm:p-3 shadow-2xl">
                                         <div className="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-[1.5rem]">
@@ -1591,40 +1592,40 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             <div>
                                 <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', 'Noto Sans Arabic', sans-serif" }}>{lang === 'ar' ? "\u062a\u0648\u0627\u0635\u0644 \u0645\u0639\u0646\u0627" : "Contact Us"}</span>
                                 <div className="space-y-8">
-                                    <a href={`tel:${salon.phone}`} className={`block group ${lang === 'en' ? 'text-left' : 'text-right'}`}>
-                                        <p className="text-white text-lg font-black group-hover:text-[#C3D809] transition-colors" dir="ltr">{salon.phone || "0785295125"}</p>
+                                    <a href={`tel:${salon?.phone}`} className={`block group ${lang === 'en' ? 'text-left' : 'text-right'}`}>
+                                        <p className="text-white text-lg font-black group-hover:text-[#C3D809] transition-colors" dir="ltr">{salon?.phone || "0785295125"}</p>
                                         <p className="text-white/20 text-[0.7rem] uppercase tracking-widest font-bold mt-1">{lang === 'ar' ? "\u0627\u062a\u0635\u0644 \u0628\u0646\u0627" : "CALL US"}</p>
                                     </a>
                                     
                                     <div className="flex gap-4">
-                                        {salon.instagram && (
+                                        {salon?.instagram && (
                                             <div className="relative group cursor-pointer">
                                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gradient-to-tr from-[#405DE6] to-[#F56040] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
                                                     INSTAGRAM
                                                 </div>
-                                                <a href={`https://instagram.com/${salon.instagram.replace('@', '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                <a href={`https://instagram.com/${salon?.instagram.replace('@', '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
                                                     <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-gradient-to-tr from-[#405DE6] via-[#E1306C] to-[#FFDC80] z-0" />
                                                     <Instagram size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
                                                 </a>
                                             </div>
                                         )}
-                                        {salon.whatsapp && (
+                                        {salon?.whatsapp && (
                                             <div className="relative group cursor-pointer">
                                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-[#25D366] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
                                                     WHATSAPP
                                                 </div>
-                                                <a href={`https://wa.me/${salon.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                <a href={`https://wa.me/${salon?.whatsapp?.replace(/[^0-9]/g, '')}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
                                                     <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-[#25D366] z-0" />
                                                     <FaWhatsapp size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
                                                 </a>
                                             </div>
                                         )}
-                                        {salon.facebook && (
+                                        {salon?.facebook && (
                                             <div className="relative group cursor-pointer">
                                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-[#1877F2] text-[10px] text-white font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none z-20">
                                                     FACEBOOK
                                                 </div>
-                                                <a href={salon.facebook.startsWith('http') ? salon.facebook : `https://facebook.com/${salon.facebook}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
+                                                <a href={salon?.facebook.startsWith('http') ? salon?.facebook : `https://facebook.com/${salon?.facebook}`} target="_blank" className="w-12 h-12 rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center relative overflow-hidden group/icon">
                                                     <div className="absolute bottom-0 left-0 w-full h-0 group-hover/icon:h-full transition-all duration-500 bg-[#1877F2] z-0" />
                                                     <Facebook size={20} className="relative z-10 text-white/40 group-hover/icon:text-white transition-colors duration-300" />
                                                 </a>

@@ -98,10 +98,8 @@ export default function BookingModal({
                 maxWidth: 720,
                 maxHeight: "92vh",
                 background: "#0c0c0c",
-                borderRadius: "2rem 2rem 0 0",
-                border: "1px solid rgba(255,255,255,0.06)",
                 boxShadow: "0 50px 150px rgba(0,0,0,0.8)",
-                ...(typeof window !== "undefined" && window.innerWidth >= 640 ? { borderRadius: "2rem" } : {}),
+                ...(typeof window !== "undefined" && window.innerWidth >= 640 ? { borderRadius: "2rem" } : { borderRadius: "2rem 2rem 0 0" }),
               }}
               onClick={e => e.stopPropagation()}
             >
@@ -117,16 +115,16 @@ export default function BookingModal({
               </div>
 
               {/* Steps (Tabs) */}
-              <div className="px-8 pb-4 flex items-center justify-between gap-3 overflow-x-auto hide-scroll">
+              <div className="px-5 sm:px-8 pb-4 flex items-center justify-between gap-1.5 sm:gap-3 overflow-x-auto hide-scroll">
                 {STEPS.map((label, i) => {
                   const active = (i + 1) === step;
                   const done = (i + 1) < step;
                   return (
-                    <div key={label} className="flex-1 flex flex-col gap-2 min-w-[70px]">
+                    <div key={label} className="flex-1 flex flex-col gap-1.5 sm:gap-2 min-w-[60px] sm:min-w-[70px]">
                       <div className="h-1 rounded-full bg-white/5 overflow-hidden">
                         <motion.div animate={{ width: done ? "100%" : active ? "100%" : "0%" }} transition={{ duration: 0.6 }} className="h-full bg-[#C3D809]" />
                       </div>
-                      <span className={`text-[10px] text-center font-bold transition-colors ${active ? "text-[#C3D809]" : "text-white/20"}`} style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{label}</span>
+                      <span className={`text-[9px] sm:text-[10px] text-center font-bold tracking-tighter sm:tracking-normal transition-colors ${active ? "text-[#C3D809]" : "text-white/20"}`} style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>{label}</span>
                     </div>
                   );
                 })}
@@ -245,8 +243,8 @@ export default function BookingModal({
                                   boxShadow: isSel ? "0 10px 30px rgba(195,216,9,0.3)" : "none"
                                 }}>
                                 <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">{i === 0 ? (lang === 'ar' ? "اليوم" : "Today") : (lang === 'en' ? dayNamesEn[dateObj.getDay()].slice(0, 3) : dayNames[dateObj.getDay()])}</span>
-                                <span className="text-3xl font-black">{dateObj.getDate()}</span>
-                                <span className="text-[9px] font-bold opacity-40 uppercase">{lang === 'en' ? monthNamesEn[dateObj.getMonth()] : monthNames[dateObj.getMonth()]}</span>
+                                <span className="text-2xl sm:text-3xl font-black">{dateObj.getDate()}</span>
+                                <span className="text-[8px] sm:text-[9px] font-bold opacity-40 uppercase">{lang === 'en' ? monthNamesEn[dateObj.getMonth()] : monthNames[dateObj.getMonth()]}</span>
                               </button>
                             );
                           })}

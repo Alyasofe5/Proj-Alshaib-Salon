@@ -1,0 +1,6 @@
+/*
+  Shared Components CSS
+  Header, Footer, BackToTop, SearchOverlay styles.
+  Full styles are provided by style.css and app.css imported globally in main.jsx.
+  This file is imported by Header.jsx for scoped reference.
+*/

@@ -1,0 +1,1132 @@
+.hs-root {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+.hs-slide-container {
+  width: 100%;
+  background-color: var(--color-primary);
+  animation: hs-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hs-banner-shell {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.hs-panel {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-primary);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+
+.hs-corner-lines {
+  display: none;
+}
+
+@keyframes hs-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hs-side-image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  z-index: 2;
+  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  filter: contrast(1.05) saturate(1.1);
+}
+
+.hs-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  /* Removed gradient per user request */
+  z-index: 1;
+}
+
+.hs-content-wrapper {
+  position: relative;
+  z-index: 50;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 10px 0 40px;
+  /* Reduced right padding (start) to move content closer to edge */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  align-self: stretch;
+  pointer-events: none;
+}
+
+@keyframes content-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hs-content {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 650px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  opacity: 0;
+  animation: content-slide-up 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+}
+
+.hs-title {
+  font-family: var(--font-base);
+  color: var(--color-surface);
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  white-space: pre-line;
+  letter-spacing: 0;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.hs-description {
+  font-family: var(--font-base);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-bottom: 36px;
+  max-width: 530px;
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+.hs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-base);
+  background: var(--color-secondary);
+  color: var(--color-text);
+  padding: 16px 42px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 20px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px rgba(220, 169, 34, 0.3);
+  border: 1.5px solid transparent;
+}
+
+.hs-btn:hover {
+  transform: translateY(-4px);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.hs-btn-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.hs-btn:hover .hs-btn-icon {
+  transform: scale(1.1) translateX(-5px);
+}
+
+.hs-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  z-index: 8;
+}
+
+.hs-dot {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 9px;
+  height: 9px;
+  min-width: 9px;
+  min-height: 9px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  outline: none;
+  flex: 0 0 9px;
+  opacity: 0.9;
+  transition: transform 0.25s ease, background-color 0.25s ease, opacity 0.25s ease;
+}
+
+.hs-dot.active {
+  background-color: var(--color-secondary);
+  transform: scale(1.12);
+  opacity: 1;
+}
+
+.hs-dot:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+.hs-dot.active:hover {
+  background-color: var(--color-secondary);
+}
+
+@media (max-width: 1100px) {
+  .hs-panel {
+    min-height: 480px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hs-panel {
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hs-side-image {
+    width: 100%;
+    height: 40%;
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    opacity: 0.28;
+  }
+
+  .hs-panel-overlay {
+    background:
+      linear-gradient(180deg, rgba(10, 31, 20, 0.14) 0%, rgba(10, 31, 20, 0.05) 18%, rgba(10, 31, 20, 0) 32%, rgba(10, 31, 20, 0) 68%, rgba(10, 31, 20, 0.08) 86%, rgba(10, 31, 20, 0.18) 100%);
+  }
+
+  .hs-content-wrapper {
+    justify-content: center;
+    align-items: flex-end;
+    padding: calc(134px + env(safe-area-inset-top, 0px)) 24px calc(146px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .hs-content {
+    text-align: center;
+    max-width: min(100%, 620px);
+    padding: 0 4px;
+    align-items: center;
+  }
+
+  .hs-title {
+    font-size: clamp(2.35rem, 8vw, 3.8rem);
+    margin-bottom: 16px;
+    max-width: 10ch;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .hs-description {
+    margin-inline: auto;
+    max-width: 32ch;
+    margin-bottom: 28px;
+    color: rgba(255, 255, 255, 0.82);
+    text-wrap: balance;
+  }
+
+  .hs-btn {
+    min-width: min(100%, 228px);
+    min-height: 54px;
+    padding: 15px 28px;
+    font-size: 17px;
+  }
+
+  .hs-controls {
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .hs-floating-beans-layer,
+  .hs-floating-nuts-layer,
+  .hs-floating-spices-layer {
+    opacity: 0.72;
+  }
+}
+
+@media (max-width: 560px) {
+  .hs-panel {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .hs-title {
+    font-size: clamp(2rem, 10vw, 2.85rem);
+    line-height: 1.1;
+  }
+
+  .hs-description {
+    font-size: 13px;
+    line-height: 1.85;
+  }
+
+  .hs-btn {
+    width: min(100%, 230px);
+    padding: 14px 22px;
+    font-size: 17px;
+  }
+
+  .hs-content-wrapper {
+    padding: calc(126px + env(safe-area-inset-top, 0px)) 18px calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .hs-controls {
+    bottom: 22px;
+    gap: 8px;
+  }
+
+  .hs-dot {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    flex-basis: 8px;
+  }
+
+}
+
+@media (max-width: 400px) {
+  .hs-panel {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .hs-content-wrapper {
+    padding: calc(116px + env(safe-area-inset-top, 0px)) 16px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .hs-title {
+    font-size: 1.92rem;
+  }
+
+  .hs-description {
+    font-size: 12.5px;
+    max-width: 28ch;
+  }
+
+  .hs-btn {
+    width: min(100%, 220px);
+  }
+
+  .hs-controls {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* --- Multi-layered Cinematic System (Beans, Nuts & Spices) --- */
+.hs-floating-beans-layer,
+.hs-floating-nuts-layer,
+.hs-floating-spices-layer {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s ease,
+    filter 1.2s ease;
+}
+
+.hs-floating-beans-layer img,
+.hs-floating-nuts-layer img,
+.hs-floating-spices-layer img {
+  width: 100%;
+  height: auto;
+  /* Mask white-edge fringing with a dark glow matching the background color.
+     Two layers intensify the effect for stubbornly visible edges. */
+  filter: drop-shadow(0 0 6px #0a1f14) drop-shadow(0 0 3px #0a1f14);
+  /* Prevent sub-pixel anti-aliasing lines from CSS rotate/scale transforms */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Base Constant Float Animations (Global) */
+.hs-floating-beans-layer img {
+  animation: constant-float 8s ease-in-out infinite;
+}
+
+.hs-floating-nuts-layer img {
+  animation: constant-float 10s ease-in-out infinite;
+}
+
+.hs-floating-spices-layer img {
+  animation: constant-float 12s ease-in-out infinite;
+}
+
+/* BEANS POSITIONING & STAGGER SEQUENCING (Slide 0) */
+.hs-floating-beans-layer.bean-1 {
+  left: 15%;
+  top: 15%;
+  width: 340px;
+  --rot: -12deg;
+  --blur: 0px;
+  --stagger: 0s;
+  z-index: 15;
+}
+
+.hs-floating-beans-layer.bean-2 {
+  left: 25%;
+  top: 45%;
+  width: 280px;
+  --rot: 15deg;
+  --blur: 1.5px;
+  --stagger: 0.15s;
+  z-index: 14;
+}
+
+.hs-floating-beans-layer.bean-3 {
+  left: 9%;
+  top: 35%;
+  width: 250px;
+  --rot: -20deg;
+  --blur: 0px;
+  --stagger: 0.3s;
+  z-index: 13;
+}
+
+.hs-floating-beans-layer.bean-4 {
+  left: 19%;
+  top: 68%;
+  width: 230px;
+  --rot: 25deg;
+  --blur: 3px;
+  --stagger: 0.45s;
+  z-index: 12;
+}
+
+.hs-floating-beans-layer.bean-5 {
+  left: 2%;
+  top: 18%;
+  width: 200px;
+  --rot: 40deg;
+  --blur: 5px;
+  --stagger: 0.6s;
+  z-index: 11;
+}
+
+.hs-floating-beans-layer.bean-6 {
+  left: 12%;
+  top: 58%;
+  width: 160px;
+  --rot: -35deg;
+  --blur: 2px;
+  --stagger: 0.75s;
+  z-index: 10;
+}
+
+.hs-floating-beans-layer.bean-7 {
+  left: 29%;
+  top: 12%;
+  width: 210px;
+  --rot: 10deg;
+  --blur: 4px;
+  --stagger: 0.9s;
+  z-index: 9;
+}
+
+.hs-floating-beans-layer.bean-8 {
+  left: 22%;
+  top: 78%;
+  width: 170px;
+  --rot: -50deg;
+  --blur: 6px;
+  --stagger: 1.05s;
+  z-index: 8;
+}
+
+/* Decorative beans around the text (Right-side alignment) */
+.hs-floating-beans-layer.bean-9 {
+  right: 5%;
+  top: 10%;
+  width: 160px;
+  --rot: 20deg;
+  --blur: 12px;
+  --stagger: 0.3s;
+  z-index: 6;
+}
+
+.hs-floating-beans-layer.bean-10 {
+  right: 15%;
+  top: 75%;
+  width: 140px;
+  --rot: -15deg;
+  --blur: 15px;
+  --stagger: 0.5s;
+  z-index: 5;
+}
+
+.hs-floating-beans-layer.bean-11 {
+  right: 42%;
+  top: 25%;
+  width: 90px;
+  --rot: 45deg;
+  --blur: 18px;
+  --stagger: 0.7s;
+  z-index: 4;
+}
+
+.hs-floating-beans-layer.bean-12 {
+  right: 2%;
+  top: 40%;
+  width: 120px;
+  --rot: -30deg;
+  --blur: 10px;
+  --stagger: 0.9s;
+  z-index: 3;
+}
+
+/* Before entry (Slide 2 active) — wait on the RIGHT, ready to enter */
+.hs-floating-beans-layer.active-slide-2 {
+  transform: translateX(120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: 0s;
+}
+
+/* Active (Slide 0) — stagger into CENTER */
+.active-slide-0.hs-floating-beans-layer {
+  opacity: 1;
+  transform: translate(0, 0) scale(1) rotate(var(--rot, 0deg));
+  filter: blur(var(--blur, 0));
+  transition-delay: calc(1.4s + var(--stagger));
+  will-change: transform, opacity, filter;
+}
+
+/* After exit (Slide 1 active) — stagger out to the LEFT */
+.hs-floating-beans-layer.active-slide-1 {
+  transform: translateX(-120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: var(--stagger);
+}
+
+/* Fallback for any unexpected state */
+.hs-floating-beans-layer:not(.active-slide-0):not(.active-slide-1):not(.active-slide-2) {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+/* NUTS POSITIONING & STAGGER SEQUENCING (Slide 1) */
+.hs-floating-nuts-layer.nut-1 {
+  left: 18%;
+  top: 20%;
+  width: 320px;
+  --rot: 15deg;
+  --blur: 0px;
+  --stagger: 0s;
+  z-index: 15;
+}
+
+.hs-floating-nuts-layer.nut-2 {
+  left: 28%;
+  top: 48%;
+  width: 260px;
+  --rot: -10deg;
+  --blur: 1.5px;
+  --stagger: 0.15s;
+  z-index: 14;
+}
+
+.hs-floating-nuts-layer.nut-3 {
+  left: 5%;
+  top: 30%;
+  width: 240px;
+  --rot: 20deg;
+  --blur: 0px;
+  --stagger: 0.3s;
+  z-index: 13;
+}
+
+.hs-floating-nuts-layer.nut-4 {
+  left: 22%;
+  top: 72%;
+  width: 220px;
+  --rot: -25deg;
+  --blur: 3px;
+  --stagger: 0.45s;
+  z-index: 12;
+}
+
+.hs-floating-nuts-layer.nut-5 {
+  left: 1%;
+  top: 15%;
+  width: 190px;
+  --rot: -35deg;
+  --blur: 5px;
+  --stagger: 0.6s;
+  z-index: 11;
+}
+
+.hs-floating-nuts-layer.nut-6 {
+  left: 14%;
+  top: 55%;
+  width: 170px;
+  --rot: 40deg;
+  --blur: 2px;
+  --stagger: 0.75s;
+  z-index: 10;
+}
+
+.hs-floating-nuts-layer.nut-7 {
+  left: 32%;
+  top: 10%;
+  width: 200px;
+  --rot: -15deg;
+  --blur: 4px;
+  --stagger: 0.9s;
+  z-index: 9;
+}
+
+.hs-floating-nuts-layer.nut-8 {
+  left: 25%;
+  top: 82%;
+  width: 160px;
+  --rot: 45deg;
+  --blur: 6px;
+  --stagger: 1.05s;
+  z-index: 8;
+}
+
+/* Decorative nuts around the text (Right-side alignment) */
+.hs-floating-nuts-layer.nut-9 {
+  right: 8%;
+  top: 15%;
+  width: 150px;
+  --rot: -20deg;
+  --blur: 10px;
+  --stagger: 0.3s;
+  z-index: 6;
+}
+
+.hs-floating-nuts-layer.nut-10 {
+  right: 12%;
+  top: 70%;
+  width: 130px;
+  --rot: 25deg;
+  --blur: 12px;
+  --stagger: 0.5s;
+  z-index: 5;
+}
+
+.hs-floating-nuts-layer.nut-11 {
+  right: 40%;
+  top: 20%;
+  width: 95px;
+  --rot: -45deg;
+  --blur: 15px;
+  --stagger: 0.7s;
+  z-index: 4;
+}
+
+.hs-floating-nuts-layer.nut-12 {
+  right: 4%;
+  top: 45%;
+  width: 110px;
+  --rot: 35deg;
+  --blur: 12px;
+  --stagger: 0.9s;
+  z-index: 3;
+}
+
+/* NUTS Movement Logic (Slide 1) */
+
+/* Before entry (Slide 0) - Ready on the RIGHT */
+.hs-floating-nuts-layer.active-slide-0 {
+  transform: translateX(120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: 0s;
+}
+
+/* Active state (Slide 1) - Stay in PLACE */
+.active-slide-1.hs-floating-nuts-layer {
+  opacity: 1;
+  transform: translate(0, 0) scale(1) rotate(var(--rot, 0deg));
+  filter: blur(var(--blur, 0));
+  transition-delay: calc(1.4s + var(--stagger));
+  will-change: transform, opacity, filter;
+}
+
+/* After exit (Slide 2) - Move out to the LEFT */
+.hs-floating-nuts-layer.active-slide-2 {
+  transform: translateX(-120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: var(--stagger);
+}
+
+/* Default state fallback */
+.hs-floating-nuts-layer:not(.active-slide-1):not(.active-slide-0):not(.active-slide-2) {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+/* SPICES POSITIONING & MOVEMENT (Slide 2) */
+
+.hs-floating-spices-layer {
+  --blur: 0px;
+  --stagger: 0s;
+  z-index: 3;
+  /* transition and position inherited from the shared base rule above */
+}
+
+.hs-floating-spices-layer.spice-1 {
+  left: 15%;
+  top: 15%;
+  width: 340px;
+  --rot: -12deg;
+  --blur: 0px;
+  --stagger: 0s;
+  z-index: 15;
+}
+
+.hs-floating-spices-layer.spice-2 {
+  left: 25%;
+  top: 45%;
+  width: 280px;
+  --rot: 15deg;
+  --blur: 1.5px;
+  --stagger: 0.15s;
+  z-index: 14;
+}
+
+.hs-floating-spices-layer.spice-3 {
+  left: 9%;
+  top: 35%;
+  width: 250px;
+  --rot: -20deg;
+  --blur: 0px;
+  --stagger: 0.3s;
+  z-index: 13;
+}
+
+.hs-floating-spices-layer.spice-4 {
+  left: 19%;
+  top: 68%;
+  width: 230px;
+  --rot: 25deg;
+  --blur: 3px;
+  --stagger: 0.45s;
+  z-index: 12;
+}
+
+.hs-floating-spices-layer.spice-5 {
+  left: 2%;
+  top: 18%;
+  width: 200px;
+  --rot: 40deg;
+  --blur: 5px;
+  --stagger: 0.6s;
+  z-index: 11;
+}
+
+.hs-floating-spices-layer.spice-6 {
+  left: 12%;
+  top: 58%;
+  width: 160px;
+  --rot: -35deg;
+  --blur: 2px;
+  --stagger: 0.75s;
+  z-index: 10;
+}
+
+.hs-floating-spices-layer.spice-7 {
+  left: 29%;
+  top: 12%;
+  width: 210px;
+  --rot: 10deg;
+  --blur: 4px;
+  --stagger: 0.9s;
+  z-index: 9;
+}
+
+.hs-floating-spices-layer.spice-8 {
+  left: 22%;
+  top: 78%;
+  width: 170px;
+  --rot: -50deg;
+  --blur: 6px;
+  --stagger: 1.05s;
+  z-index: 8;
+}
+
+.hs-floating-spices-layer.spice-9 {
+  right: 5%;
+  top: 10%;
+  width: 160px;
+  --rot: 20deg;
+  --blur: 12px;
+  --stagger: 0.3s;
+  z-index: 6;
+}
+
+.hs-floating-spices-layer.spice-10 {
+  right: 15%;
+  top: 75%;
+  width: 140px;
+  --rot: -15deg;
+  --blur: 15px;
+  --stagger: 0.5s;
+  z-index: 5;
+}
+
+.hs-floating-spices-layer.spice-11 {
+  right: 42%;
+  top: 25%;
+  width: 90px;
+  --rot: 45deg;
+  --blur: 18px;
+  --stagger: 0.7s;
+  z-index: 4;
+}
+
+.hs-floating-spices-layer.spice-12 {
+  right: 2%;
+  top: 40%;
+  width: 120px;
+  --rot: -30deg;
+  --blur: 10px;
+  --stagger: 0.9s;
+  z-index: 3;
+}
+
+/* Before entry (Slide 1) - Wait on RIGHT */
+.hs-floating-spices-layer.active-slide-1 {
+  transform: translateX(120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: 0s;
+}
+
+/* Active (Slide 2) - Enter CENTER */
+.active-slide-2.hs-floating-spices-layer {
+  opacity: 1;
+  transform: translate(0, 0) rotate(var(--rot, 0deg)) scale(1);
+  filter: blur(var(--blur, 0));
+  transition-delay: calc(1.4s + var(--stagger));
+  will-change: transform, opacity, filter;
+}
+
+/* Exit (Slide 0) - Move LEFT */
+.hs-floating-spices-layer.active-slide-0 {
+  transform: translateX(-120vw) scale(0.6);
+  opacity: 0;
+  filter: blur(20px);
+  transition-delay: var(--stagger);
+}
+
+/* Hidden in other states */
+.hs-floating-spices-layer:not(.active-slide-2):not(.active-slide-1):not(.active-slide-0) {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+@keyframes constant-float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-30px) rotate(3deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .hs-floating-beans-layer.bean-1,
+  .hs-floating-nuts-layer.nut-1,
+  .hs-floating-spices-layer.spice-1 {
+    left: 8%;
+    top: 14%;
+    width: 100px !important;
+    opacity: 0.96;
+    z-index: 14;
+  }
+
+  .hs-floating-beans-layer.bean-2,
+  .hs-floating-nuts-layer.nut-2,
+  .hs-floating-spices-layer.spice-2 {
+    left: 24%;
+    top: 22%;
+    width: 52px !important;
+    opacity: 0.22;
+    z-index: 8;
+    --blur: 8px;
+  }
+
+  .hs-floating-beans-layer.bean-3,
+  .hs-floating-nuts-layer.nut-3,
+  .hs-floating-spices-layer.spice-3 {
+    left: 40%;
+    top: 13%;
+    width: 82px !important;
+    opacity: 0.46;
+    z-index: 10;
+    --blur: 4px;
+  }
+
+  .hs-floating-beans-layer.bean-4,
+  .hs-floating-nuts-layer.nut-4,
+  .hs-floating-spices-layer.spice-4 {
+    left: auto;
+    right: 25%;
+    top: 21%;
+    width: 46px !important;
+    opacity: 0.14;
+    z-index: 7;
+    --blur: 10px;
+  }
+
+  .hs-floating-beans-layer.bean-5,
+  .hs-floating-nuts-layer.nut-5,
+  .hs-floating-spices-layer.spice-5 {
+    left: auto;
+    right: 10%;
+    top: 14%;
+    width: 72px !important;
+    opacity: 0.54;
+    z-index: 11;
+  }
+
+  .hs-floating-beans-layer.bean-6,
+  .hs-floating-nuts-layer.nut-6,
+  .hs-floating-spices-layer.spice-6 {
+    left: 9%;
+    top: 66%;
+    width: 70px !important;
+    opacity: 0.62;
+    z-index: 11;
+  }
+
+  .hs-floating-beans-layer.bean-7,
+  .hs-floating-nuts-layer.nut-7,
+  .hs-floating-spices-layer.spice-7 {
+    left: 26%;
+    top: 74%;
+    width: 88px !important;
+    opacity: 0.26;
+    z-index: 8;
+    --blur: 6px;
+  }
+
+  .hs-floating-beans-layer.bean-8,
+  .hs-floating-nuts-layer.nut-8,
+  .hs-floating-spices-layer.spice-8 {
+    left: 48%;
+    top: 82%;
+    width: 50px !important;
+    opacity: 0.18;
+    z-index: 7;
+    --blur: 9px;
+  }
+
+  .hs-floating-beans-layer.bean-9,
+  .hs-floating-nuts-layer.nut-9,
+  .hs-floating-spices-layer.spice-9 {
+    left: auto;
+    right: 18%;
+    top: 74%;
+    width: 80px !important;
+    opacity: 0.22;
+    z-index: 8;
+    --blur: 7px;
+  }
+
+  .hs-floating-beans-layer.bean-10,
+  .hs-floating-nuts-layer.nut-10,
+  .hs-floating-spices-layer.spice-10 {
+    left: auto;
+    right: 7%;
+    top: 66%;
+    width: 62px !important;
+    opacity: 0.44;
+    z-index: 9;
+    --blur: 4px;
+  }
+
+  .hs-floating-beans-layer.bean-11,
+  .hs-floating-nuts-layer.nut-11,
+  .hs-floating-spices-layer.spice-11 {
+    left: 54%;
+    top: 18%;
+    width: 34px !important;
+    opacity: 0.12;
+    z-index: 6;
+    --blur: 10px;
+  }
+
+  .hs-floating-beans-layer.bean-12,
+  .hs-floating-nuts-layer.nut-12,
+  .hs-floating-spices-layer.spice-12 {
+    left: 56%;
+    top: 71%;
+    width: 38px !important;
+    opacity: 0.14;
+    z-index: 6;
+    --blur: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hs-floating-beans-layer.bean-1,
+  .hs-floating-nuts-layer.nut-1,
+  .hs-floating-spices-layer.spice-1 {
+    width: 86px !important;
+  }
+
+  .hs-floating-beans-layer.bean-3,
+  .hs-floating-nuts-layer.nut-3,
+  .hs-floating-spices-layer.spice-3 {
+    width: 68px !important;
+  }
+
+  .hs-floating-beans-layer.bean-2,
+  .hs-floating-nuts-layer.nut-2,
+  .hs-floating-spices-layer.spice-2 {
+    left: 23%;
+    top: 24%;
+    width: 44px !important;
+  }
+
+  .hs-floating-beans-layer.bean-4,
+  .hs-floating-nuts-layer.nut-4,
+  .hs-floating-spices-layer.spice-4 {
+    right: 23%;
+    top: 23%;
+    width: 40px !important;
+  }
+
+  .hs-floating-beans-layer.bean-5,
+  .hs-floating-nuts-layer.nut-5,
+  .hs-floating-spices-layer.spice-5 {
+    width: 58px !important;
+  }
+
+  .hs-floating-beans-layer.bean-6,
+  .hs-floating-nuts-layer.nut-6,
+  .hs-floating-spices-layer.spice-6 {
+    width: 60px !important;
+    top: 67%;
+  }
+
+  .hs-floating-beans-layer.bean-7,
+  .hs-floating-nuts-layer.nut-7,
+  .hs-floating-spices-layer.spice-7 {
+    left: 24%;
+    top: 76%;
+    width: 76px !important;
+  }
+
+  .hs-floating-beans-layer.bean-8,
+  .hs-floating-nuts-layer.nut-8,
+  .hs-floating-spices-layer.spice-8 {
+    left: 46%;
+    top: 83%;
+    width: 42px !important;
+  }
+
+  .hs-floating-beans-layer.bean-9,
+  .hs-floating-nuts-layer.nut-9,
+  .hs-floating-spices-layer.spice-9 {
+    right: 16%;
+    top: 76%;
+    width: 70px !important;
+  }
+
+  .hs-floating-beans-layer.bean-10,
+  .hs-floating-nuts-layer.nut-10,
+  .hs-floating-spices-layer.spice-10 {
+    right: 6%;
+    top: 67%;
+    width: 54px !important;
+  }
+
+  .hs-floating-beans-layer.bean-11,
+  .hs-floating-nuts-layer.nut-11,
+  .hs-floating-spices-layer.spice-11 {
+    left: 56%;
+    top: 20%;
+    width: 28px !important;
+  }
+
+  .hs-floating-beans-layer.bean-12,
+  .hs-floating-nuts-layer.nut-12,
+  .hs-floating-spices-layer.spice-12 {
+    left: 54%;
+    top: 73%;
+    width: 32px !important;
+  }
+}
+
+/* Unified directional motion:
+   all decorative sets enter from right and exit to left. */
+.hs-floating-beans-layer.active-slide-2,
+.hs-floating-nuts-layer.active-slide-0,
+.hs-floating-spices-layer.active-slide-1 {
+  transform: translate3d(115vw, 0, 0) scale(0.72) rotate(var(--rot, 0deg));
+  opacity: 0;
+  filter: blur(18px);
+  transition-delay: 0s;
+}
+
+.active-slide-0.hs-floating-beans-layer,
+.active-slide-1.hs-floating-nuts-layer,
+.active-slide-2.hs-floating-spices-layer {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(var(--rot, 0deg));
+  filter: blur(var(--blur, 0px));
+  transition-delay: calc(1.1s + var(--stagger, 0s));
+  will-change: transform, opacity, filter;
+}
+
+.hs-floating-beans-layer.active-slide-1,
+.hs-floating-nuts-layer.active-slide-2,
+.hs-floating-spices-layer.active-slide-0 {
+  transform: translate3d(-115vw, 0, 0) scale(0.72) rotate(var(--rot, 0deg));
+  opacity: 0;
+  filter: blur(18px);
+  transition-delay: var(--stagger, 0s);
+}

@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# AI tool configs (local only)
+.agents/
+.claude/
+.kiro/
+.qoder/
+.qwen/
+.windsurf/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

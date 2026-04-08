@@ -26,19 +26,30 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
     const ref = useRef<HTMLSpanElement>(null);
     const isInView = useInView(ref, { once: true });
     const [count, setCount] = useState(0);
+
     useEffect(() => {
         if (!isInView) return;
-        let start = 0;
-        const dur = 2000;
-        const step = (ts: number) => {
-            start = start || ts;
-            const p = Math.min((ts - start) / dur, 1);
-            setCount(Math.floor(p * target));
-            if (p < 1) requestAnimationFrame(step);
+        let startTimestamp: number | null = null;
+        const duration = 2000;
+        const step = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            setCount(Math.floor(progress * target));
+            if (progress < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
     }, [isInView, target]);
-    return <span ref={ref}>+{count}{suffix}</span>;
+
+    return (
+        <span ref={ref} className="inline-block relative">
+            <span className="relative z-10">{count}{suffix}</span>
+            <motion.span 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={isInView ? { opacity: 0.15, scale: 1.2 } : {}}
+                className="absolute inset-0 blur-xl bg-[#C3D809] rounded-full z-0"
+            />
+        </span>
+    );
 }
 
 const AUTO_TRANSLATE_MAP: Record<string, string> = {
@@ -842,7 +853,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     </span>
                                 </div>
                                 
-                                <h2 className="text-white font-black leading-[1.05] tracking-tight text-[clamp(2rem,6vw,4rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                <h2 className="text-white font-black leading-[1.05] tracking-tight text-[clamp(2.1rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
                                     {tData(salon.about_title || (lang === 'ar' ? "أكثر من مجرد صالون" : "More Than Just A Salon"), lang)}
                                 </h2>
                             </div>
@@ -855,24 +866,31 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                             <div className="w-full max-w-xl h-[1px] bg-white/5 my-10" />
 
-                            <div className="grid grid-cols-3 gap-6 sm:gap-10 pt-4">
+                            <div className="grid grid-cols-3 gap-4 sm:gap-10 pt-4">
                                 {(lang === 'ar' ? [
                                     { n: salon?.stats_years || "7+", label: "سنوات خبرة" },
-                                    { n: salon?.stats_clients || "15K+", label: "عميل راضٍ" },
-                                    { n: salon?.stats_experts || "6", label: "خبراء مظهر" }
+                                    { n: salon?.stats_clients || "250+", label: "عميل راضٍ" },
+                                    { n: salon?.stats_experts || "3+", label: "خبراء مظهر" }
                                 ] : [
                                     { n: salon?.stats_years || "7+", label: "Years Exp" },
-                                    { n: salon?.stats_clients || "15K+", label: "Happy Client" },
-                                    { n: salon?.stats_experts || "6", label: "Top Experts" }
+                                    { n: salon?.stats_clients || "250+", label: "Happy Client" },
+                                    { n: salon?.stats_experts || "3+", label: "Top Experts" }
                                 ]).map((stat, i) => {
                                     const numPart = parseInt(stat.n.toString()) || 0;
                                     const suffixPart = stat.n.toString().replace(/[0-9]/g, "");
                                     return (
-                                        <div key={i} className="space-y-4">
-                                            <h4 className="text-[#C3D809] font-black text-[clamp(1.5rem,5vw,3rem)] tracking-tighter" style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif" }}>
+                                        <div key={i} className="space-y-2.5">
+                                            <h4 className="font-black text-[clamp(1.2rem,4.5vw,2.75rem)] tracking-tighter" 
+                                                style={{ 
+                                                    fontFamily: "'Playfair Display', 'Oswald', sans-serif",
+                                                    background: "linear-gradient(135deg, #C3D809 0%, #8A9A06 100%)",
+                                                    WebkitBackgroundClip: "text",
+                                                    WebkitTextFillColor: "transparent"
+                                                }}>
                                                 <AnimatedCounter target={numPart} suffix={suffixPart} />
                                             </h4>
-                                            <p className="text-white/40 text-[10px] sm:text-[11px] font-bold leading-[1.6]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                                            <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]" 
+                                               style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
                                                 {stat.label.split(' ').map((word, wIdx) => <span key={wIdx} className="block">{word}</span>)}
                                             </p>
                                         </div>
@@ -957,21 +975,26 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             aria-label={`احجز خدمة ${s.name}`}
                                         >
                                             <div className="flex flex-row items-center justify-between gap-6">
-                                                <div className="flex flex-row items-center gap-5 sm:gap-8 lg:gap-12">
+                                                <div className="flex flex-row items-center gap-4 sm:gap-8 lg:gap-12">
                                                     
                                                     {/* Index Number */}
-                                                    <div className={[
-                                                        "text-[0.8rem] sm:text-[0.95rem] font-medium tracking-[0.2em] transition-colors font-mono min-w-[2rem]",
-                                                        isActive ? "text-[#C3D809]" : "text-white/30",
-                                                    ].join(" ")}>
-                                                        {String(i + 1).padStart(2, "0")}
+                                                    <div className="relative">
+                                                        <div className={[
+                                                            "text-[0.8rem] sm:text-[0.95rem] font-medium tracking-[0.2em] transition-all duration-500 font-mono min-w-[2.5rem]",
+                                                            isActive ? "text-[#C3D809]" : "text-white/20",
+                                                        ].join(" ")}>
+                                                            {String(i + 1).padStart(2, "0")}
+                                                        </div>
+                                                        {isActive && (
+                                                            <div className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
+                                                        )}
                                                     </div>
 
                                                     {/* Name & Expanded Body */}
                                                     <div className="flex flex-col justify-center">
                                                         <h3 className={[
                                                             "font-black tracking-tight transition-all duration-500",
-                                                            "text-[clamp(1.5rem,5vw,3rem)]",
+                                                            "text-[clamp(1.2rem,4vw,2.5rem)]",
                                                             isActive ? "text-white" : "text-white/80 group-hover:text-white",
                                                         ].join(" ")}
                                                             style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
@@ -1248,12 +1271,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             {/* Large Quote Design */}
                                             <div className="relative px-4 sm:px-12">
                                                 {/* Visual Quote Icon Decor */}
-                                                <div className="absolute -top-12 -right-8 text-[#C3D809]/5 select-none rotate-12">
-                                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21ZM5 21V18C5 16.8954 5.89543 16 7 16H10C11.1046 16 12 16.8954 12 18V21C12 22.1046 11.1046 23 10 23H7C5.89543 23 5 22.1046 5 21Z"/></svg>
+                                                <div className="absolute -top-10 -right-4 sm:-top-12 sm:-right-8 text-[#C3D809]/5 select-none rotate-12">
+                                                    <svg width="80" height="80" className="sm:w-[120px] sm:h-[120px]" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21ZM5 21V18C5 16.8954 5.89543 16 7 16H10C11.1046 16 12 16.8954 12 18V21C12 22.1046 11.1046 23 10 23H7C5.89543 23 5 22.1046 5 21Z"/></svg>
                                                 </div>
 
-                                                <h3 className="relative z-10 leading-[1.6] text-white/90 font-medium tracking-tight mb-12 max-w-4xl" 
-                                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(1.25rem, 3.5vw, 2.25rem)" }}>
+                                                <h3 className="relative z-10 leading-[1.6] text-white/90 font-medium tracking-tight mb-8 sm:mb-12 max-w-4xl" 
+                                                    style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(1.1rem, 3.5vw, 2.1rem)" }}>
                                                     &ldquo;{tData(mockReviews[activeReviewIndex]?.comment, lang) || (lang === 'ar' ? "تجربة ممتازة وخدمة احترافية" : "Excellent experience and professional service")}&rdquo;
                                                 </h3>
                                             </div>

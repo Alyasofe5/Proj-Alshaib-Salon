@@ -152,7 +152,7 @@ export default function BarberChair3D() {
                         enableZoom={false}
                         enablePan={false}
                         autoRotate={false}
-                        enableRotate={!isLowEnd.current}
+                        enableRotate={false}
                     />
                 </Canvas>
             </div>

@@ -43,10 +43,11 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
     return (
         <span ref={ref} className="inline-block relative">
             <span className="relative z-10">{count}{suffix}</span>
+            {/* Glow only for mobile screens */}
             <motion.span 
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={isInView ? { opacity: 0.15, scale: 1.2 } : {}}
-                className="absolute inset-0 blur-xl bg-[#C3D809] rounded-full z-0"
+                className="absolute inset-0 blur-xl bg-[#C3D809] rounded-full z-0 sm:hidden"
             />
         </span>
     );
@@ -880,13 +881,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     const suffixPart = stat.n.toString().replace(/[0-9]/g, "");
                                     return (
                                         <div key={i} className="space-y-2.5">
-                                            <h4 className="font-black text-[clamp(1.2rem,4.5vw,2.75rem)] tracking-tighter" 
-                                                style={{ 
-                                                    fontFamily: "'Playfair Display', 'Oswald', sans-serif",
-                                                    background: "linear-gradient(135deg, #C3D809 0%, #8A9A06 100%)",
-                                                    WebkitBackgroundClip: "text",
-                                                    WebkitTextFillColor: "transparent"
-                                                }}>
+                                            <h4 className="font-black text-[clamp(1.2rem,4.5vw,2.75rem)] tracking-tighter bg-gradient-to-br from-[#C3D809] to-[#8A9A06] bg-clip-text text-transparent sm:text-[#C3D809] sm:bg-none sm:bg-clip-padding" 
+                                                style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif" }}>
                                                 <AnimatedCounter target={numPart} suffix={suffixPart} />
                                             </h4>
                                             <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]" 
@@ -986,7 +982,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             {String(i + 1).padStart(2, "0")}
                                                         </div>
                                                         {isActive && (
-                                                            <div className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
+                                                            <div className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0 sm:hidden" />
                                                         )}
                                                     </div>
 

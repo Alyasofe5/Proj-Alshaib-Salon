@@ -174,44 +174,83 @@ export default function BookingModal({
                         return (
                           <motion.div 
                             key={s.id}
-                            initial={{ opacity: 0, x: idx % 2 === 0 ? -10 : 10 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
-                            whileTap={{ scale: 0.97 }} 
+                            whileTap={{ scale: 0.98 }} 
                             onClick={() => toggleSrv(s.id)}
-                            className={`relative group flex items-center p-5 sm:p-6 rounded-[2.5rem] cursor-pointer transition-all duration-500 overflow-hidden ${active ? "bg-[#C3D809]/[0.12] ring-1 ring-[#C3D809]/30" : "bg-white/[0.03] ring-1 ring-white/5 hover:bg-white/[0.05]"}`}
+                            className={`relative group flex items-center p-4 sm:p-5 rounded-[2rem] cursor-pointer transition-all duration-500 overflow-hidden border ${
+                              active 
+                                ? "bg-[#C3D809]/[0.08] border-[#C3D809]/40 shadow-[0_0_30px_rgba(195,216,9,0.05)]" 
+                                : "bg-white/[0.03] border-white/5 hover:border-white/10 hover:bg-white/[0.05]"
+                            }`}
                           >
                              {/* Service Media */}
-                             <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl overflow-hidden bg-black/40 border border-white/5 shrink-0">
+                             <div className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-black/40 shrink-0 transition-all duration-500 ${active ? "ring-2 ring-[#C3D809]/50 shadow-lg shadow-[#C3D809]/20" : "border border-white/5"}`}>
                                 {assetUrl(s.image || (s as any).image_path) ? (
                                   <img 
                                     src={assetUrl(s.image || (s as any).image_path)!} 
-                                    className={`w-full h-full object-cover transition-transform duration-1000 ${active ? "scale-110" : "group-hover:scale-105"}`} 
+                                    className={`w-full h-full object-cover transition-transform duration-1000 ${active ? "scale-110" : "group-hover:scale-110"}`} 
                                     alt={s.name}
+                                    onError={(e) => {
+                                      (e.target as any).style.display = 'none';
+                                      (e.target as any).parentElement.querySelector('.fallback-icon').style.display = 'flex';
+                                    }}
                                   />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center opacity-20"><Scissors size={28} /></div>
-                                )}
-                                {active && <div className="absolute inset-0 bg-[#C3D809]/20 flex items-center justify-center"><Check size={32} strokeWidth={4} className="text-black" /></div>}
-                             </div>
+                                ) : null}
+                                
+                                <div className={`fallback-icon absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none ${assetUrl(s.image || (s as any).image_path) ? 'hidden' : 'flex'}`}>
+                                    <Scissors size={28} />
+                                </div>
 
+                                {active && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="absolute inset-0 bg-[#C3D809]/80 backdrop-blur-[2px] flex items-center justify-center"
+                                  >
+                                    <Check size={32} strokeWidth={4} className="text-black" />
+                                  </motion.div>
+                                )}
+                             </div>
+ 
                              {/* Service Details */}
                              <div className="flex-1 px-5 min-w-0">
-                                <h4 className="text-white text-lg sm:text-xl font-black mb-1 truncate" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
-                                  {tData(s.name, lang)}
-                                </h4>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className={`text-lg sm:text-xl font-black truncate transition-colors duration-300 ${active ? "text-[#C3D809]" : "text-white"}`} style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                    {tData(s.name, lang)}
+                                  </h4>
+                                  {idx === 0 && (
+                                    <span className="shrink-0 text-[7px] bg-[#C3D809] text-black px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter shadow-sm shadow-[#C3D809]/20">Popular</span>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-3">
-                                   <span className="flex items-center gap-1 text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                                      <Clock size={10} /> {s.duration_minutes || 0} {lang === 'ar' ? "دقيقة" : "min"}
+                                   <span className="flex items-center gap-1 text-white/30 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
+                                      <Clock size={10} className={active ? "text-[#C3D809]/50" : ""} /> {s.duration_minutes || 0} {lang === 'ar' ? "دقيقة" : "min"}
                                    </span>
-                                   {idx === 0 && <span className="text-[8px] bg-[#C3D809] text-black px-1.5 py-0.5 rounded-full font-black uppercase">Popular</span>}
+                                   <div className={`h-1 w-1 rounded-full ${active ? "bg-[#C3D809]/30" : "bg-white/10"}`} />
+                                   <span className="text-[9px] sm:text-[10px] font-bold text-white/20 uppercase tracking-tight truncate max-w-[100px]">Elite Service</span>
+                                </div>
+                             </div>
+ 
+                             <div className="text-right shrink-0">
+                                <div className="flex flex-col items-end">
+                                    <span className={`block text-xl sm:text-2xl font-black tracking-tighter transition-all duration-300 ${active ? "text-[#C3D809] scale-105" : "text-white"}`}>
+                                        {s.price} <small className="text-[10px] opacity-70">JOD</small>
+                                    </span>
+                                    <span className="text-white/10 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest mt-0.5">
+                                        {lang === 'ar' ? "يبدأ من" : "FROM"}
+                                    </span>
                                 </div>
                              </div>
 
-                             <div className="text-right">
-                                <span className={`block text-xl sm:text-2xl font-black tracking-tighter ${active ? "text-[#C3D809]" : "text-white"}`}>{s.price} JOD</span>
-                                <span className="text-white/10 text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? "السعر يبدأ من" : "STARTING AT"}</span>
-                             </div>
+                             {/* Interactive Background Glow for active state */}
+                             {active && (
+                               <motion.div 
+                                 layoutId="active-glow"
+                                 className="absolute -inset-x-20 -inset-y-10 bg-[#C3D809]/[0.02] blur-[40px] z-[-1]"
+                               />
+                             )}
                           </motion.div>
                         );
                       })}
@@ -219,21 +258,20 @@ export default function BookingModal({
                   )}
 
                   {step === 2 && (
-                    <motion.div key="s2-barbers" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      {/* Anyone Option (Card Style) */}
+                    <motion.div key="s2-barbers" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scal                      {/* Anyone Option (Card Style) */}
                       <motion.div 
-                        whileHover={{ y: -5 }} whileTap={{ scale: 0.97 }} 
+                        whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} 
                         onClick={() => { setSel(p => ({ ...p, employee_id: 0 })); setStep(3); }}
-                        className={`flex flex-col items-center justify-center p-8 rounded-[3rem] transition-all duration-500 border relative overflow-hidden ${sel.employee_id === 0 ? "bg-[#C3D809]/10 border-[#C3D809]/30" : "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]"}`}
+                        className={`group flex flex-col items-center justify-center p-8 rounded-[3rem] transition-all duration-500 border relative overflow-hidden ${sel.employee_id === 0 ? "bg-[#C3D809]/[0.08] border-[#C3D809]/40 shadow-[0_20px_40px_rgba(195,216,9,0.1)]" : "bg-white/[0.03] border-white/5 hover:bg-white/[0.06]"}`}
                       >
-                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${sel.employee_id === 0 ? "bg-[#C3D809] text-black shadow-[0_0_40px_rgba(195,216,9,0.3)]" : "bg-white/5 text-white/30"}`}>
+                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${sel.employee_id === 0 ? "bg-[#C3D809] text-black shadow-[0_0_30px_rgba(195,216,9,0.4)] scale-110" : "bg-white/5 text-white/30 group-hover:scale-105"}`}>
                             <Sparkles size={32} />
                          </div>
-                         <h4 className="text-white text-xl font-black text-center" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
+                         <h4 className={`text-xl font-black text-center transition-colors ${sel.employee_id === 0 ? "text-[#C3D809]" : "text-white"}`} style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
                             {lang === 'ar' ? "أي حلاق متاح" : "First Available"}
                          </h4>
-                         <p className="text-white/20 text-xs text-center mt-2 font-medium tracking-wide">{lang === 'ar' ? "دخول أسرع وأسهل" : "Fastest entry, best match"}</p>
-                         {sel.employee_id === 0 && <div className="absolute top-4 right-6 text-[#C3D809] animate-bounce"><CheckCircle2 size={24} /></div>}
+                         <p className="text-white/20 text-[10px] text-center mt-2 font-black uppercase tracking-widest">{lang === 'ar' ? "دخول أسرع" : "FASTEST ENTRY"}</p>
+                         {sel.employee_id === 0 && <div className="absolute top-6 right-8 text-[#C3D809]"><CheckCircle2 size={24} /></div>}
                       </motion.div>
 
                       {employees.map(emp => {
@@ -241,32 +279,50 @@ export default function BookingModal({
                         return (
                           <motion.div 
                             key={emp.id}
-                            whileHover={{ y: -5 }} whileTap={{ scale: 0.97 }} 
+                            whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} 
                             onClick={() => { setSel(p => ({ ...p, employee_id: emp.id })); setStep(3); }}
-                            className={`flex flex-col p-6 rounded-[3rem] transition-all duration-500 border relative overflow-hidden ${active ? "bg-[#C3D809]/10 border-[#C3D809]/30" : "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]"}`}
+                            className={`group flex flex-col items-center p-8 rounded-[3rem] transition-all duration-500 border relative overflow-hidden ${active ? "bg-[#C3D809]/[0.08] border-[#C3D809]/40 shadow-[0_20px_40px_rgba(195,216,9,0.1)]" : "bg-white/[0.03] border-white/5 hover:bg-white/[0.06]"}`}
                           >
-                             <div className="flex items-center gap-5 mb-5">
-                                <div className={`w-20 h-20 rounded-[2rem] overflow-hidden shrink-0 border-2 p-1 transition-all ${active ? "border-[#C3D809] shadow-lg shadow-[#C3D809]/10" : "border-white/10 grayscale opacity-60"}`}>
+                             {/* Avatar Composition */}
+                             <div className={`relative w-24 h-24 mb-6 transition-all duration-500 ${active ? "scale-110" : "group-hover:scale-105"}`}>
+                                <div className={`w-full h-full rounded-[2.5rem] overflow-hidden border-2 p-1 transition-all ${active ? "border-[#C3D809] shadow-lg shadow-[#C3D809]/20" : "border-white/10 grayscale-[50%] group-hover:grayscale-0"}`}>
                                     {assetUrl(emp.avatar || (emp as any).photo_path) ? (
-                                      <img src={assetUrl(emp.avatar || (emp as any).photo_path)!} className="w-full h-full rounded-[1.75rem] object-cover" alt={emp.name} />
+                                      <img src={assetUrl(emp.avatar || (emp as any).photo_path)!} className="w-full h-full rounded-[2rem] object-cover" alt={emp.name} />
                                     ) : (
-                                      <div className="w-full h-full rounded-[1.75rem] bg-white/10" />
+                                      <div className="w-full h-full rounded-[2rem] bg-white/5 flex items-center justify-center text-white/10"><UserCircle size={40} /></div>
                                     )}
                                 </div>
-                                <div className="min-w-0">
-                                   <h4 className="text-white text-2xl font-black truncate leading-tight" style={{ fontFamily: lang === 'en' ? "'Playfair Display', serif" : "'Noto Sans Arabic', sans-serif" }}>
-                                      {tData(emp.name, lang)}
-                                   </h4>
-                                   <span className="text-[#C3D809] text-[10px] uppercase font-black tracking-widest block mt-1">{tData(emp.role || "Elite Barber", lang)}</span>
-                                </div>
+                                {active && <div className="absolute -top-2 -right-2 bg-[#C3D809] text-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg"><Check size={20} strokeWidth={4} /></div>}
                              </div>
-                             <div className="mt-auto flex items-center justify-between">
-                                <div className="flex -space-x-1">
-                                   {[1, 2, 3, 4, 5].map(v => <div key={v} className="w-1.5 h-1.5 rounded-full bg-[#C3D809]" />)}
-                                </div>
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${active ? "text-white" : "text-white/20"}`}>{lang === 'ar' ? "متفرغ الآن" : "AVAILABLE"}</span>
+
+                             {/* Name & Role Centered */}
+                             <div className="text-center w-full px-2">
+                                <h4 className={`text-lg sm:text-xl font-black leading-tight mb-2 transition-colors ${active ? "text-[#C3D809]" : "text-white"}`} 
+                                    style={{ 
+                                        fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif",
+                                        wordBreak: "break-word"
+                                    }}>
+                                   {tData(emp.name, lang)}
+                                </h4>
+                                <span className={`text-[9px] uppercase font-black tracking-[0.2em] transition-opacity ${active ? "text-[#C3D809] opacity-100" : "text-white/20 opacity-60"}`}>
+                                    {tData(emp.role || "Elite Barber", lang)}
+                                </span>
                              </div>
-                             {active && <div className="absolute top-4 right-6 text-[#C3D809]"><CheckCircle2 size={24} /></div>}
+
+                             {/* Bottom Status */}
+                             <div className="mt-8 pt-4 border-t border-white/5 w-full flex items-center justify-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#C3D809] animate-pulse" />
+                                <span className={`text-[8px] font-black uppercase tracking-widest ${active ? "text-white" : "text-white/20"}`}>
+                                    {lang === 'ar' ? "متوفر الآن" : "AVAILABLE"}
+                                </span>
+                             </div>
+                             
+                             {active && (
+                               <motion.div 
+                                 layoutId="active-emp-glow"
+                                 className="absolute inset-0 bg-gradient-to-b from-[#C3D809]/[0.03] to-transparent z-[-1]"
+                               />
+                             )}
                           </motion.div>
                         );
                       })}

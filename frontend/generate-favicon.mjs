@@ -1,91 +1,71 @@
 import sharp from "sharp";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 
-const SIZE = 64;
-const BORDER = 3;
-const INNER = SIZE - BORDER * 2;
+// Configuration for high-quality PWA icons
+const sizes = [192, 512, 180]; // Standard PWA sizes
+const outputFiles = ["public/icon-192.png", "public/icon-512.png", "public/apple-touch-icon.png"];
 
-// Load the logo with black background
+// Load the source logo
 const logoBuffer = readFileSync("public/images/logo_new.png");
 
-// Resize logo to fit inside the circle
-const logoResized = await sharp(logoBuffer)
-  .resize(INNER - 4, INNER - 4, { fit: "contain" })
-  .toBuffer();
+async function generateIcons() {
+  try {
+    for (let i = 0; i < sizes.length; i++) {
+        const size = sizes[i];
+        const outputFile = outputFiles[i];
 
-// Create circular mask for the logo
-const circleMask = Buffer.from(
-  `<svg width="${INNER - 4}" height="${INNER - 4}">
-    <circle cx="${(INNER - 4) / 2}" cy="${(INNER - 4) / 2}" r="${(INNER - 4) / 2}" fill="white"/>
-  </svg>`
-);
+        // 1. Create a solid black background
+        const blackBg = await sharp({
+            create: {
+                width: size,
+                height: size,
+                channels: 4,
+                background: { r: 0, g: 0, b: 0, alpha: 1 }
+            }
+        }).png().toBuffer();
 
-// Apply circular mask to logo
-const logoCircular = await sharp(logoResized)
-  .composite([{ input: circleMask, blend: "dest-in" }])
-  .png()
-  .toBuffer();
+        // 2. Prepare the LOGO
+        // Safe size for splash screen (centered with breathing room)
+        const logoSize = Math.floor(size * 0.75); 
+        
+        // Creative "Neon Bloom" Effect:
+        // Create a blurred lime-tinted version of the logo to act as a glow
+        // Using Maqass Lime: #C3D809 (r: 195, g: 216, b: 9)
+        const glowBuffer = await sharp(logoBuffer)
+            .resize(logoSize, logoSize, { fit: "contain" })
+            .tint({ r: 195, g: 216, b: 9 })
+            .blur(size * 0.05) 
+            .toBuffer();
 
-// Use logo as-is (already has black background)
-const logoFinal = logoCircular;
+        const logoResized = await sharp(logoBuffer)
+            .resize(logoSize, logoSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+            .toBuffer();
 
-// Create the black inner circle background
-const innerCircleSvg = `<svg width="${INNER}" height="${INNER}">
-  <circle cx="${INNER / 2}" cy="${INNER / 2}" r="${INNER / 2}" fill="black"/>
-</svg>`;
+        // 3. Composite everything together
+        await sharp(blackBg)
+            .composite([
+                { input: glowBuffer, gravity: "center", blend: "screen" },
+                { input: logoResized, gravity: "center" }
+            ])
+            .png()
+            .toFile(outputFile);
 
-// Create the gradient border circle (yellow-green)
-const outerCircleSvg = `<svg width="${SIZE}" height="${SIZE}">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#c3d809"/>
-      <stop offset="100%" stop-color="#1a1f00"/>
-    </linearGradient>
-  </defs>
-  <circle cx="${SIZE / 2}" cy="${SIZE / 2}" r="${SIZE / 2}" fill="url(#g)"/>
-</svg>`;
-
-// Create a solid black background square
-const blackBackground = await sharp({
-  create: {
-    width: SIZE,
-    height: SIZE,
-    channels: 4,
-    background: { r: 0, g: 0, b: 0, alpha: 1 }
+        // Also save for app/icon.png (Next.js favicon)
+        if (size === 512) {
+            await sharp(blackBg)
+                .composite([
+                    { input: glowBuffer, gravity: "center", blend: "screen" },
+                    { input: logoResized, gravity: "center" }
+                ])
+                .png()
+                .toFile("app/icon.png");
+        }
+    }
+    
+    console.log("✅ Icons (PWA & Favicon) generated successfully with premium NEON BLOOM look!");
+  } catch (error) {
+    console.error("❌ Error generating icons:", error);
   }
-}).png().toBuffer();
+}
 
-// Compose: Background square + outer gradient circle + inner black circle + logo
-const favicon = await sharp(blackBackground)
-  .composite([
-    {
-        input: Buffer.from(outerCircleSvg),
-        top: 0,
-        left: 0
-    },
-    {
-      input: Buffer.from(innerCircleSvg),
-      left: BORDER,
-      top: BORDER,
-    },
-    {
-      input: logoFinal,
-      left: BORDER + 2,
-      top: BORDER + 2,
-    },
-  ])
-  .png()
-  .toBuffer();
-
-// Save as app/icon.png (Next.js uses this as favicon)
-writeFileSync("app/icon.png", favicon);
-
-// Also save larger versions for PWA icons
-const favicon192 = await sharp(favicon).resize(192, 192).png().toBuffer();
-const favicon512 = await sharp(favicon).resize(512, 512).png().toBuffer();
-
-writeFileSync("public/icon-192.png", favicon192);
-writeFileSync("public/icon-512.png", favicon512);
-writeFileSync("public/apple-touch-icon.png", await sharp(favicon).resize(180, 180).png().toBuffer());
-
-console.log("✅ Favicon generated successfully!");
+generateIcons();

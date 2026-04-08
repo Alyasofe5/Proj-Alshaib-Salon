@@ -161,7 +161,10 @@ const tData = (text: string | null | undefined, lang: 'ar' | 'en'): string => {
     
     if (lang === 'ar') return text;
     
-    const cleanText = text.trim();
+    // For non-Arabic, try auto-translation
+    const cleanText = (text || "").trim();
+    if (!cleanText) return "";
+    
     if (AUTO_TRANSLATE_MAP[cleanText]) return AUTO_TRANSLATE_MAP[cleanText];
     
     let translated = cleanText;
@@ -514,9 +517,9 @@ function BookingContent({ params }: { params: { slug: string } }) {
         </div>
     );
     const mockReviews = (salon && (salon as any).reviews?.length) ? (salon as any).reviews : [
-        { id: 1, customer_name: lang === 'en' ? "Ahmed Abdullah" : "\u0623\u062d\u0645\u062f \u0627\u0644\u0639\u0628\u062f\u0627\u0644\u0644\u0647", rating: 5, comment: lang === 'en' ? "Very professional service, the barber understood exactly what I wanted." : "\u062e\u062f\u0645\u0629 \u062d\u062a\u0631\u0627\u0641\u064a\u0629 \u062c\u062f\u0627\u064b\u060c \u0627\u0644\u062d\u0644\u0627\u0642 \u0641\u0647\u0645 \u0642\u0635\u0629 \u0627\u0644\u0634\u0631 \u0627\u0644\u0644\u064a \u0623\u0631\u064a\u062f\u0647\u0627 \u0628\u0627\u0644\u0636\u0628\u0637." },
-        { id: 2, customer_name: lang === 'en' ? "Mohammed Khaled" : "\u0645\u062d\u0645\u062f \u062e\u0627\u0644\u062f", rating: 5, comment: lang === 'en' ? "Very elegant place and excellent commitment. I recommend trying the skincare section." : "\u0627\u0644\u0645\u0643\u0627\u0646 \u0631\u0627\u0642\u064a \u062c\u062f\u0627\u064b \u0648\u0627\u0644\u062a\u0631\u0627\u0645 \u0645\u0645\u062a\u0627\u0632. \u0623\u0646\u0635\u062d \u0628\u062a\u062c\u0631\u0628\u0629 \u0642\u0633\u0645 \u0627\u0644\u0639\u0646\u0627\u064a\u0629 \u0628\u0627\u0644\u0628\u0634\u0631\u0629." },
-        { id: 3, customer_name: lang === 'en' ? "Salem Al-Marri" : "\u0633\u0627\u0644\u0645 \u0627\u0644\u0645\u0631\u064a", rating: 5, comment: lang === 'en' ? "Great experience and booking app is very easy. The price is reasonable for the quality." : "\u062a\u062c\u0631\u0628\u0629 \u0631\u0627\u0626\u0639\u0629 \u0648\u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u062d\u062c\u0632 \u0633\u0647\u0644 \u062c\u062f\u0627\u064b. \u0627\u0644\u0633\u0631 \u0645\u0646\u0627\u0633\u0628 \u0645\u0642\u0627\u0628\u0644 \u0627\u0644\u062c\u0648\u062f\u0629." }
+        { id: 1, customer_name: "أحمد العبدالله || Ahmed Abdullah", rating: 5, comment: "خدمة احترافية جداً، الحلاق فهم قصة الشعر اللي أريدها بالضبط. || Very professional service, the barber understood exactly what I wanted." },
+        { id: 2, customer_name: "محمد خالد || Mohammed Khaled", rating: 5, comment: "المكان راقي جداً والالتزام ممتاز. أنصح بتجربة قسم العناية بالبشرة. || Very elegant place and excellent commitment. I recommend trying the skincare section." },
+        { id: 3, customer_name: "سالم المري || Salem Al-Marri", rating: 5, comment: "تجربة رائعة وتطبيق الحجز سهل جداً. السعر مناسب مقابل الجودة. || Great experience and booking app is very easy. The price is reasonable for the quality." }
     ];
     const currentReview = mockReviews[Math.min(activeReviewIndex, Math.max(mockReviews.length - 1, 0))];
     const mockFaqs = salon.faqs?.length ? salon.faqs : [
@@ -568,14 +571,16 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 <div className="absolute inset-0 rounded-full blur-md opacity-20 bg-[#C3D809] animate-pulse" />
                                 
                                 <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-black flex items-center justify-center border-2 border-[#C3D809] shadow-[0_0_15px_rgba(195,216,9,0.3)]">
-                                    {salon.logo ? (
+                                    {resolveMediaUrl(salon.logo) ? (
                                         <img
-                                            src={salon.logo}
+                                            src={resolveMediaUrl(salon.logo)}
                                             alt={tData(salon.name, lang)}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <Scissors size={20} className="text-[#C3D809]" />
+                                        <div className="w-full h-full flex items-center justify-center bg-black">
+                                            <img src="/images/logo_new.png" className="w-5 h-5 opacity-80" alt="Maqass" />
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -1142,7 +1147,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 {employees.map((emp, i) => (
                                     <motion.div key={emp.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.8 }} className="group relative">
                                         <div className="relative overflow-hidden aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03]">
-                                            <img src={emp.avatar ? assetUrl(emp.avatar)! : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
+                                            <img src={resolveMediaUrl(emp.avatar) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
                                                 className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={tData(emp.name, lang)} />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-30" />
                                             <div className="absolute inset-0 border-[0.5px] border-white/0 group-hover:border-white/10 transition-all duration-700 m-3 sm:m-4 rounded-[1.25rem] sm:rounded-[1.5rem] pointer-events-none" />
@@ -1239,17 +1244,6 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                                             className="flex flex-col items-center text-center"
                                         >
-                                            {/* Rating Stars */}
-                                            <div className="flex gap-1.5 mb-8">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star 
-                                                        key={i} 
-                                                        size={18} 
-                                                        fill={i < (salon?.reviews?.[activeReviewIndex]?.rating || 5) ? "#C3D809" : "transparent"} 
-                                                        className={i < (salon?.reviews?.[activeReviewIndex]?.rating || 5) ? "text-[#C3D809]" : "text-white/10"} 
-                                                    />
-                                                ))}
-                                            </div>
 
                                             {/* Large Quote Design */}
                                             <div className="relative px-4 sm:px-12">
@@ -1260,7 +1254,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                                                 <h3 className="relative z-10 leading-[1.6] text-white/90 font-medium tracking-tight mb-12 max-w-4xl" 
                                                     style={{ fontFamily: "'Noto Sans Arabic', sans-serif", fontSize: "clamp(1.25rem, 3.5vw, 2.25rem)" }}>
-                                                    &ldquo;{tData(mockReviews[activeReviewIndex]?.comment, lang)}&rdquo;
+                                                    &ldquo;{tData(mockReviews[activeReviewIndex]?.comment, lang) || (lang === 'ar' ? "تجربة ممتازة وخدمة احترافية" : "Excellent experience and professional service")}&rdquo;
                                                 </h3>
                                             </div>
                                             
@@ -1268,7 +1262,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-col items-center">
                                                 <div className="w-12 h-1 bg-[#C3D809] mb-6 rounded-full" />
                                                 <h4 className="text-white text-lg sm:text-xl font-bold tracking-tight mb-1" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
-                                                    {tData(mockReviews[activeReviewIndex]?.customer_name, lang)}
+                                                    {tData(mockReviews[activeReviewIndex]?.customer_name, lang) || (lang === 'ar' ? "عميل سعيد" : "Happy Client")}
                                                 </h4>
                                                 <span className="text-[#C3D809] text-[11px] font-black uppercase tracking-[0.4em] opacity-60" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
                                                     {tData(mockReviews[activeReviewIndex]?.role || (lang === 'ar' ? "عميل موثق" : "Verified Client"), lang)}
@@ -1381,44 +1375,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
                         
                         {/* Realistic Floating Tools (Photos from NEW-PIC - Now 100% Transparent) */}
-                        <motion.div 
-                            initial={{ opacity: 0, x: -50, rotate: -20 }}
-                            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
-                            animate={{ y: [-20, 20, -20], rotate: [-10, 5, -10] }}
-                            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute top-[18%] left-[5%] w-[180px] sm:w-[280px] opacity-100 z-[5]"
-                        >
-                            <img src="/images/sticker_scissors.svg" alt="Scissors" 
-                                 className="w-full h-auto object-contain filter invert brightness-[2.5] drop-shadow-[0_0_40px_rgba(255,255,255,0.6)]" 
-                                 style={{ mixBlendMode: 'screen' }} />
-                        </motion.div>
 
-                        <motion.div 
-                            initial={{ opacity: 0, x: 50, rotate: 20 }}
-                            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
-                            animate={{ y: [0, -15, 0], rotate: [5, -5, 5] }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute top-[12%] right-[5%] w-[150px] sm:w-[240px] opacity-100 z-[5]"
-                        >
-                            <img src="/images/sticker_comb.svg" alt="Comb" 
-                                 className="w-full h-auto object-contain filter invert brightness-[2.5] drop-shadow-[0_0_40px_rgba(255,255,255,0.6)]"
-                                 style={{ mixBlendMode: 'screen' }} />
-                        </motion.div>
 
-                        <motion.div 
-                            initial={{ opacity: 0, y: 50, rotate: 10 }}
-                            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-                            animate={{ y: [-10, 10, -10], rotate: [2, -2, 2] }}
-                            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute bottom-[15%] right-[10%] w-[clamp(140px,30vw,280px)] z-[5] opacity-[0.8]"
-                        >
-                            <img src="/images/sticker_clipper.svg" alt="Clipper" 
-                                 className="w-full h-auto object-contain filter drop-shadow-[0_0_30px_rgba(195,216,9,0.4)]"
-                                 style={{ 
-                                     filter: "invert(84%) sepia(82%) saturate(4156%) hue-rotate(24deg) brightness(101%) contrast(98%)",
-                                     mixBlendMode: 'screen' 
-                                 }} />
-                        </motion.div>
 
                         <motion.div 
                             initial={{ opacity: 0, y: -50, rotate: -15 }}

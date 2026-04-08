@@ -897,9 +897,9 @@ export default function BookingSettingsPage() {
                                     <div key={item.id} className="w-40 flex-shrink-0 rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--color-surface)] transition-all hover:border-[var(--color-accent)]/50">
                                         <div className="aspect-square bg-black/20 relative">
                                             {item.file_type === "video" ? (
-                                                <video src={item.url} controls playsInline className="w-full h-full object-cover" />
+                                                <video src={assetUrl(item.file_path) || item.url} controls playsInline className="w-full h-full object-cover" />
                                             ) : (
-                                                <img src={item.url} alt="" className="w-full h-full object-cover" />
+                                                <img src={assetUrl(item.file_path) || item.url} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                         <div className="p-4 flex items-center justify-between gap-2">

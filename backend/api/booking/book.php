@@ -31,8 +31,17 @@ if ($method === 'GET') {
     ");
     $booked->execute([$salon['id'], $date]);
 
+    // الموظفين اللي عندهم إجازة اليوم
+    $leaves = $pdo->prepare("
+        SELECT employee_id FROM employee_leaves 
+        WHERE salon_id = ? AND leave_date = ?
+    ");
+    $leaves->execute([$salon['id'], $date]);
+    $offEmployeeIds = $leaves->fetchAll(PDO::FETCH_COLUMN);
+
     sendSuccess([
         'booked_slots' => $booked->fetchAll(),
+        'off_employees_ids' => $offEmployeeIds
     ]);
 }
 
@@ -77,6 +86,15 @@ if ($method === 'POST') {
     if (!$salon) sendError('الصالون غير موجود أو غير نشط', 404);
     $salonId = (int) $salon['id'];
 
+    // الجديد: تحقق من أن الحلاق ليس في إجازة
+    if ($employeeId) {
+        $leaveCheck = $pdo->prepare("SELECT id FROM employee_leaves WHERE employee_id = ? AND leave_date = ?");
+        $leaveCheck->execute([$employeeId, $bookingDate]);
+        if ($leaveCheck->fetch()) {
+            sendError('عذراً، هذا الحلاق في إجازة في هذا التاريخ، يرجى اختيار حلاق آخر أو تاريخ آخر');
+        }
+    }
+
     // تحقق من عدم تكرار الحجز (نفس الوقت + الموظف)
     if ($employeeId) {
         $check = $pdo->prepare("
@@ -89,11 +107,18 @@ if ($method === 'POST') {
             sendError('هذا الموعد محجوز مسبقاً لهذا الموظف، يرجى اختيار وقت آخر');
         }
     } else {
-        // إذا ما اختار حلاق — نتحقق إنه في على الأقل حلاق واحد متاح
+        // إذا ما اختار حلاق — نتحقق إنه في على الأقل حلاق واحد متاح (وليس في إجازة)
         $allEmployees = $pdo->prepare("SELECT id FROM employees WHERE salon_id = ? AND is_active = 1");
         $allEmployees->execute([$salonId]);
-        $empIds = $allEmployees->fetchAll(PDO::FETCH_COLUMN);
+        $activeEmpIds = $allEmployees->fetchAll(PDO::FETCH_COLUMN);
         
+        // استبعاد من هم في إجازة
+        $leaveEmps = $pdo->prepare("SELECT employee_id FROM employee_leaves WHERE salon_id = ? AND leave_date = ?");
+        $leaveEmps->execute([$salonId, $bookingDate]);
+        $onLeaveIds = $leaveEmps->fetchAll(PDO::FETCH_COLUMN);
+        
+        $empIds = array_diff($activeEmpIds, $onLeaveIds);
+
         if (count($empIds) > 0) {
             $placeholders = implode(',', array_fill(0, count($empIds), '?'));
             $checkAll = $pdo->prepare("
@@ -102,12 +127,14 @@ if ($method === 'POST') {
                 AND status IN ('pending','confirmed')
                 AND employee_id IN ($placeholders)
             ");
-            $checkAll->execute(array_merge([$salonId, $bookingDate, $bookingTime], $empIds));
+            $checkAll->execute(array_merge([$salonId, $bookingDate, $bookingTime], array_values($empIds)));
             $bookedEmpIds = $checkAll->fetchAll(PDO::FETCH_COLUMN);
             
             if (count($bookedEmpIds) >= count($empIds)) {
                 sendError('جميع الحلاقين محجوزين في هذا الوقت، يرجى اختيار وقت آخر');
             }
+        } else {
+            sendError('عذراً، لا يوجد حلاقون متاحون في هذا اليوم');
         }
     }
 

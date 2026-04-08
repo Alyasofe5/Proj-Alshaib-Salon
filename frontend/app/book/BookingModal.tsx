@@ -31,6 +31,7 @@ interface BookingModalProps {
   setSel: (v: BookingSel | ((p: BookingSel) => BookingSel)) => void;
   dates: string[];
   bookedSlots: any[];
+  offEmployeesIds: number[];
   fetchBooked: (empId: number, date: string) => void;
   genTimes: () => string[];
   totalPrice: number;
@@ -49,7 +50,7 @@ interface BookingModalProps {
 
 export default function BookingModal({
   isOpen, onClose, salon, services, employees, step, setStep, sel, setSel,
-  dates, bookedSlots, fetchBooked, genTimes, totalPrice, totalDur, selSrvs,
+  dates, bookedSlots, offEmployeesIds, fetchBooked, genTimes, totalPrice, totalDur, selSrvs,
   submitting, error, submitBooking, toggleSrv, lang, tData, subtotal, hasDiscount, discountPercent
 }: BookingModalProps) {
 
@@ -82,7 +83,7 @@ export default function BookingModal({
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
           <motion.div
@@ -258,7 +259,8 @@ export default function BookingModal({
                   )}
 
                   {step === 2 && (
-                    <motion.div key="s2-barbers" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scal                      {/* Anyone Option (Card Style) */}
+                    <motion.div key="s2-barbers" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Anyone Option (Card Style) */}
                       <motion.div 
                         whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} 
                         onClick={() => { setSel(p => ({ ...p, employee_id: 0 })); setStep(3); }}
@@ -358,7 +360,23 @@ export default function BookingModal({
                              {lang === 'ar' ? "المواعيد المتاحة" : "Available Slots"}
                           </div>
                           
-                          {genTimes().length > 0 ? (
+                          {sel.employee_id !== 0 && offEmployeesIds.includes(sel.employee_id) ? (
+                            <div className="flex flex-col items-center py-16 bg-red-500/[0.03] rounded-[3rem] border border-dashed border-red-500/20">
+                              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-6"><AlertCircle size={32} /></div>
+                              <h3 className="text-white text-lg font-black">{lang === 'ar' ? "الحلاق في إجازة" : "Barber on Leave"}</h3>
+                              <p className="text-white/40 text-xs mt-2 text-center px-8 lg:px-20 leading-relaxed">
+                                {lang === 'ar' 
+                                  ? "عذراً، هذا الحلاق غير متوفر في التاريخ المختار بسبب إجازة. يرجى اختيار تاريخ آخر أو العودة وتغيير الحلاق." 
+                                  : "Sorry, this barber is unavailable on the selected date. Please choose another date or go back and pick another barber."}
+                              </p>
+                              <button 
+                                onClick={() => setStep(2)}
+                                className="mt-8 px-8 py-3 bg-white/5 hover:bg-white/10 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                              >
+                                {lang === 'ar' ? "تغيير الحلاق" : "Change Barber"}
+                              </button>
+                            </div>
+                          ) : genTimes().length > 0 ? (
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                                {genTimes().map(t => {
                                  const isBooked = bookedSlots.some(b => (typeof b === "string" ? b : b?.booking_time) === t);
@@ -553,6 +571,6 @@ export default function BookingModal({
           </div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }

@@ -7,11 +7,13 @@ import { reportsAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import StatCard from "@/components/StatCard";
 
-import { FaUsers, FaCoins, FaPercent, FaCalendarAlt, FaPlusCircle } from "react-icons/fa";
-import { ReceiptText } from "lucide-react";
+import { FaUsers, FaCoins, FaPercent, FaCalendarAlt, FaPlusCircle, FaCalendarTimes, FaExclamationTriangle, FaTrash } from "react-icons/fa";
+import { ReceiptText, AlertCircle } from "lucide-react";
+import { employeesAPI } from "@/lib/api";
+import Modal from "@/components/Modal";
 
 interface EmpDashData {
-    employee: { name: string; commission_rate: number };
+    employee: { id: number; name: string; commission_rate: number };
     stats: { customers: number; income: number; commission: number };
     transactions: Array<{
         id: number;
@@ -29,7 +31,49 @@ export default function EmployeeDashboard() {
     const [monthCommission, setMonthCommission] = useState(0);
     const [monthCustomers, setMonthCustomers] = useState(0);
     const [loading, setLoading] = useState(true);
-    const { salon } = useAuthStore();
+    const { salon, user } = useAuthStore();
+    const [flash, setFlash] = useState<{ type: string; msg: string } | null>(null);
+
+    // Leave Management State
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [empLeaves, setEmpLeaves] = useState<any[]>([]);
+    const [newLeaveDate, setNewLeaveDate] = useState("");
+
+    const fetchLeaves = async () => {
+        if (!user?.employee_id) return;
+        try {
+            const res = await employeesAPI.getLeaves({ employee_id: user.employee_id.toString() });
+            setEmpLeaves(res.data.data);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleAddLeave = async () => {
+        if (!user?.employee_id || !newLeaveDate) return;
+        try {
+            await employeesAPI.addLeave({ employee_id: user.employee_id, leave_date: newLeaveDate });
+            setFlash({ type: "success", msg: "تم تسجيل الإجازة" });
+            fetchLeaves();
+            setNewLeaveDate("");
+        } catch (e: any) { setFlash({ type: "error", msg: e.response?.data?.message || "حدث خطأ" }); }
+    };
+
+    const handleDeleteLeave = async (id: number) => {
+        try {
+            await employeesAPI.deleteLeave(id);
+            fetchLeaves();
+        } catch (e) { console.error(e); }
+    };
+
+    const handleEmergency = async () => {
+        if (!user?.employee_id) return;
+        const reason = prompt("ما هو سبب الظرف الطارئ؟", "ظرف طارئ");
+        if (!reason) return;
+        if (!confirm(`سيتم إلغاء جميع حجوزاتك لليوم وإبلاغ العملاء. هل أنت متأكد؟`)) return;
+        try {
+            await employeesAPI.declareEmergency({ employee_id: user.employee_id, date: new Date().toISOString().split('T')[0], reason });
+            setFlash({ type: "success", msg: "تم إلغاء الحجوزات اليومية" });
+        } catch (e: any) { setFlash({ type: "error", msg: e.response?.data?.message || "حدث خطأ" }); }
+    };
 
     useEffect(() => {
         Promise.all([
@@ -42,32 +86,48 @@ export default function EmployeeDashboard() {
         }).catch(console.error).finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        if (showLeaveModal) fetchLeaves();
+    }, [showLeaveModal]);
+
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="spinner" /></div>;
     if (!data) return null;
 
     return (
         <>
+            {flash && (
+                <div className={`fixed top-4 left-4 right-4 z-50 p-4 rounded-xl text-white text-center font-bold animate-bounce ${flash.type === "success" ? "bg-green-500" : "bg-red-500"}`} onClick={() => setFlash(null)}>
+                    {flash.msg}
+                </div>
+            )}
+
             <div className="topbar">
                 <div>
                     <div className="topbar-title">أهلاً، <span>{data.employee.name}</span> 👋</div>
                     <div className="topbar-date"><FaCalendarAlt className="inline ml-1" /> {new Date().toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
                 </div>
-                <Link href="/employee/new-customer" className="btn-lime flex items-center gap-2"><FaPlusCircle /> تسجيل زبون جديد</Link>
+                <div className="flex gap-2">
+                    <button onClick={() => setShowLeaveModal(true)} className="btn-outline-lime px-4 py-2 border flex items-center gap-2"><FaCalendarTimes /> إجازاتي</button>
+                    <Link href="/employee/new-customer" className="btn-lime flex items-center gap-2"><FaPlusCircle /> تسجيل زبون</Link>
+                </div>
             </div>
 
             <div className="content-area">
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     <StatCard icon={<FaUsers />} value={data.stats.customers} label="زبائن اليوم" color="lime" />
-                    <StatCard icon={<FaCoins />} value={data.stats.income.toFixed(3)} label="مبيعات اليوم (د.أ)" color="green" />
-                    <StatCard icon={<FaPercent />} value={data.stats.commission.toFixed(3)} label="عمولتي اليوم (د.أ)" sub={`${data.employee.commission_rate}% عمولة`} color="blue" />
-                    <StatCard icon={<FaCalendarAlt />} value={monthCommission.toFixed(3)} label="عمولة الشهر (د.أ)" sub={`${monthCustomers} زبون هذا الشهر`} color="purple" />
+                    <StatCard icon={<FaCoins />} value={data.stats.income.toFixed(3)} label="مبيعات اليوم" color="green" />
+                    <StatCard icon={<FaPercent />} value={data.stats.commission.toFixed(3)} label="عمولتي اليوم" color="blue" />
+                    <StatCard icon={<FaExclamationTriangle />} value="ظرف طارئ" label="يجب إلغاء الحجوزات" onClick={handleEmergency} color="red" />
                 </div>
 
                 {/* Big CTA */}
-                <div className="text-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
                     <Link href="/employee/new-customer" className="inline-flex items-center gap-3 px-10 py-5 rounded-xl text-black font-extrabold text-lg transition-all hover:-translate-y-1" style={{ background: "linear-gradient(135deg, #C3D809, #D4EC0A)", boxShadow: "0 8px 30px rgba(195,216,9,0.4)" }}>
                         <FaPlusCircle size={24} /> تسجيل زبون جديد
                     </Link>
+                    <button onClick={handleEmergency} className="inline-flex items-center gap-3 px-10 py-5 rounded-xl text-white font-extrabold text-lg transition-all hover:-translate-y-1 bg-red-600 shadow-lg shadow-red-900/20">
+                        <FaExclamationTriangle size={24} /> ظرف طارئ اليوم
+                    </button>
                 </div>
 
                 {/* Today Transactions */}
@@ -90,8 +150,45 @@ export default function EmployeeDashboard() {
                         </tbody>
                     </table>
                 </motion.div>
-
             </div>
+
+            {/* Leave Modal */}
+            <Modal
+                isOpen={showLeaveModal}
+                onClose={() => setShowLeaveModal(false)}
+                title="إدارة إجازاتي"
+                icon={<FaCalendarTimes />}
+                footer={<button className="btn-outline-lime w-full" onClick={() => setShowLeaveModal(false)}>إغلاق</button>}
+            >
+                <div className="space-y-6">
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                        <h5 className="text-accent-lime text-xs font-black uppercase tracking-widest mb-4">طلب إجازة جديدة</h5>
+                        <div className="flex gap-2">
+                            <input 
+                                type="date" 
+                                className="form-input flex-1" 
+                                value={newLeaveDate} 
+                                onChange={e => setNewLeaveDate(e.target.value)} 
+                                min={new Date().toISOString().split('T')[0]}
+                            />
+                            <button className="btn-lime px-4" onClick={handleAddLeave} disabled={!newLeaveDate}>إضافة</button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                         <h5 className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">إجازاتي القادمة</h5>
+                         <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2">
+                            {empLeaves.map(l => (
+                                <div key={l.id} className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                                    <span className="text-white font-bold">{l.leave_date}</span>
+                                    <button onClick={() => handleDeleteLeave(l.id)} className="text-red-500 hover:scale-110 transition-transform"><FaTrash size={12} /></button>
+                                </div>
+                            ))}
+                            {empLeaves.length === 0 && <p className="text-center py-4 text-white/10 text-xs">لا يوجد إجازات مسجلة</p>}
+                         </div>
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 }

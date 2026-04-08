@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { employeesAPI } from "@/lib/api";
 import Modal from "@/components/Modal";
-import { FaUsers, FaPlus, FaEdit, FaTrash, FaPhone } from "react-icons/fa";
+import { FaUsers, FaPlus, FaEdit, FaTrash, FaPhone, FaCalendarTimes, FaExclamationTriangle } from "react-icons/fa";
 
 interface Employee {
     id: number;
@@ -24,6 +24,47 @@ export default function EmployeesPage() {
     const [showModal, setShowModal] = useState(false);
     const [editingEmp, setEditingEmp] = useState<Employee | null>(null);
     const [flash, setFlash] = useState<{ type: string; msg: string } | null>(null);
+
+    // Leave Management State
+    const [leaveModalEmp, setLeaveModalEmp] = useState<Employee | null>(null);
+    const [empLeaves, setEmpLeaves] = useState<any[]>([]);
+    const [newLeaveDate, setNewLeaveDate] = useState("");
+
+    const openLeaveModal = async (emp: Employee) => {
+        setLeaveModalEmp(emp);
+        try {
+            const res = await employeesAPI.getLeaves({ employee_id: emp.id.toString() });
+            setEmpLeaves(res.data.data);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleAddLeave = async () => {
+        if (!leaveModalEmp || !newLeaveDate) return;
+        try {
+            await employeesAPI.addLeave({ employee_id: leaveModalEmp.id, leave_date: newLeaveDate });
+            setFlash({ type: "success", msg: "تم تسجيل الإجازة" });
+            openLeaveModal(leaveModalEmp); // Refresh
+            setNewLeaveDate("");
+        } catch (e: any) { setFlash({ type: "error", msg: e.response?.data?.message || "حدث خطأ" }); }
+    };
+
+    const handleDeleteLeave = async (id: number) => {
+        try {
+            await employeesAPI.deleteLeave(id);
+            if (leaveModalEmp) openLeaveModal(leaveModalEmp);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleEmergency = async (emp: Employee) => {
+        const reason = prompt("ما هو سبب الظرف الطارئ؟", "ظرف طارئ");
+        if (!reason) return;
+        if (!confirm(`سيتم إلغاء جميع حجوزات ${emp.name} لليوم وإبلاغ العملاء. هل أنت متأكد؟`)) return;
+        try {
+            await employeesAPI.declareEmergency({ employee_id: emp.id, date: new Date().toISOString().split('T')[0], reason });
+            setFlash({ type: "success", msg: "تم إلغاء الحجوزات وتسجيل الإجازة الطارئة" });
+            fetchData();
+        } catch (e: any) { setFlash({ type: "error", msg: e.response?.data?.message || "حدث خطأ" }); }
+    };
 
     // Form state
     const [form, setForm] = useState({
@@ -182,13 +223,31 @@ export default function EmployeesPage() {
                                             <button
                                                 onClick={() => openEditModal(emp)}
                                                 className="p-2 rounded-lg transition-colors"
+                                                title="تعديل"
                                                 style={{ background: "rgba(195,216,9,0.1)", border: "1px solid rgba(195,216,9,0.3)", color: "var(--color-accent)" }}
                                             >
                                                 <FaEdit size={12} />
                                             </button>
+                                            <button 
+                                                onClick={() => openLeaveModal(emp)}
+                                                className="p-2 rounded-lg transition-colors"
+                                                title="الإجازات"
+                                                style={{ background: "rgba(255,165,0,0.1)", border: "1px solid rgba(255,165,0,0.3)", color: "orange" }}
+                                            >
+                                                <FaCalendarTimes size={12} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleEmergency(emp)}
+                                                className="p-2 rounded-lg transition-colors animate-pulse"
+                                                title="ظرف طارئ اليوم"
+                                                style={{ background: "rgba(231,76,60,0.1)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}
+                                            >
+                                                <FaExclamationTriangle size={12} />
+                                            </button>
                                             <button
                                                 onClick={() => handleDelete(emp.id)}
                                                 className="p-2 rounded-lg transition-colors"
+                                                title="حذف"
                                                 style={{ background: "rgba(231,76,60,0.1)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}
                                             >
                                                 <FaTrash size={12} />
@@ -208,6 +267,44 @@ export default function EmployeesPage() {
                     </table>
                 </motion.div>
             </div>
+
+            {/* Leave Management Modal */}
+            <Modal
+                isOpen={!!leaveModalEmp}
+                onClose={() => setLeaveModalEmp(null)}
+                title={`إجازات الحلاق: ${leaveModalEmp?.name}`}
+                icon={<FaCalendarTimes />}
+                footer={<button className="btn-outline-lime w-full" onClick={() => setLeaveModalEmp(null)}>إغلاق</button>}
+            >
+                <div className="space-y-6">
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                        <h5 className="text-accent-lime text-xs font-black uppercase tracking-widest mb-4">إضافة يوم إجازة</h5>
+                        <div className="flex gap-2">
+                            <input 
+                                type="date" 
+                                className="form-input flex-1" 
+                                value={newLeaveDate} 
+                                onChange={e => setNewLeaveDate(e.target.value)} 
+                                min={new Date().toISOString().split('T')[0]}
+                            />
+                            <button className="btn-lime px-4" onClick={handleAddLeave} disabled={!newLeaveDate}>إضافة</button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                         <h5 className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">الإجازات القادمة</h5>
+                         <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2">
+                            {empLeaves.map(l => (
+                                <div key={l.id} className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                                    <span className="text-white font-bold">{l.leave_date}</span>
+                                    <button onClick={() => handleDeleteLeave(l.id)} className="text-red-500 hover:scale-110 transition-transform"><FaTrash size={12} /></button>
+                                </div>
+                            ))}
+                            {empLeaves.length === 0 && <p className="text-center py-4 text-white/10 text-xs">لا يوجد إجازات مسجلة</p>}
+                         </div>
+                    </div>
+                </div>
+            </Modal>
 
             {/* Add/Edit Modal */}
             <Modal

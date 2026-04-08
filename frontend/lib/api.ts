@@ -66,6 +66,16 @@ export const employeesAPI = {
     update: (id: number, data: Record<string, unknown>) =>
         api.put(`/employees/manage.php?id=${id}`, data),
     delete: (id: number) => api.delete(`/employees/manage.php?id=${id}`),
+    
+    // Leaves Management
+    getLeaves: (params?: Record<string, string>) => api.get("/employees/leaves.php", { params }),
+    addLeave: (data: { employee_id: number; leave_date: string; reason?: string }) => 
+        api.post("/employees/leaves.php", data),
+    deleteLeave: (id: number) => api.delete(`/employees/leaves.php?id=${id}`),
+    
+    // Emergency
+    declareEmergency: (data: { employee_id: number; date: string; reason: string }) => 
+        api.post("/bookings/emergency.php", data),
 };
 
 // ===== Services API =====

@@ -276,10 +276,13 @@ function BookingContent({ params }: { params: { slug: string } }) {
         return () => clearInterval(interval);
     }, [salon?.reviews?.length]);
 
+    const [offEmployeesIds, setOffEmployeesIds] = useState<number[]>([]);
+
     const fetchBooked = useCallback(async (empId: number, date: string) => {
         try {
             const res = await axios.get(`${API}/booking/book.php?act=getBooked&slug=${slug.toLowerCase()}&date=${date}&employee_id=${empId}`);
             setBookedSlots(res.data.data.booked_slots || []);
+            setOffEmployeesIds(res.data.data.off_employees_ids || []);
         } catch { /* silent */ }
     }, [slug]);
 
@@ -1643,6 +1646,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         setSel={setSel}
                         dates={dates}
                         bookedSlots={bookedSlots}
+                        offEmployeesIds={offEmployeesIds}
                         fetchBooked={fetchBooked}
                         genTimes={genTimes}
                         subtotal={subtotal}

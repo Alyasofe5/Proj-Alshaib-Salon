@@ -9,6 +9,7 @@ interface StatCardProps {
     label: string;
     sub?: string;
     color: 'lime' | "green" | "blue" | "red" | "purple";
+    onClick?: () => void;
 }
 
 export default function StatCard({
@@ -17,13 +18,15 @@ export default function StatCard({
     label,
     sub,
     color,
+    onClick,
 }: StatCardProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="stat-card"
+            onClick={onClick}
+            className={`stat-card ${onClick ? 'cursor-pointer' : ''}`}
         >
             <div className={`stat-icon ${color}`}>{icon}</div>
             <div className="stat-value">{value}</div>

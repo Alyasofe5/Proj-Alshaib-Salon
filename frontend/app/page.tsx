@@ -461,29 +461,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* ── Bottom Social Proof ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}
-            className="flex items-center justify-center gap-5 mt-8 md:mt-12"
-          >
-            <div className="flex -space-x-2 rtl:space-x-reverse">
-              {[
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&q=80",
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&q=80",
-                "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&q=80",
-              ].map((src, i) => (
-                <img key={i} src={src} alt="" className="w-8 h-8 rounded-full object-cover" style={{ border: "2px solid var(--color-background)" }} loading="lazy" />
-              ))}
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black" style={{ background: "var(--color-accent-bg)", color: "var(--color-accent)", border: "2px solid var(--color-background)" }}>+97</div>
-            </div>
-            <div>
-              <div className="flex items-center gap-0.5 mb-0.5">
-                {[1, 2, 3, 4, 5].map(s => <span key={s} style={{ color: "var(--color-accent)", fontSize: 11 }}>★</span>)}
-                <span className="text-[10px] mr-1" style={{ color: "var(--color-text-muted)" }}>4.9</span>
-              </div>
-              <div className="text-[11px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>+200 صالون يثقون بنا</div>
-            </div>
-          </motion.div>
+
 
         </div>
 

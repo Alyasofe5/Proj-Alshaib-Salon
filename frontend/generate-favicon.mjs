@@ -6,7 +6,7 @@ const BORDER = 3;
 const INNER = SIZE - BORDER * 2;
 
 // Load the logo with black background
-const logoBuffer = readFileSync("public/images/logo_black_bg.png");
+const logoBuffer = readFileSync("public/images/logo_new.png");
 
 // Resize logo to fit inside the circle
 const logoResized = await sharp(logoBuffer)
@@ -45,9 +45,24 @@ const outerCircleSvg = `<svg width="${SIZE}" height="${SIZE}">
   <circle cx="${SIZE / 2}" cy="${SIZE / 2}" r="${SIZE / 2}" fill="url(#g)"/>
 </svg>`;
 
-// Compose: outer gradient circle + inner black circle + logo
-const favicon = await sharp(Buffer.from(outerCircleSvg))
+// Create a solid black background square
+const blackBackground = await sharp({
+  create: {
+    width: SIZE,
+    height: SIZE,
+    channels: 4,
+    background: { r: 0, g: 0, b: 0, alpha: 1 }
+  }
+}).png().toBuffer();
+
+// Compose: Background square + outer gradient circle + inner black circle + logo
+const favicon = await sharp(blackBackground)
   .composite([
+    {
+        input: Buffer.from(outerCircleSvg),
+        top: 0,
+        left: 0
+    },
     {
       input: Buffer.from(innerCircleSvg),
       left: BORDER,

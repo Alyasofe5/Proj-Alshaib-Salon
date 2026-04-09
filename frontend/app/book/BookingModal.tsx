@@ -361,7 +361,7 @@ export default function BookingModal({
                           </div>
                           
                           {sel.employee_id !== 0 && offEmployeesIds.includes(sel.employee_id) ? (
-                            <div className="flex flex-col items-center py-16 bg-red-500/[0.03] rounded-[3rem] border border-dashed border-red-500/20">
+                            <div className="flex flex-col items-center py-16 bg-red-500/[0.03] rounded-[3rem] border border-dashed border-red-500/20 w-full text-center">
                               <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-6"><AlertCircle size={32} /></div>
                               <h3 className="text-white text-lg font-black">{lang === 'ar' ? "الحلاق في إجازة" : "Barber on Leave"}</h3>
                               <p className="text-white/40 text-xs mt-2 text-center px-8 lg:px-20 leading-relaxed">
@@ -369,12 +369,6 @@ export default function BookingModal({
                                   ? "عذراً، هذا الحلاق غير متوفر في التاريخ المختار بسبب إجازة. يرجى اختيار تاريخ آخر أو العودة وتغيير الحلاق." 
                                   : "Sorry, this barber is unavailable on the selected date. Please choose another date or go back and pick another barber."}
                               </p>
-                              <button 
-                                onClick={() => setStep(2)}
-                                className="mt-8 px-8 py-3 bg-white/5 hover:bg-white/10 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all"
-                              >
-                                {lang === 'ar' ? "تغيير الحلاق" : "Change Barber"}
-                              </button>
                             </div>
                           ) : genTimes().length > 0 ? (
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -395,11 +389,9 @@ export default function BookingModal({
                                    </motion.button>
                                  );
                                })}
-                               {/* Empty State filler if only few times */}
-                               {genTimes().length < 4 && <div className="col-span-full py-12 text-center text-white/10 font-black uppercase tracking-widest text-[10px]">No more slots for this day</div>}
                             </div>
                           ) : (
-                            <div className="flex flex-col items-center py-16 bg-white/[0.02] rounded-[3rem] border border-dashed border-white/10">
+                            <div className="flex flex-col items-center py-16 bg-white/[0.02] rounded-[3rem] border border-dashed border-white/10 w-full text-center">
                                <div className="w-16 h-16 rounded-full bg-red-500/5 flex items-center justify-center text-red-500/50 mb-6"><AlertCircle size={32} /></div>
                                <h3 className="text-white text-lg font-black">{lang === 'ar' ? "يوم مزدحم جداً" : "Fully Booked Day"}</h3>
                                <p className="text-white/20 text-xs mt-1">{lang === 'ar' ? "اختر يوماً آخر للمواعيد المتاحة" : "Please check another date for availability"}</p>

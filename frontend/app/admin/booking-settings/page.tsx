@@ -541,7 +541,7 @@ export default function BookingSettingsPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => window.open(`${baseUrl}/book/${salon?.slug}`, '_blank')}
+                    <button onClick={() => window.open(`${baseUrl}/book/?s=${settings?.slug || salon?.slug}`, '_blank')}
                         className="btn-outline-lime hidden md:flex items-center gap-2 h-10 px-4">
                         <FaExternalLinkAlt size={11} /> <span>المعاينة</span>
                     </button>
@@ -607,7 +607,7 @@ export default function BookingSettingsPage() {
                                     >
                                         <FaWhatsapp size={12} /> مشاركة واتساب
                                     </button>
-                                    <a href={`/book/?s=${settings.slug}`} target="_blank" rel="noopener noreferrer"
+                                    <a href={`/book/?s=${settings?.slug || salon?.slug}`} target="_blank" rel="noopener noreferrer"
                                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/10 transition-all"
                                     >
                                         <FaExternalLinkAlt size={10} /> معاينة

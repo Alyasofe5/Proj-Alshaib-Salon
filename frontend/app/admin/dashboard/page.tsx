@@ -214,6 +214,28 @@ export default function DashboardPage() {
                     </div>
                 </motion.div>
 
+                {/* ===== Emergency & Leave Card ===== */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.28 }}
+                    className="chart-card mb-6 border-red-500/10 hover:border-red-500/40 transition-all cursor-pointer group"
+                    onClick={() => window.location.href = "/admin/employees"}
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-500/5 group-hover:bg-red-500/10 transition-colors">
+                                <AlarmClock size={18} className="text-red-500" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-sm text-white">إعلان حالة طوارئ / إجازة</p>
+                                <p className="text-xs mt-0.5 text-gray-500">إلغاء جميع حجوزات موظف لليوم بسبب ظرف طارئ أو تسجيل إجازة</p>
+                            </div>
+                        </div>
+                        <ChevronLeft size={16} className="text-red-500" />
+                    </div>
+                </motion.div>
+
                 {/* ===== Chart + Best Employee ===== */}
                 <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                     {/* Chart */}

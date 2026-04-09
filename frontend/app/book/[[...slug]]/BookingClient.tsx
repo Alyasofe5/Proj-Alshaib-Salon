@@ -327,6 +327,11 @@ function BookingContent({ params }: { params: { slug: string } }) {
         const tr: string[] = [];
         if (!sel.booking_date) return tr;
         
+        // Check if barber is on leave
+        if (sel.employee_id !== 0 && offEmployeesIds.includes(sel.employee_id)) {
+            return [];
+        }
+        
         let [ch, cm] = workHours.start.split(":").map(Number);
         let [eh, em] = workHours.end.split(":").map(Number);
         
@@ -964,9 +969,9 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             viewport={{ once: true }}
                                             transition={{ delay: i * 0.08, duration: 0.6, ease: "easeOut" }}
                                             className={[
-                                                "group relative w-full overflow-hidden border-b border-white/[0.05] py-7 sm:py-9 transition-colors outline-none",
+                                                "group relative w-full border-b border-white/[0.05] py-7 sm:py-9 px-4 sm:px-6 transition-colors outline-none",
                                                 lang === 'en' ? 'text-left' : 'text-right',
-                                                isActive ? "opacity-100" : "opacity-40 hover:opacity-100",
+                                                isActive ? "opacity-100" : "opacity-50 hover:opacity-100",
                                             ].join(" ")}
                                             onClick={() => setIsBookingOpen(true)}
                                             onMouseEnter={() => setActiveServiceIndex(i)}
@@ -985,7 +990,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             {String(i + 1).padStart(2, "0")}
                                                         </div>
                                                         {isActive && (
-                                                            <div className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0 sm:hidden" />
+                                                            <motion.div layoutId="idx-glow" className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
                                                         )}
                                                     </div>
 
@@ -994,16 +999,16 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                         <h3 className={[
                                                             "font-black tracking-tight transition-all duration-500",
                                                             "text-[clamp(1.2rem,4vw,2.5rem)]",
-                                                            isActive ? "text-white" : "text-white/80 group-hover:text-white",
+                                                            isActive ? "text-white" : "text-white/70 group-hover:text-white",
                                                         ].join(" ")}
-                                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                                            style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
                                                             <span className={isActive ? "text-[#C3D809] transition-colors duration-500" : ""}>{tData(s.name, lang)}</span>
                                                         </h3>
                                                         <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-20 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}>
                                                             <div className="flex items-center gap-3">
                                                                 <div className="h-[1px] w-6 bg-[#C3D809]" />
-                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/50" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
-                                                                    {lang === 'ar' ? "عناية دقيقة بأدوات احترافية" : "Precise care with professional tools"}
+                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
+                                                                    {lang === 'ar' ? "تجربة فاخرة وعناية متكاملة" : "Luxury experience & complete care"}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1012,12 +1017,14 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                                                 {/* Arrow */}
                                                 <div className="flex items-center justify-center shrink-0">
-                                                    <ArrowRight size={24} strokeWidth={isActive ? 2.5 : 1.5} className={[
-                                                        lang === 'en' ? "transition-all duration-500" : "-rotate-180 transition-all duration-500",
-                                                        isActive 
-                                                          ? (lang === 'en' ? "text-[#C3D809] translate-x-2" : "text-[#C3D809] -translate-x-2") 
-                                                          : "text-white/20 group-hover:text-white/50 scale-90",
-                                                    ].join(" ")} />
+                                                    <div className={`p-3 rounded-full border transition-all duration-500 ${isActive ? "border-[#C3D809] bg-[#C3D809]/5" : "border-white/5 bg-white/[0.02]"}`}>
+                                                        <ArrowRight size={20} strokeWidth={isActive ? 3 : 2} className={[
+                                                            lang === 'en' ? "transition-all duration-500" : "-rotate-180 transition-all duration-500",
+                                                            isActive 
+                                                              ? (lang === 'en' ? "text-[#C3D809] translate-x-1" : "text-[#C3D809] -translate-x-1") 
+                                                              : "text-white/20 group-hover:text-white/50",
+                                                        ].join(" ")} />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.button>

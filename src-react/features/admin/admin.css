@@ -978,24 +978,32 @@
 @media (max-width: 768px) {
   .admin-main {
     padding: 16px;
+    /* Account for bottom nav on mobile */
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  /* Keep topnav in one row on tablet portrait — don't stack */
+  .admin-top-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   .admin-top-nav,
   .admin-header,
   .calendar-header,
   .card-header-luxe {
-    align-items: flex-start;
+    align-items: center;
   }
 
-  .admin-top-nav {
-    flex-direction: column;
+  .nav-left {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
-  .nav-left,
   .nav-right,
   .admin-actions {
-    width: 100%;
-    justify-content: space-between;
+    flex-shrink: 0;
   }
 
   .admin-user-info {
@@ -1389,4 +1397,242 @@
 
   .offers-admin-stat-card { padding: 16px; }
   .offers-admin-stat-card strong { font-size: 18px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRITICAL SPECIFICITY OVERRIDES
+   Scoped with .admin-body parent to beat legacy app.css & style.css
+   (no !important — fixed via specificity, per PROJECT_RULES.md)
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Desktop: Sidebar MUST be sticky — beats app.css position:fixed ── */
+@media (min-width: 1025px) {
+  .admin-body {
+    display: grid;
+    grid-template-columns: clamp(240px, 20vw, 280px) minmax(0, 1fr);
+    gap: var(--admin-shell-gap);
+    overflow-x: clip;
+  }
+
+  .admin-body .admin-sidebar {
+    position: sticky;
+    top: 0;
+    right: auto;
+    bottom: auto;
+    height: 100dvh;
+    width: clamp(240px, 20vw, 280px);
+    z-index: 10;
+    border-radius: 0;
+    transform: none;
+    transition: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-self: start;
+  }
+
+  /* Sidebar doesn't need close button on desktop */
+  .admin-body .admin-sidebar .admin-sidebar-close {
+    display: none;
+  }
+
+  /* Main content has no margin — grid handles the offset */
+  .admin-body .admin-main {
+    margin-right: 0;
+    margin-left: 0;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: var(--admin-shell-padding);
+    padding-bottom: clamp(32px, 5vw, 64px);
+  }
+}
+
+/* ── 2. Mobile / Tablet: Sidebar as off-canvas RTL drawer ── */
+@media (max-width: 1024px) {
+  .admin-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .admin-body .admin-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    height: 100dvh;
+    width: min(86vw, 360px);
+    max-width: 100%;
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 0;
+    will-change: transform;
+  }
+
+  .admin-body .admin-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  /* Overlay z-index must be just below sidebar */
+  .admin-body .admin-sidebar-overlay {
+    z-index: 199;
+  }
+}
+
+/* ── 3. Top nav: sticky glass bar — overrides app.css margin-bottom:40px ── */
+.admin-main .admin-top-nav {
+  position: sticky;
+  top: env(safe-area-inset-top, 0);
+  z-index: 30;
+  margin-bottom: clamp(16px, 2.5vw, 28px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(10, 31, 20, 0.06);
+  box-shadow: 0 4px 24px rgba(10, 31, 20, 0.05);
+  padding: clamp(14px, 2.2vw, 22px) clamp(16px, 2.8vw, 28px);
+  border-radius: var(--admin-radius-md);
+}
+
+/* ── 4. Overview layout: fluid — overrides app.css fixed 1fr 440px ── */
+.admin-body .admin-overview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+  gap: var(--admin-shell-gap);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .admin-body .admin-overview-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── 5. Page content entry animation (PROJECT_RULES.md: Section Animations) ── */
+@keyframes adminPageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-content-shell {
+  animation: adminPageFadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger metric cards on entry */
+.react-admin-grid .admin-metric-card-luxe:nth-child(1) { animation-delay: 0ms; }
+.react-admin-grid .admin-metric-card-luxe:nth-child(2) { animation-delay: 60ms; }
+.react-admin-grid .admin-metric-card-luxe:nth-child(3) { animation-delay: 120ms; }
+.react-admin-grid .admin-metric-card-luxe:nth-child(4) { animation-delay: 180ms; }
+
+.react-admin-grid .admin-metric-card-luxe {
+  animation: adminPageFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── 6. Metric cards: hover lift — beats app.css basic hover ── */
+.admin-body .admin-metric-card-luxe {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease;
+  cursor: default;
+}
+
+.admin-body .admin-metric-card-luxe:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 36px rgba(10, 31, 20, 0.1),
+    0 2px 8px rgba(10, 31, 20, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ── 7. Sidebar menu links: improved active state ── */
+.admin-body .admin-menu li a {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    padding-right 0.2s ease;
+}
+
+/* ── 8. Accessibility: Focus rings (PROJECT_RULES.md a11y) ── */
+.admin-body .admin-menu li a:focus-visible,
+.admin-body .admin-menu-toggle:focus-visible,
+.admin-body .admin-sidebar-close:focus-visible,
+.admin-body .btn:focus-visible,
+.admin-body .btn-primary:focus-visible,
+.admin-body .btn-outline:focus-visible,
+.admin-body .filter-item-luxe:focus-visible,
+.admin-body .offers-toggle-btn:focus-visible,
+.admin-body .btn-icon-sml:focus-visible {
+  outline: 2px solid var(--color-secondary, #dca922);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ── 9. Connection status badge — cleaner on mobile ── */
+@media (max-width: 480px) {
+  .admin-main .connection-status {
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  .admin-main .admin-top-nav {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .admin-user-info {
+    border-right: 0;
+    padding-right: 0;
+  }
+}
+
+/* ── 10. Mobile bottom-nav content clearance (480px and below) ── */
+@media (max-width: 480px) {
+  .admin-body .admin-main {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 12px));
+  }
+}
+
+/* ── 11. Prefers-reduced-motion (PROJECT_RULES.md hard rule) ── */
+@media (prefers-reduced-motion: reduce) {
+  .admin-content-shell,
+  .react-admin-grid .admin-metric-card-luxe {
+    animation: none;
+  }
+
+  .admin-body .admin-sidebar {
+    transition: none;
+  }
+
+  .admin-body .admin-metric-card-luxe {
+    transition: none;
+  }
+}
+
+/* ── 12. Smooth scrollbar for sidebar ── */
+.admin-body .admin-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 169, 34, 0.3) transparent;
+}
+
+.admin-body .admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-body .admin-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-body .admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(220, 169, 34, 0.35);
+  border-radius: 4px;
 }

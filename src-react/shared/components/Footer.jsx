@@ -34,7 +34,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="/assets/images/logo-gold.svg" alt="AL Hasoon" className="footer-logo" />
+            <img src="/assets/images/logo-gold.svg" alt="AL Hasoon" className="footer-logo" width="120" height="48" loading="lazy" />
             <p className="footer-brand-text">
               نحن لا نبيع مجرد قهوة، نحن نصدر ثقافة النخبة وتراث الجودة منذ سنوات في الأردن.
             </p>

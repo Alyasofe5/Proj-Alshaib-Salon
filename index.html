@@ -17,30 +17,56 @@
 
     <title>محامص ومطاحن الحسّون | AL Hason Roastery</title>
 
-    <!-- Preconnect to external origins to reduce DNS/TCP latency -->
+    <!-- Preconnect + DNS prefetch to reduce DNS/TCP latency -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://hebqbdfozdllebuinkkb.supabase.co" crossorigin />
 
-    <!-- Google Fonts — display=swap prevents render blocking -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet" />
+    <!-- Preload LCP-critical assets -->
+    <link rel="preload" as="image" href="/assets/images/logo-gold.svg" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/images/user-bean-1.webp" fetchpriority="high" />
+
+    <!-- Google Fonts — fully async, zero render blocking -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" /></noscript>
 
     <!-- FontAwesome — load async to avoid render blocking -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
 
-    <!-- SweetAlert2 — defer so it doesn't block parsing -->
-    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- MOBILE FIX: Prevent iOS callout on long press & double-tap zoom on elements -->
+    <!-- Critical CSS — above-the-fold styles inlined to eliminate render blocking -->
     <style>
-      html { touch-action: manipulation; }
-      /* Prevent layout shift before fonts load */
-      body { font-family: Cairo, system-ui, sans-serif; }
+      /* Base */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { touch-action: manipulation; scroll-behavior: smooth; }
+      body {
+        font-family: Cairo, system-ui, -apple-system, sans-serif;
+        background: #0a1f14;
+        color: #f5f0e8;
+        direction: rtl;
+        min-height: 100dvh;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Prevent layout shift for header height */
+      #root { min-height: 100dvh; }
+      /* Header skeleton — prevents CLS */
+      .header {
+        position: fixed; top: 0; right: 0; left: 0; z-index: 1000;
+        height: 72px; background: transparent;
+        display: flex; align-items: center;
+      }
+      .header.scrolled, .header.headershop { background: #0a1f14; }
+      /* Logo placeholder — prevents CLS */
+      .brand-logo { width: 48px; height: 48px; }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src-react/main.jsx"></script>
+    <!-- SweetAlert2 — loaded after page render, only needed on interaction -->
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
   </body>
 </html>

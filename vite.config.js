@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  publicDir: "public",
   server: {
     open: "/index.html"
   },
@@ -52,5 +53,10 @@ export default defineConfig({
     },
     // Minify with esbuild (faster + smaller)
     minify: "esbuild",
+    // esbuild minify options — drop console.log in production
+    esbuildOptions: {
+      drop: ["console", "debugger"],
+      legalComments: "none",
+    },
   }
 });

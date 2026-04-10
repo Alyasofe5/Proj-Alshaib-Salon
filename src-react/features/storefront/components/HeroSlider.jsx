@@ -61,73 +61,30 @@ export default function HeroSlider() {
 
   return (
     <section className="hs-root">
-      {/* Dense Coffee Beans - 8 Individual Entities */}
-      <div className={`hs-floating-beans-layer bean-1 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-1.webp" alt="حبة بن 1" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-2 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-2.webp" alt="حبة بن 2" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-3 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-3.webp" alt="حبة بن 3" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-4 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-4.webp" alt="حبة بن 4" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-5 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-1.webp" alt="حبة بن 5" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-6 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-2.webp" alt="حبة بن 6" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-7 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-3.webp" alt="حبة بن 7" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-8 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-4.webp" alt="حبة بن 8" />
-      </div>
-      {/* Additional Decorative Beans around Text (Right Side) */}
-      <div className={`hs-floating-beans-layer bean-9 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-1.webp" alt="حبة بن 9" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-10 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-2.webp" alt="حبة بن 10" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-11 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-3.webp" alt="حبة بن 11" />
-      </div>
-      <div className={`hs-floating-beans-layer bean-12 active-slide-${active}`}>
-        <img src="/assets/images/user-bean-4.webp" alt="حبة بن 12" />
-      </div>
-
-      {/* Dense Nuts Layer - 12 Individual Entities (ONLY FOR SLIDE 1) */}
-      {[...Array(12)].map((_, i) => (
-        <div
-          key={`nut-${i + 1}`}
-          className={`hs-floating-nuts-layer nut-${i + 1} active-slide-${active}`}
-        >
-          <img
-            src={`/assets/images/user-nut-${(i % 5) + 1}.webp`}
-            alt={`مكسرات ${i + 1}`}
-          />
+      {/* Coffee Beans — eager for first 4 (slide-0), lazy for others */}
+      {[1,2,3,4,1,2,3,4,1,2,3,4].map((n, i) => (
+        <div key={`bean-${i+1}`} className={`hs-floating-beans-layer bean-${i+1} active-slide-${active}`}>
+          <img src={`/assets/images/user-bean-${n}.webp`} alt="" aria-hidden="true"
+            width="120" height="120" loading={i < 4 ? "eager" : "lazy"} decoding={i < 4 ? "sync" : "async"}
+            fetchpriority={i < 2 ? "high" : undefined} />
         </div>
       ))}
 
-      {/* Dense Spices Layer - 12 Individual Entities (ONLY FOR SLIDE 2) */}
-      {[...Array(12)].map((_, i) => {
-        const spicePattern = [5, 1, 2, 6, 3, 4, 4, 1, 2, 6, 3, 4];
-        return (
-          <div
-            key={`spice-${i + 1}`}
-            className={`hs-floating-spices-layer spice-${i + 1} active-slide-${active}`}
-          >
-            <img
-              src={`/assets/images/user-spice-${spicePattern[i % spicePattern.length]}.webp`}
-              alt={`بهارات ${i + 1}`}
-            />
-          </div>
-        );
-      })}
+      {/* Nuts — all lazy (slide-1, not visible initially) */}
+      {[1,2,3,4,5,1,2,3,4,5,1,2].map((n, i) => (
+        <div key={`nut-${i+1}`} className={`hs-floating-nuts-layer nut-${i+1} active-slide-${active}`}>
+          <img src={`/assets/images/user-nut-${n}.webp`} alt="" aria-hidden="true"
+            width="120" height="120" loading="lazy" decoding="async" />
+        </div>
+      ))}
+
+      {/* Spices — all lazy (slide-2, not visible initially) */}
+      {[5,1,2,6,3,4,4,1,2,6,3,4].map((n, i) => (
+        <div key={`spice-${i+1}`} className={`hs-floating-spices-layer spice-${i+1} active-slide-${active}`}>
+          <img src={`/assets/images/user-spice-${n}.webp`} alt="" aria-hidden="true"
+            width="120" height="120" loading="lazy" decoding="async" />
+        </div>
+      ))}
 
       <div className="hs-slide-container">
         <div className="hs-banner-shell">

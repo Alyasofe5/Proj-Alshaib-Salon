@@ -4,7 +4,7 @@
   "description": "Al Hason storefront and admin",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && cp public/.htaccess dist/.htaccess && cp -r assets/images dist/assets/images",
     "preview": "vite preview"
   },
   "author": "Al-Hason",

@@ -96,13 +96,13 @@ function OurStorySection({ story: s }) {
         <div className="our-story-visual" aria-hidden="true">
           <div className="our-story-collage">
             <div className="our-story-photo our-story-photo-primary">
-              <img src={s.image1} alt="" className="our-story-image" />
+              <img src={s.image1} alt="" className="our-story-image" width="340" height="340" loading="lazy" decoding="async" />
             </div>
             <div className="our-story-photo our-story-photo-secondary">
-              <img src={s.image2} alt="" className="our-story-image our-story-image-muted" />
+              <img src={s.image2} alt="" className="our-story-image our-story-image-muted" width="340" height="340" loading="lazy" decoding="async" />
             </div>
             <div className="our-story-beans">
-              <img src="/assets/images/beans-floating.png" alt="" className="our-story-beans-image" />
+              <img src="/assets/images/beans-floating.png" alt="" className="our-story-beans-image" width="120" height="124" loading="lazy" decoding="async" />
             </div>
           </div>
         </div>

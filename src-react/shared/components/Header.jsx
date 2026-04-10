@@ -11,7 +11,16 @@ export default function Header({ type = "default", onOpenSearch }) {
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 50);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -40,7 +49,7 @@ export default function Header({ type = "default", onOpenSearch }) {
         <div className="container nav-container">
           <div className="logo-wrapper">
             <Link to="/" onClick={() => setMobileMenu(false)} className="brand-lockup">
-              <img src="assets/images/logo-gold.svg" alt="AL Hason" className="brand-logo" />
+              <img src="assets/images/logo-gold.svg" alt="AL Hason" className="brand-logo" width="48" height="48" fetchpriority="high" />
               <div className="brand-text">
                 <span className="brand-ar">محامص الحسون</span>
                 <span className="brand-en hide-on-xs">Al Hason roasters</span>

@@ -14,7 +14,9 @@ export default function ProductCard({ product }) {
         <img
           src={normalizeImagePath(product.image_url, product.category || detectLegacyCategory(product.name, product.image_url))}
           alt={product.name}
+          width="329" height="329"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             const cat = product.category || detectLegacyCategory(product.name, product.image_url);
             const fallback = {

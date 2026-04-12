@@ -408,31 +408,33 @@ export default function BookingModal({
                           
                           <div className="space-y-6">
                             {[
-                               { label: lang === 'ar' ? "الأسم الكامل" : "FULL NAME", field: "customer_name", type: "text", pl: lang === 'ar' ? "اكتب اسمك هنا..." : "Your name here...", icon: <UserCircle size={20} /> },
-                               { label: lang === 'ar' ? "رقم الهاتف" : "PHONE NUMBER", field: "customer_phone", type: "tel", pl: "07XXXXXXXX", icon: <Check size={20} /> }
+                               { label: lang === 'ar' ? "الأسم الكامل" : "FULL NAME", field: "customer_name", type: "text", pl: lang === 'ar' ? "اكتب اسمك هنا..." : "Your name here...", icon: <UserCircle size={20} />, dir: lang === 'ar' ? 'rtl' : 'ltr' },
+                               { label: lang === 'ar' ? "رقم الهاتف" : "PHONE NUMBER", field: "customer_phone", type: "tel", pl: lang === 'ar' ? "07XXXXXXXX أو +966XXXXXXXXX" : "+962 / +966 / +971...", icon: <Check size={20} />, dir: 'ltr' as const }
                             ].map(f => (
                               <div key={f.field} className="relative group">
-                                <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block px-2">{f.label}</label>
+                                <label className={`text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block px-2 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>{f.label}</label>
                                 <div className="relative">
-                                  <div className={`absolute inset-y-0 ${lang === 'ar' ? 'right-6' : 'left-6'} flex items-center text-white/20 group-focus-within:text-[#C3D809] transition-colors`}>{f.icon}</div>
-                                  <input 
-                                    type={f.type} 
-                                    value={(sel as any)[f.field]} 
-                                    onChange={e => setSel(p => ({ ...p, [f.field]: e.target.value }))} 
+                                  <div className={`absolute inset-y-0 ${f.dir === 'ltr' ? 'left-6' : (lang === 'ar' ? 'right-6' : 'left-6')} flex items-center text-white/20 group-focus-within:text-[#C3D809] transition-colors`}>{f.icon}</div>
+                                  <input
+                                    type={f.type}
+                                    dir={f.dir}
+                                    value={(sel as any)[f.field]}
+                                    onChange={e => setSel(p => ({ ...p, [f.field]: e.target.value }))}
                                     placeholder={f.pl}
-                                    className={`w-full bg-white/[0.03] border border-white/5 rounded-[1.75rem] ${lang === 'ar' ? 'pr-16 pl-6' : 'pl-16 pr-6'} py-6 text-white focus:border-[#C3D809] focus:outline-none transition-all duration-500 font-black placeholder:text-white/10`} 
+                                    className={`w-full bg-white/[0.03] border border-white/5 rounded-[1.75rem] ${f.dir === 'ltr' ? 'pl-16 pr-6' : (lang === 'ar' ? 'pr-16 pl-6' : 'pl-16 pr-6')} py-6 text-white focus:border-[#C3D809] focus:outline-none transition-all duration-500 font-black placeholder:text-white/10`}
                                   />
                                 </div>
                               </div>
                             ))}
                             <div className="relative group">
-                               <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block px-2">{lang === 'ar' ? "ملاحظات إضافية" : "SPECIAL REQUESTS"}</label>
-                               <textarea 
-                                  value={sel.notes} 
-                                  onChange={e => setSel(p => ({ ...p, notes: e.target.value }))} 
-                                  rows={3} 
+                               <label className={`text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block px-2 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>{lang === 'ar' ? "ملاحظات إضافية" : "SPECIAL REQUESTS"}</label>
+                               <textarea
+                                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                                  value={sel.notes}
+                                  onChange={e => setSel(p => ({ ...p, notes: e.target.value }))}
+                                  rows={3}
                                   placeholder={lang === 'ar' ? "هل هناك شيء نود معرفته؟" : "Any details we should know?"}
-                                  className="w-full bg-white/[0.03] border border-white/5 rounded-[1.75rem] px-8 py-6 text-white focus:border-[#C3D809] focus:outline-none transition-all duration-500 font-bold resize-none placeholder:text-white/10" 
+                                  className={`w-full bg-white/[0.03] border border-white/5 rounded-[1.75rem] ${lang === 'ar' ? 'pr-8 pl-6 text-right' : 'pl-8 pr-6 text-left'} py-6 text-white focus:border-[#C3D809] focus:outline-none transition-all duration-500 font-bold resize-none placeholder:text-white/10`}
                                />
                             </div>
                           </div>
@@ -447,42 +449,42 @@ export default function BookingModal({
                              
                              <div className="flex flex-col items-center mb-8 border-b border-white/5 pb-6">
                                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[#C3D809] mb-4 border border-white/5"><Scissors size={20} /></div>
-                                <span className="text-[10px] font-black text-white/40 tracking-[0.6em] uppercase">Summary</span>
+                                <span className="text-[10px] font-black text-white/40 tracking-[0.6em] uppercase">{lang === 'ar' ? 'ملخص الحجز' : 'Summary'}</span>
                              </div>
 
                              <div className="space-y-4 mb-10">
                                 {selSrvs.map(s => (
-                                  <div key={s.id} className="flex justify-between items-end">
+                                  <div key={s.id} className={`flex items-end gap-2 ${lang === 'ar' ? 'flex-row-reverse' : 'flex-row'} justify-between`}>
                                      <div className="flex flex-col">
                                         <span className="text-white text-sm font-black leading-tight">{tData(s.name, lang)}</span>
-                                        <span className="text-white/10 text-[9px] uppercase font-bold">{s.duration_minutes} min service</span>
+                                        <span className="text-white/10 text-[9px] uppercase font-bold">{s.duration_minutes} {lang === 'ar' ? 'دقيقة' : 'min'}</span>
                                      </div>
-                                     <span className="text-white font-black">{s.price} JOD</span>
+                                     <span className="text-white font-black shrink-0">{s.price} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
                                   </div>
                                 ))}
                              </div>
 
                              <div className="pt-6 border-t border-white/5 border-dashed space-y-6">
-                                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
-                                   <div className="w-10 h-10 rounded-xl bg-black/40 flex items-center justify-center text-[#C3D809]"><Calendar size={18} /></div>
-                                   <div>
+                                <div className={`flex items-center gap-4 bg-white/5 p-4 rounded-2xl ${lang === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                   <div className="w-10 h-10 rounded-xl bg-black/40 flex items-center justify-center text-[#C3D809] shrink-0"><Calendar size={18} /></div>
+                                   <div className={lang === 'ar' ? 'text-right' : 'text-left'}>
                                       <p className="text-white text-xs font-black">{sel.booking_date}</p>
-                                      <p className="text-white/20 text-[9px] uppercase font-bold tracking-widest">{fmt12(sel.booking_time)} Appointment</p>
+                                      <p className="text-white/20 text-[9px] uppercase font-bold tracking-widest">{fmt12(sel.booking_time, lang)} — {lang === 'ar' ? 'الموعد' : 'Appointment'}</p>
                                    </div>
                                 </div>
 
                                 {hasDiscount && (
-                                   <div className="flex justify-between items-center text-[#C3D809] px-2">
-                                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">Vip Discount Applied</span>
+                                   <div className={`flex justify-between items-center text-[#C3D809] px-2 ${lang === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">{lang === 'ar' ? 'خصم VIP مطبق' : 'VIP Discount Applied'}</span>
                                       <span className="text-lg font-black leading-none">-{discountPercent}%</span>
                                    </div>
                                 )}
 
-                                <div className="flex justify-between items-end bg-[#C3D809] text-black p-6 rounded-[2rem] shadow-xl shadow-[#C3D809]/5">
-                                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">{lang === 'ar' ? 'الإجمالي القائم' : 'Final Price'}</span>
-                                   <div className="text-right">
-                                      {hasDiscount && <div className="text-black/40 text-[10px] line-through font-bold mb-0.5">{subtotal} JOD</div>}
-                                      <span className="text-3xl font-black leading-none tracking-tighter">{totalPrice} <small className="text-xs uppercase">Jod</small></span>
+                                <div className={`flex justify-between items-end bg-[#C3D809] text-black p-6 rounded-[2rem] shadow-xl shadow-[#C3D809]/5 ${lang === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">{lang === 'ar' ? 'الإجمالي النهائي' : 'Final Price'}</span>
+                                   <div className={lang === 'ar' ? 'text-left' : 'text-right'}>
+                                      {hasDiscount && <div className="text-black/40 text-[10px] line-through font-bold mb-0.5">{subtotal} {lang === 'ar' ? 'د.أ' : 'JOD'}</div>}
+                                      <span className="text-3xl font-black leading-none tracking-tighter">{totalPrice} <small className="text-xs uppercase">{lang === 'ar' ? 'د.أ' : 'JOD'}</small></span>
                                    </div>
                                 </div>
                              </div>
@@ -525,7 +527,7 @@ export default function BookingModal({
                        >
                           <span className="relative z-10 flex items-center gap-3">
                             {lang === 'ar' ? "العودة للرئيسية" : "Back to Home"}
-                            <ArrowLeft size={20} className={lang === 'ar' ? "" : "rotate-180"} />
+                            <ArrowLeft size={20} className={lang === 'en' ? "rotate-180" : ""} />
                           </span>
                        </button>
                     </motion.div>

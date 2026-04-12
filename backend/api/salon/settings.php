@@ -63,7 +63,6 @@ if (getMethod() === 'GET') {
         'hero_image'      => $settings['hero_image']      ?? null,
         'hero_video'      => $settings['hero_video']      ?? null,
         'hero_type'       => $settings['hero_type']       ?? '',
-        'hero_subtitle'   => $settings['hero_subtitle']   ?? 'تأسس ٢٠٢٤ -- صالون فاخر',
         'hero_title'      => $settings['hero_title']      ?? 'أين يلتقي الإبــــداع بالأناقة',
         'about_title'     => $settings['about_title']     ?? 'قصتنا',
         'about_subtitle'  => $settings['about_subtitle']  ?? 'لمسة من الإبداع',

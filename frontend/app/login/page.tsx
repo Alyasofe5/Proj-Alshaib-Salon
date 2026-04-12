@@ -164,7 +164,7 @@ export default function LoginPage() {
                         <div className="relative w-28 h-28 rounded-full flex items-center justify-center p-[2px] transition-all duration-1000 group-hover:scale-105"
                             style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.05) 100%)" }}>
                             <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-1.5 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] overflow-hidden border border-[#C3D809]/20">
-                                <img src="/images/logo_new.png" alt="Maqass Logo"
+                                <img src="/images/logo_black_bg_hd.png" alt="Maqass Logo"
                                     width="256"
                                     height="256"
                                     className="w-full h-full object-cover rounded-full" />

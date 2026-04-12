@@ -143,6 +143,8 @@ sendSuccess([
         'reviews_subtitle' => $settingsData['reviews_subtitle'] ?? 'آراء عملائنا',
         'reviews' => $settingsData['reviews'] ?? [],
         'faqs' => $settingsData['faqs'] ?? [],
+        'faq_title' => $settingsData['faq_title'] ?? '',
+        'faq_subtitle' => $settingsData['faq_subtitle'] ?? '',
         'stats_years' => $settingsData['stats_years'] ?? '7+',
         'stats_clients' => $settingsData['stats_clients'] ?? '15K+',
         'stats_experts' => $settingsData['stats_experts'] ?? '6',

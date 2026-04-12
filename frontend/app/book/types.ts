@@ -11,7 +11,6 @@ export interface SalonInfo {
     reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; }[];
     faqs?: { id: number; question: string; answer: string; }[];
     // New Content Fields
-    hero_subtitle?: string;
     hero_title?: string;
     about_title?: string;
     about_subtitle?: string;

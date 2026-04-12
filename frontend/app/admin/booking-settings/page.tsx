@@ -56,7 +56,6 @@ interface SalonSettings {
     off_days: number[];
     booking_days: number;
     // New Content Fields
-    hero_subtitle: string;
     hero_title: string;
     about_title: string;
     about_subtitle: string;
@@ -78,6 +77,9 @@ interface SalonSettings {
     stats_years: string;
     stats_clients: string;
     stats_experts: string;
+    // FAQ section headers
+    faq_title: string;
+    faq_subtitle: string;
     // Discount fields
     discount_active: number;
     discount_percentage: string;
@@ -109,9 +111,13 @@ export default function BookingSettingsPage() {
     const [saved, setSaved] = useState(false);
     const [heroUploading, setHeroUploading] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const aboutImg1Ref = useRef<HTMLInputElement>(null);
+    const aboutImg2Ref = useRef<HTMLInputElement>(null);
     const [logoUploading, setLogoUploading] = useState(false);
     const [logoSaved, setLogoSaved] = useState(false);
     const [currentLogo, setCurrentLogo] = useState<string | null>(null);
+    const [aboutImg1Uploading, setAboutImg1Uploading] = useState(false);
+    const [aboutImg2Uploading, setAboutImg2Uploading] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('general');
 
@@ -345,6 +351,24 @@ export default function BookingSettingsPage() {
             }
         } catch (e) { console.error(e); }
         finally { setLogoUploading(false); }
+    };
+
+    const handleAboutImageUpload = async (which: 1 | 2, file: File) => {
+        const setter = which === 1 ? setAboutImg1Uploading : setAboutImg2Uploading;
+        setter(true);
+        try {
+            const fd = new FormData();
+            fd.append("image", file);
+            fd.append("which", String(which));
+            const res = await axios.post(`${API_BASE}/salon/about-image.php`, fd, {
+                headers: { ...authH(), "Content-Type": "multipart/form-data" },
+            });
+            if (res.data.success && res.data.data?.path && settings) {
+                const field = which === 1 ? "about_image_1" : "about_image_2";
+                setSettings({ ...settings, [field]: res.data.data.path });
+            }
+        } catch (e) { console.error(e); }
+        finally { setter(false); }
     };
 
     const handleImageUpload = async (serviceId: number, file: File) => {
@@ -855,11 +879,10 @@ export default function BookingSettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t border-white/5">
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم المعرض</h3>
-                                <BilingualInput label="عنوان المعرض الصغير" value={settings.gallery_subtitle} onChange={v => setSettings({ ...settings, gallery_subtitle: v })} gold={gold} placeholderAr="الصور والفيديو" placeholderEn="Visual Gallery" />
                                 <BilingualInput label="عنوان المعرض الكبير" value={settings.gallery_title} onChange={v => setSettings({ ...settings, gallery_title: v })} gold={gold} placeholderAr="فلسفة المظهر" placeholderEn="Style Philosophy" />
                             </div>
                             <div className="rounded-2xl p-5 flex items-center justify-center text-center text-xs leading-7 text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--border-subtle)]">
-                                تظهر هذه الحقول مباشرة فوق معرض الصور والفيديو في صفحة الحجز العامة.
+                                يظهر هذا العنوان مباشرة فوق معرض الصور والفيديو في صفحة الحجز العامة.
                             </div>
                         </div>
                     </div>
@@ -1009,7 +1032,6 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">نصوص الواجهة الرئيسية (Hero)</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <BilingualInput label="العنوان الصغير (أعلى الهيدر)" value={settings.hero_subtitle} onChange={v => setSettings({ ...settings, hero_subtitle: v })} gold={gold} placeholderAr="مثال: تأسس ٢٠٢٤ -- صالون فاخر" placeholderEn="Est. 2024 — Luxury Barber" />
                             <div className="md:col-span-2">
                                 <BilingualInput label="العنوان الرئيسي للموقع" value={settings.hero_title} onChange={v => setSettings({ ...settings, hero_title: v })} gold={gold} placeholderAr="مثال: أين يلتقي الإبداع بالأناقة" placeholderEn="Where Craft Meets Elegance" />
                             </div>
@@ -1025,7 +1047,6 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">قسم "قصتنا" (About)</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <BilingualInput label="عنوان القسم الصغير" value={settings.about_subtitle} onChange={v => setSettings({ ...settings, about_subtitle: v })} gold={gold} placeholderAr="لمسة من الإبداع" placeholderEn="A Touch of Craft" />
                             <BilingualInput label="العنوان الرئيسي للقسم" value={settings.about_title} onChange={v => setSettings({ ...settings, about_title: v })} gold={gold} placeholderAr="قصتنا" placeholderEn="Our Story" />
                             <div className="md:col-span-2">
                                 <BilingualTextArea 
@@ -1039,8 +1060,46 @@ export default function BookingSettingsPage() {
                                 />
                             </div>
 
-                            <InputField label="رابط الصورة الرئيسية (اختياري)" value={settings.about_image_1} onChange={v => setSettings({ ...settings, about_image_1: v })} gold={gold} placeholder="https://..." />
-                            <InputField label="رابط الصورة الفرعية (اختياري)" value={settings.about_image_2} onChange={v => setSettings({ ...settings, about_image_2: v })} gold={gold} placeholder="https://..." />
+                            {/* About Image 1 */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-[var(--color-text-muted)] block uppercase tracking-wider">الصورة الرئيسية (قسم القصة)</label>
+                                <div className="flex items-center gap-3">
+                                    {assetUrl(settings.about_image_1) && (
+                                        <img src={assetUrl(settings.about_image_1)!} alt="" className="w-14 h-14 rounded-xl object-cover border border-[var(--border-subtle)]" />
+                                    )}
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <label className="btn-outline-lime flex items-center gap-2 h-9 px-4 cursor-pointer w-fit">
+                                            <FaCamera size={10} />
+                                            <span>{aboutImg1Uploading ? "جارٍ الرفع..." : "رفع صورة"}</span>
+                                            <input ref={aboutImg1Ref} type="file" accept="image/*" className="hidden"
+                                                onChange={e => { const f = e.target.files?.[0]; if (f) handleAboutImageUpload(1, f); e.currentTarget.value = ""; }} />
+                                        </label>
+                                        <input value={settings.about_image_1 ?? ""} onChange={e => setSettings({ ...settings, about_image_1: e.target.value })}
+                                            placeholder="أو ضع رابط URL مباشر..." dir="ltr"
+                                            className="w-full py-2.5 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-xs font-mono" />
+                                    </div>
+                                </div>
+                            </div>
+                            {/* About Image 2 */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-[var(--color-text-muted)] block uppercase tracking-wider">الصورة الفرعية (قسم القصة)</label>
+                                <div className="flex items-center gap-3">
+                                    {assetUrl(settings.about_image_2) && (
+                                        <img src={assetUrl(settings.about_image_2)!} alt="" className="w-14 h-14 rounded-xl object-cover border border-[var(--border-subtle)]" />
+                                    )}
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <label className="btn-outline-lime flex items-center gap-2 h-9 px-4 cursor-pointer w-fit">
+                                            <FaCamera size={10} />
+                                            <span>{aboutImg2Uploading ? "جارٍ الرفع..." : "رفع صورة"}</span>
+                                            <input ref={aboutImg2Ref} type="file" accept="image/*" className="hidden"
+                                                onChange={e => { const f = e.target.files?.[0]; if (f) handleAboutImageUpload(2, f); e.currentTarget.value = ""; }} />
+                                        </label>
+                                        <input value={settings.about_image_2 ?? ""} onChange={e => setSettings({ ...settings, about_image_2: e.target.value })}
+                                            placeholder="أو ضع رابط URL مباشر..." dir="ltr"
+                                            className="w-full py-2.5 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-xs font-mono" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1055,13 +1114,11 @@ export default function BookingSettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم الخدمات</h3>
-                                <BilingualInput label="عنوان الخدمات الصغير" value={settings.services_subtitle} onChange={v => setSettings({ ...settings, services_subtitle: v })} gold={gold} placeholderAr="خدمات" placeholderEn="Services" />
                                 <BilingualInput label="عنوان الخدمات الكبير" value={settings.services_title} onChange={v => setSettings({ ...settings, services_title: v })} gold={gold} placeholderAr="ما نقدمه" placeholderEn="What We Offer" />
                                 <BilingualInput label="وصف قسم الخدمات" value={settings.services_description} onChange={v => setSettings({ ...settings, services_description: v })} gold={gold} placeholderAr="اكتب وصفاً..." placeholderEn="Write description..." />
                             </div>
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم فريق العمل</h3>
-                                <BilingualInput label="عنوان الفريق الصغير" value={settings.team_subtitle} onChange={v => setSettings({ ...settings, team_subtitle: v })} gold={gold} placeholderAr="فريقنا" placeholderEn="Our Team" />
                                 <BilingualInput label="عنوان الفريق الكبير" value={settings.team_title} onChange={v => setSettings({ ...settings, team_title: v })} gold={gold} placeholderAr="الخبراء" placeholderEn="The Experts" />
                                 <BilingualInput label="وصف قسم الفريق" value={settings.team_description} onChange={v => setSettings({ ...settings, team_description: v })} gold={gold} placeholderAr="اكتب وصفاً..." placeholderEn="Write description..." />
                             </div>
@@ -1076,7 +1133,6 @@ export default function BookingSettingsPage() {
                             <h2 className="text-lg font-bold">قسم آراء العملاء</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <BilingualInput label="العنوان الصغير" value={settings.reviews_subtitle ?? ""} onChange={v => setSettings({ ...settings, reviews_subtitle: v })} gold={gold} placeholderAr="آراء العملاء" placeholderEn="Client Reviews" />
                             <BilingualInput label="العنوان الكبير" value={settings.reviews_title ?? ""} onChange={v => setSettings({ ...settings, reviews_title: v })} gold={gold} placeholderAr="ماذا يقولون" placeholderEn="What They Say" />
                         </div>
                         <div className="space-y-4">
@@ -1402,6 +1458,21 @@ export default function BookingSettingsPage() {
 
                 {/* ══════ Tab: FAQ ══════ */}
                 {activeTab === 'faq' && <motion.div key="faq" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+
+                    {/* FAQ Section Headers */}
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${gold}15`, color: gold }}>
+                                <HelpCircle size={18} />
+                            </div>
+                            <h2 className="text-lg font-bold">عناوين قسم الأسئلة الشائعة</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <BilingualInput label="العنوان الرئيسي" value={settings.faq_title ?? ""} onChange={v => setSettings({ ...settings, faq_title: v })} gold={gold} placeholderAr="الأسئلة الشائعة" placeholderEn="Common Questions" />
+                        </div>
+                        <p className="mt-4 text-[10px] text-[var(--color-text-muted)] italic">يظهر هذا العنوان فوق قائمة الأسئلة في صفحة الحجز. اضغط "حفظ التغييرات" لتطبيقه.</p>
+                    </div>
+
                     <div className="card">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">

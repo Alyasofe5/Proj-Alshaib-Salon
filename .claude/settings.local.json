@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/WASEEM/.agents/**)",
+      "Read(//c/Users/WASEEM/.antigravity/**)",
+      "Read(//c/Users/WASEEM/.codex/**)",
+      "Read(//c/Users/WASEEM/.gemini/**)",
+      "Read(//c/Users/WASEEM/.qwen/**)"
+    ]
+  }
+}

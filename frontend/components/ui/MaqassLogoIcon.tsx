@@ -9,16 +9,18 @@ interface MaqassLogoIconProps {
 
 export default function MaqassLogoIcon({ size = 40, className = "" }: MaqassLogoIconProps) {
     return (
-        <div 
+        <div
           className={`relative overflow-hidden rounded-full bg-black border-2 border-[#C3D809] flex items-center justify-center shadow-[0_0_15px_rgba(195,216,9,0.3)] ${className}`}
-          style={{ width: size, height: size }}
+          style={{ width: size, height: size, flexShrink: 0 }}
         >
             <Image
-                src="/images/logo_new.png"
+                src="/images/logo_black_bg_hd.png"
                 alt="Maqass Logo"
-                width={size}
-                height={size}
-                className="w-full h-full object-cover"
+                width={size * 2}
+                height={size * 2}
+                quality={100}
+                className="w-full h-full object-contain"
+                style={{ imageRendering: "high-quality" }}
                 priority
             />
         </div>

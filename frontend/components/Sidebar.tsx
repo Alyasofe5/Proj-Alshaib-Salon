@@ -163,7 +163,7 @@ export default function Sidebar({ role }: SidebarProps) {
                             <div className="w-full h-full flex items-center justify-center bg-black" 
                                  style={{ display: assetUrl(salonLogo) ? "none" : "flex" }}>
                                 <img 
-                                    src="/images/logo_new.png" 
+                                    src="/images/logo_black_bg_hd.png"
                                     alt="Maqass" 
                                     className="w-8 h-8 object-contain"
                                 />

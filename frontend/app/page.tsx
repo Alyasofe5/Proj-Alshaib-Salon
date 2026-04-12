@@ -186,7 +186,7 @@ export default function LandingPage() {
                 style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
                 <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
                   <Image
-                    src="/images/logo_new.png"
+                    src="/images/logo_black_bg_hd.png"
                     alt="Maqass Logo"
                     width={128}
                     height={128}
@@ -716,7 +716,7 @@ export default function LandingPage() {
                     style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
                     <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
                       <Image
-                        src="/images/logo_new.png"
+                        src="/images/logo_black_bg_hd.png"
                         alt="Maqass Logo"
                         width={128}
                         height={128}

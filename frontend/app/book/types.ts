@@ -20,6 +20,7 @@ export interface SalonInfo {
     services_title?: string;
     services_subtitle?: string;
     services_description?: string;
+    services_ticker?: string;
     team_title?: string;
     team_subtitle?: string;
     team_description?: string;

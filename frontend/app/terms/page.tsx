@@ -94,7 +94,10 @@ function TermsContent() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 lg:gap-12 text-right">
                         <div className="space-y-8">
-                            <h3 className="text-white font-black italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif", fontSize: "2.2rem" }}>
+                            <h3
+                                className="text-white font-black tracking-tighter whitespace-nowrap"
+                                style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.55rem, 4vw, 2.15rem)" }}
+                            >
                                 AL SHAYEB SALON<span className="text-[#C3D809]">.</span>
                             </h3>
                             <p className="text-white/40 leading-relaxed text-sm max-w-xs">

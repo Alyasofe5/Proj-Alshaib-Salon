@@ -194,6 +194,32 @@ const tData = (text: string | null | undefined, lang: 'ar' | 'en'): string => {
     return translated;
 };
 
+const DEFAULT_SERVICE_TICKER = [
+    "قصات دقيقة||Precision Cuts",
+    "تلوين وميش الشعر||Hair Coloring",
+    "تصفيف الشعر||Hair Styling",
+    "تسريحات المناسبات||Event Hairstyles",
+    "التجديد العميق||Deep Restoration",
+    "العناية باللحية||Beard Care",
+    "تنظيف البشرة||Skin Cleansing",
+    "مساج استرخائي||Relax Massage",
+];
+
+const getServiceTickerItems = (value?: string | null): { ar: string; en: string }[] => {
+    const source = value?.trim() ? value : DEFAULT_SERVICE_TICKER.join("\n");
+    return source
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+            if (line.includes("||")) {
+                const [ar, en] = line.split("||");
+                return { ar: ar.trim(), en: en?.trim() || ar.trim() };
+            }
+            return { ar: line, en: line };
+        });
+};
+
 function BookingContent({ params }: { params: { slug: string } }) {
     const searchParams = useSearchParams();
     const slugFromPath = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean).pop() : "";
@@ -223,6 +249,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const thumbRef = useRef<HTMLDivElement>(null);
+    const serviceTickerItems = getServiceTickerItems(salon?.services_ticker);
 
     const scrollThumbs = (dir: 'l' | 'r') => {
         if (!thumbRef.current) return;
@@ -564,7 +591,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
     return (
         <div
-            className="min-h-screen overflow-x-hidden transition-all duration-500"
+            className="min-h-screen overflow-x-hidden transition-all duration-500 w-full max-w-[100vw]"
             data-lang={lang}
             style={{
                 fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif",
@@ -625,21 +652,44 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     {/* Right: Actions */}
                     <div className="flex justify-end items-center gap-3 sm:gap-5">
 
-                        {/* Classic minimalist language switcher */}
-                        <div className="hidden sm:flex items-center gap-3 text-[10px] font-black uppercase tracking-widest" style={{ fontFamily: "'Space Mono', monospace" }}>
-                            <button
-                                onClick={() => setLang('ar')}
-                                className={`transition-all duration-300 px-1 ${lang === 'ar' ? 'text-[#C3D809]' : 'text-white/30 hover:text-white'}`}
-                            >
-                                ع
-                            </button>
-                            <span className="w-px h-3 bg-white/10"></span>
-                            <button
-                                onClick={() => setLang('en')}
-                                className={`transition-all duration-300 px-1 ${lang === 'en' ? 'text-[#C3D809]' : 'text-white/30 hover:text-white'}`}
-                            >
-                                EN
-                            </button>
+                        {/* Language switcher */}
+                        <div
+                            role="group"
+                            aria-label="Language switcher"
+                            className="hidden sm:flex items-center relative p-[3px] rounded-2xl"
+                            style={{
+                                fontFamily: "'Space Mono', monospace",
+                                background: 'rgba(255,255,255,0.04)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                            }}
+                        >
+                            {/* animated pill */}
+                            <span
+                                aria-hidden="true"
+                                className="absolute top-[3px] bottom-[3px] rounded-[11px] transition-all duration-[350ms]"
+                                style={{
+                                    width: 'calc(50% - 3px)',
+                                    left: lang === 'ar' ? '3px' : 'calc(50%)',
+                                    background: 'linear-gradient(135deg, #d4ea0a 0%, #C3D809 60%, #a8bc08 100%)',
+                                    boxShadow: '0 0 14px rgba(195,216,9,0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
+                                    transitionTimingFunction: 'cubic-bezier(0.34,1.4,0.64,1)',
+                                }}
+                            />
+                            {(['ar', 'en'] as const).map((l) => (
+                                <button
+                                    key={l}
+                                    onClick={() => setLang(l)}
+                                    aria-pressed={lang === l}
+                                    className={`relative z-10 w-[46px] py-[7px] text-[10px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 select-none ${
+                                        lang === l
+                                            ? '!text-black'
+                                            : 'text-white/50 hover:text-white/80'
+                                    }`}
+                                >
+                                    {l === 'ar' ? 'AR' : 'EN'}
+                                </button>
+                            ))}
                         </div>
 
                         {/* Divider */}
@@ -835,28 +885,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         {/* 2 continuous sets for perfect infinite scrolling loop */}
                         {[...Array(2)].map((_, i) => (
                             <div key={i} className="flex items-center pr-8 lg:pr-16">
-                                {(lang === 'ar' ? [
-                                    "قصات دقيقة",
-                                    "تلوين وميش الشعر",
-                                    "تصفيف الشعر",
-                                    "تسريحات المناسبات",
-                                    "التجديد العميق",
-                                    "العناية باللحية",
-                                    "تنظيف البشرة",
-                                    "مساج استرخائي"
-                                ] : [
-                                    "Precision Cuts",
-                                    "Hair Coloring",
-                                    "Hair Styling",
-                                    "Event Hairstyles",
-                                    "Deep Restoration",
-                                    "Beard Care",
-                                    "Skin Cleansing",
-                                    "Relax Massage"
-                                ]).map((service, j) => (
+                                {serviceTickerItems.map((service, j) => (
                                     <div key={j} className="flex items-center gap-8 lg:gap-16 pr-8 lg:pr-16">
                                         <span className="text-white/60 text-[13px] md:text-[15px] font-bold" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
-                                            {service}
+                                            {lang === 'en' ? service.en : service.ar}
                                         </span>
                                         <span className="text-[#C3D809]/60 text-[10px] md:text-xs">•</span>
                                     </div>
@@ -977,6 +1009,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     const isActive = activeServiceIndex === i;
                                     return (
                                         <motion.button type="button"
+                                            key={s.id ?? i}
                                             initial={{ opacity: 0, x: -15 }}
                                             whileInView={{ opacity: 1, x: 0 }}
                                             viewport={{ once: true }}

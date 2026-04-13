@@ -134,6 +134,7 @@ sendSuccess([
         'services_title' => $settingsData['services_title'] ?? 'قائمة الخدمات',
         'services_subtitle' => $settingsData['services_subtitle'] ?? 'خدمات الصالون',
         'services_description' => $settingsData['services_description'] ?? '',
+        'services_ticker' => $settingsData['services_ticker'] ?? "قصات دقيقة||Precision Cuts\nتلوين وميش الشعر||Hair Coloring\nتصفيف الشعر||Hair Styling\nتسريحات المناسبات||Event Hairstyles\nالتجديد العميق||Deep Restoration\nالعناية باللحية||Beard Care\nتنظيف البشرة||Skin Cleansing\nمساج استرخائي||Relax Massage",
         'team_title' => $settingsData['team_title'] ?? 'فريقنا',
         'team_subtitle' => $settingsData['team_subtitle'] ?? 'فريق العمل',
         'team_description' => $settingsData['team_description'] ?? '',

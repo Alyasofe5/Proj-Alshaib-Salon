@@ -65,6 +65,7 @@ interface SalonSettings {
     services_title: string;
     services_subtitle: string;
     services_description: string;
+    services_ticker: string;
     team_title: string;
     team_subtitle: string;
     team_description: string;
@@ -1116,6 +1117,15 @@ export default function BookingSettingsPage() {
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم الخدمات</h3>
                                 <BilingualInput label="عنوان الخدمات الكبير" value={settings.services_title} onChange={v => setSettings({ ...settings, services_title: v })} gold={gold} placeholderAr="ما نقدمه" placeholderEn="What We Offer" />
                                 <BilingualInput label="وصف قسم الخدمات" value={settings.services_description} onChange={v => setSettings({ ...settings, services_description: v })} gold={gold} placeholderAr="اكتب وصفاً..." placeholderEn="Write description..." />
+                                <BilingualListEditor
+                                    label="شريط الخدمات المتحرك"
+                                    value={settings.services_ticker ?? ""}
+                                    onChange={v => setSettings({ ...settings, services_ticker: v })}
+                                    gold={gold}
+                                    placeholderAr="قصات دقيقة"
+                                    placeholderEn="Precision Cuts"
+                                    helperText="كل سطر يمثل خدمة واحدة. السطر الأول عربي يقابله السطر الأول إنجليزي."
+                                />
                             </div>
                             <div className="space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-accent)]">قسم فريق العمل</h3>
@@ -1765,6 +1775,73 @@ function BilingualTextArea({ label, value, onChange, gold, placeholderAr, placeh
                     />
                 </div>
             </div>
+        </div>
+    );
+}
+
+function BilingualListEditor({ label, value, onChange, gold, placeholderAr, placeholderEn, helperText }: {
+    label?: string;
+    value: string;
+    onChange: (v: string) => void;
+    gold: string;
+    placeholderAr?: string;
+    placeholderEn?: string;
+    helperText?: string;
+}) {
+    const lines = (value || "").split(/\r?\n/);
+    const arVal = lines.map((line) => line.includes("||") ? line.split("||")[0].trim() : line.trim()).join("\n");
+    const enVal = lines.map((line) => line.includes("||") ? line.split("||")[1]?.trim() ?? "" : "").join("\n");
+
+    const mergeValues = (nextAr: string, nextEn: string) => {
+        const arLines = nextAr.split(/\r?\n/);
+        const enLines = nextEn.split(/\r?\n/);
+        const maxLines = Math.max(arLines.length, enLines.length);
+        const merged = Array.from({ length: maxLines }, (_, index) => {
+            const arLine = arLines[index]?.trim() ?? "";
+            const enLine = enLines[index]?.trim() ?? "";
+            if (!arLine && !enLine) return "";
+            return enLine ? `${arLine}||${enLine}` : arLine;
+        }).filter(Boolean);
+        onChange(merged.join("\n"));
+    };
+
+    return (
+        <div className="space-y-3">
+            {label && (
+                <label className="text-xs font-bold text-[var(--color-text-muted)] block uppercase tracking-wider">
+                    {label}
+                </label>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: gold }}>Arabic</div>
+                    <textarea
+                        value={arVal}
+                        onChange={(e) => mergeValues(e.target.value, enVal)}
+                        placeholder={placeholderAr}
+                        rows={6}
+                        className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all resize-y"
+                        style={{ border: "1.5px solid var(--border-subtle)" }}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: gold }}>English</div>
+                    <textarea
+                        value={enVal}
+                        onChange={(e) => mergeValues(arVal, e.target.value)}
+                        placeholder={placeholderEn}
+                        rows={6}
+                        dir="ltr"
+                        className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all resize-y"
+                        style={{ border: "1.5px solid var(--border-subtle)" }}
+                    />
+                </div>
+            </div>
+            {helperText && (
+                <p className="text-[10px] text-[var(--color-text-muted)] italic leading-relaxed">
+                    {helperText}
+                </p>
+            )}
         </div>
     );
 }

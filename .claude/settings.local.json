@@ -5,7 +5,9 @@
       "Read(//c/Users/WASEEM/.antigravity/**)",
       "Read(//c/Users/WASEEM/.codex/**)",
       "Read(//c/Users/WASEEM/.gemini/**)",
-      "Read(//c/Users/WASEEM/.qwen/**)"
+      "Read(//c/Users/WASEEM/.qwen/**)",
+      "Bash(python3 -c ':*)",
+      "Bash(python -c ':*)"
     ]
   }
 }

@@ -72,6 +72,7 @@ if (getMethod() === 'GET') {
         'services_title'  => $settings['services_title']  ?? 'قائمة الخدمات',
         'services_subtitle' => $settings['services_subtitle'] ?? 'خدمات الصالون',
         'services_description' => $settings['services_description'] ?? 'اختر الخدمة، شاهد لمحة فورية، ثم احجز بضغطة واحدة. تصميم واضح لتجربة راقية وعناية دقيقة تليق بك.',
+        'services_ticker' => $settings['services_ticker'] ?? "قصات دقيقة||Precision Cuts\nتلوين وميش الشعر||Hair Coloring\nتصفيف الشعر||Hair Styling\nتسريحات المناسبات||Event Hairstyles\nالتجديد العميق||Deep Restoration\nالعناية باللحية||Beard Care\nتنظيف البشرة||Skin Cleansing\nمساج استرخائي||Relax Massage",
         'team_title'      => $settings['team_title']      ?? 'أيدي مبدعة',
         'team_subtitle'   => $settings['team_subtitle']   ?? 'فريق العمل',
         'team_description' => $settings['team_description'] ?? 'خبراء محترفون يجمعون بين المهارة والإبداع لتقديم أفضل النتائج.',

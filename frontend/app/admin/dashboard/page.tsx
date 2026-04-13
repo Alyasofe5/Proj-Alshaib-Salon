@@ -360,7 +360,7 @@ export default function DashboardPage() {
                             <tbody>
                                 {data.employees_today.map((emp, i) => (
                                     <tr key={i}>
-                                        <td className="text-white font-semibold">{emp.name}</td>
+                                        <td className="text-white font-semibold">{emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name}</td>
                                         <td>
                                             <span className="badge badge-blue">{emp.cnt}</span>
                                         </td>
@@ -410,7 +410,7 @@ export default function DashboardPage() {
                                 {data.last_transactions.map((tx, i) => (
                                     <tr key={tx.id}>
                                         <td className="text-gray-600">#{i + 1}</td>
-                                        <td>{tx.emp_name}</td>
+                                        <td>{tx.emp_name?.includes("||") ? tx.emp_name.split("||")[0].trim() : tx.emp_name}</td>
                                         <td className="text-accent-lime font-bold">
                                             {Number(tx.total_amount).toFixed(3)} د.أ
                                         </td>

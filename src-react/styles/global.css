@@ -1,0 +1,570 @@
+/*
+  AL-HASON ROASTERY | Global Tokens, Reset & Typography
+  =====================================================
+  MOBILE CHANGES SUMMARY:
+  - MOBILE FIX: Added -webkit-tap-highlight-color: transparent (removes iOS blue flash on tap)
+  - MOBILE FIX: overscroll-behavior-y: none on body (stops iOS rubber-band scroll)
+  - MOBILE FIX: All inputs forced to 16px min (prevents iOS auto-zoom bug)
+  - MOBILE FIX: h1/h2/body use clamp() fluid typography
+  - MOBILE FIX: Bottom nav styles with env(safe-area-inset-bottom) for iPhone home bar
+  - MOBILE FIX: Tables scroll horizontally on mobile with -webkit-overflow-scrolling: touch
+  - MOBILE FIX: Responsive grid system with auto-fit/minmax
+  - MOBILE FIX: Button min-height 48px for comfortable touch targets
+  - MOBILE FIX: Padding on all containers uses clamp() for fluid spacing
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&display=swap');
+
+:root {
+    /* Brand Colors */
+    --color-primary: #0a1f14;
+    --color-secondary: #dca922;
+    --color-secondary-hover: #b49352;
+    --color-bg-light: #fdfdfc;
+    --color-surface: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-dark: #2c3e35;
+    --color-text-muted: #6b7b73;
+    --font-base: 'Cairo', sans-serif;
+    --font-accent: 'Cairo', sans-serif;
+    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.06);
+
+    /* MOBILE FIX: Fluid Typography — scales from 320px to 1440px using clamp() */
+    --fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+    --fs-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
+    --fs-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
+    --fs-md: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
+    --fs-lg: clamp(1.15rem, 1rem + 0.75vw, 1.4rem);
+    --fs-xl: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+    --fs-2xl: clamp(1.6rem, 1.2rem + 2vw, 2.5rem);
+    --fs-3xl: clamp(2rem, 1.4rem + 3vw, 3.2rem);
+    --fs-hero: clamp(2.2rem, 1.5rem + 3.5vw, 4rem);
+
+    /* MOBILE FIX: Fluid spacing — no fixed px values on containers */
+    --space-1: clamp(4px, 0.5vw, 8px);
+    --space-2: clamp(8px, 1vw, 12px);
+    --space-3: clamp(12px, 1.5vw, 16px);
+    --space-4: clamp(16px, 2vw, 24px);
+    --space-5: clamp(20px, 3vw, 32px);
+    --space-6: clamp(24px, 4vw, 48px);
+    --space-8: clamp(32px, 5vw, 64px);
+    --space-10: clamp(40px, 6vw, 80px);
+    --space-12: clamp(48px, 8vw, 120px);
+
+    /* MOBILE FIX: Safe area insets for iPhone notch / Dynamic Island / home bar */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+
+    /* MOBILE FIX: Bottom nav height accounts for home-bar on iPhone */
+    --mobile-nav-height: calc(64px + var(--safe-bottom));
+}
+
+/* ============================================
+   RESET
+   ============================================ */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    /* MOBILE FIX: Remove native iOS blue tap highlight on all elements */
+    -webkit-tap-highlight-color: transparent;
+}
+
+*::-webkit-scrollbar {
+    display: none !important;
+}
+
+html {
+    scroll-behavior: smooth;
+    direction: rtl;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* MOBILE FIX: touch-action manipulation prevents 300ms click delay on mobile */
+    touch-action: manipulation;
+}
+
+::-webkit-scrollbar {
+    display: none !important;
+}
+
+body {
+    font-family: var(--font-base);
+    background-color: var(--color-bg-light);
+    color: var(--color-text);
+    /* MOBILE FIX: line-height 1.6 minimum for readability on small screens */
+    line-height: 1.6;
+    overflow-x: hidden;
+    font-size: var(--fs-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* MOBILE FIX: Prevents iOS rubber-band scroll on body (keeps scroll in panels) */
+    overscroll-behavior-y: none;
+    /* MOBILE FIX: Safe area side padding for landscape mode on notched phones */
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+}
+
+/* ============================================
+   TYPOGRAPHY — fluid clamp() scales
+   ============================================ */
+/* MOBILE FIX: h1 uses clamp so it never overflows on 320px screens */
+h1 {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-family: var(--font-base);
+    color: var(--color-primary);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* MOBILE FIX: h2 clamp for tablet/desktop fluid scaling */
+h2 {
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-family: var(--font-base);
+    color: var(--color-primary);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+h3, h4 {
+    font-family: var(--font-base);
+    color: var(--color-primary);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* MOBILE FIX: Body text clamp prevents too-small text on tiny screens */
+p, li, td, th, span, label {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+    line-height: 1.5;
+}
+
+/* MOBILE FIX: small text minimum size */
+small, .text-sm {
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+}
+
+/* MOBILE FIX: Prevent iOS input auto-zoom — minimum 16px on ALL inputs */
+input,
+select,
+textarea {
+    font-size: 16px !important;
+    font-family: var(--font-base);
+}
+
+/* ============================================
+   TOUCH TARGETS — min 44×44px (Apple HIG)
+   ============================================ */
+/* MOBILE FIX: All interactive elements get minimum 44px touch target */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ============================================
+   CONTAINERS & LAYOUT
+   ============================================ */
+.container {
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    /* MOBILE FIX: clamp padding keeps horizontal breathing room on all screen sizes */
+    padding: 0 clamp(16px, 4vw, 24px);
+}
+
+.section {
+    padding: var(--space-12) 0;
+}
+
+/* MOBILE FIX: Reduce section vertical padding on small screens */
+@media (max-width: 768px) {
+    .section { padding: var(--space-8) 0; }
+}
+
+@media (max-width: 480px) {
+    .section { padding: var(--space-6) 0; }
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: var(--space-10);
+}
+
+@media (max-width: 768px) {
+    .section-header { margin-bottom: var(--space-6); }
+}
+
+.section-subtitle {
+    font-family: var(--font-accent);
+    color: #282828;
+    font-style: normal;
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.section-title {
+    font-family: var(--font-base);
+    font-size: var(--fs-2xl);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* ============================================
+   BUTTONS — mobile-optimized
+   ============================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* MOBILE FIX: clamp padding so buttons never look cramped on 320px */
+    padding: clamp(12px, 2vw, 16px) clamp(24px, 4vw, 36px);
+    font-size: var(--fs-base);
+    font-weight: 800;
+    border-radius: 8px;
+    text-decoration: none;
+    /* MOBILE FIX: max 200ms transition feels snappier / more native */
+    transition: all 0.2s ease-out;
+    cursor: pointer;
+    border: 2px solid transparent;
+    /* MOBILE FIX: 48px min-height for comfortable touch target (exceeds 44px HIG) */
+    min-height: 48px;
+    min-width: 120px;
+}
+
+/* MOBILE FIX: Full-width buttons on very small screens for easy tapping */
+@media (max-width: 480px) {
+    .btn { width: 100%; }
+}
+
+.btn-primary {
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-secondary-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(209, 176, 107, 0.2);
+}
+
+/* MOBILE FIX: Disable hover transforms on touch devices (no hover state on finger) */
+@media (hover: none) {
+    .btn-primary:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+.btn-outline {
+    background-color: transparent;
+    border-color: var(--color-surface);
+    color: var(--color-surface);
+}
+
+.btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+@media (hover: none) {
+    .btn-outline:hover { transform: none; }
+}
+
+/* ============================================
+   MOBILE BOTTOM NAVIGATION BAR
+   Native iOS/Android app-like tab bar
+   ============================================ */
+.mobile-bottom-nav {
+    /* MOBILE FIX: Hidden on desktop, only shows on mobile */
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* MOBILE FIX: Height includes env(safe-area-inset-bottom) for iPhone home bar */
+    height: var(--mobile-nav-height);
+    background: var(--color-primary);
+    z-index: 1000;
+    /* MOBILE FIX: padding-bottom uses safe-area so tabs don't hide behind home bar */
+    padding-bottom: var(--safe-bottom);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(220, 169, 34, 0.15);
+}
+
+@media (max-width: 767px) {
+    .mobile-bottom-nav {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-around;
+    }
+}
+
+.mobile-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 4px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.5);
+    /* MOBILE FIX: small label font under icon */
+    font-size: clamp(9px, 2.5vw, 11px);
+    font-weight: 700;
+    transition: color 0.2s ease-out;
+    min-width: 0;
+    flex: 1;
+    position: relative;
+    /* MOBILE FIX: min 44px touch target per tab */
+    min-height: 44px;
+}
+
+.mobile-bottom-nav a i {
+    font-size: 20px;
+    transition: transform 0.2s ease-out;
+}
+
+.mobile-bottom-nav a.active,
+.mobile-bottom-nav a:active {
+    color: var(--color-secondary);
+}
+
+/* MOBILE FIX: Active tab indicator line at top of tab */
+.mobile-bottom-nav a.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 2px;
+    background: var(--color-secondary);
+    border-radius: 0 0 2px 2px;
+}
+
+.mobile-bottom-nav .nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(calc(50% + 8px));
+    background: #e74c3c;
+    color: white;
+    font-size: 9px;
+    font-weight: 900;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+/* MOBILE FIX: Add bottom padding to main content so it's not hidden behind the tab bar */
+@media (max-width: 767px) {
+    .react-shell > div:not(.cart-drawer-overlay):not(.cart-drawer-panel),
+    .react-shell > main,
+    .platinum-shop-view,
+    .admin-body {
+        padding-bottom: var(--mobile-nav-height) !important;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TABLES — horizontal scroll on mobile
+   ============================================ */
+/* MOBILE FIX: Table wrapper scrolls horizontally with native momentum */
+@media (max-width: 767px) {
+    .react-table-wrap,
+    .admin-modern-table-container,
+    .table-wrapper,
+    .nl-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .react-table,
+    .admin-table,
+    .nl-table {
+        min-width: 600px;
+    }
+}
+
+/* ============================================
+   STAT CARDS GRID — responsive auto-fit
+   ============================================ */
+/* MOBILE FIX: Cards auto-fit with minmax — 1 col on 320px, 2 col on tablet, 4 on desktop */
+.react-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+/* Override for explicit 2-col on tablet */
+@media (max-width: 768px) and (min-width: 480px) {
+    .react-admin-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* MOBILE FIX: Single column on small phones */
+@media (max-width: 479px) {
+    .react-admin-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* MOBILE FIX: Stat card mobile styles */
+.react-stat-card {
+    border-radius: 12px;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   FEATURES GRID COLLAPSE
+   ============================================ */
+@media (max-width: 1024px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+@media (max-width: 767px) {
+    .features-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ============================================
+   MAIN CONTENT SCROLL — native feel
+   ============================================ */
+/* MOBILE FIX: -webkit-overflow-scrolling: touch for momentum on iOS.
+   Do NOT set overflow-y: auto here — that creates scroll traps where
+   the window stops scrolling and only the div scrolls. Window scroll is correct. */
+.admin-content-shell,
+.react-shell > div {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   FORMS — mobile-first
+   ============================================ */
+/* MOBILE FIX: Stack label above input on all screen sizes */
+.react-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.react-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 800;
+    color: var(--color-primary);
+    /* MOBILE FIX: label always above input */
+    align-self: flex-start;
+}
+
+/* MOBILE FIX: All inputs full-width on mobile */
+.react-field input,
+.react-field select,
+.react-field textarea {
+    width: 100%;
+    /* MOBILE FIX: 12px vertical, 16px horizontal padding for comfortable tap */
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: var(--font-base);
+    /* MOBILE FIX: 16px minimum prevents iOS auto-zoom on focus */
+    font-size: 16px !important;
+    background: white;
+    /* MOBILE FIX: 48px min-height for comfortable tap targets */
+    min-height: 48px;
+}
+
+.react-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* ============================================
+   MOBILE UTILITY CLASSES
+   ============================================ */
+/* MOBILE FIX: .hide-mobile hides content below 769px */
+.hide-mobile {
+    display: none !important;
+}
+
+@media (min-width: 769px) {
+    .hide-mobile { display: initial !important; }
+}
+
+/* MOBILE FIX: .show-mobile shows content only on mobile */
+.show-mobile {
+    display: initial !important;
+}
+
+@media (min-width: 769px) {
+    .show-mobile { display: none !important; }
+}
+
+/* ============================================
+   TOPBAR SAFE AREA — iPhone notch support
+   ============================================ */
+/* MOBILE FIX: Only apply safe-area padding on mobile where notch/Dynamic Island exists.
+   Desktop always has safe-area = 0px, but wrapping in @media keeps intent clear
+   and avoids any browser quirk that resolves env() non-zero on desktop. */
+@media (max-width: 767px) {
+    .topbar,
+    .header,
+    .admin-top-nav {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+}
+
+/* ============================================
+   MODAL / BOTTOM SHEET — mobile native feel
+   ============================================ */
+/* MOBILE FIX: On mobile, modals become bottom sheets that slide up */
+@media (max-width: 767px) {
+    .modal-overlay {
+        align-items: flex-end !important;
+    }
+
+    .modal-content,
+    .admin-modal,
+    [class*="modal"] > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        /* MOBILE FIX: Bottom sheet border radius — rounded top, square bottom */
+        border-radius: 16px 16px 0 0 !important;
+        /* MOBILE FIX: Padding bottom includes home bar safe area */
+        padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+        margin: 0 !important;
+        max-height: 92vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* MOBILE FIX: Drag handle indicator at top of bottom sheet */
+    .modal-content::before,
+    .admin-modal::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 2px;
+        margin: 0 auto 16px;
+    }
+}

@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { Building2, ChevronDown, Check, Loader2, ArrowLeftRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { assetUrl } from "@/lib/assets";
+import { tData } from "@/lib/i18n";
 
 /**
  * BranchSwitcher — Enterprise plan branch selector
@@ -43,7 +44,7 @@ export default function BranchSwitcher() {
         }
     };
 
-    const currentInitial = (salon?.name || "S").charAt(0).toUpperCase();
+    const currentInitial = tData(salon?.name || "S", "ar").charAt(0).toUpperCase();
 
     return (
         <div className="relative w-full" ref={dropdownRef}>
@@ -72,7 +73,7 @@ export default function BranchSwitcher() {
                     {assetUrl(salon?.logo) ? (
                         <img
                             src={assetUrl(salon?.logo)!}
-                            alt={salon?.name || ""}
+                            alt={tData(salon?.name || "", "ar")}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = "none";
@@ -87,7 +88,7 @@ export default function BranchSwitcher() {
                 {/* Name + label */}
                 <div className="flex-1 text-right min-w-0">
                     <p className="text-[11px] text-accent-lime/60 font-medium leading-none mb-0.5">الفرع الحالي</p>
-                    <p className="text-xs font-bold text-white truncate leading-none">{salon?.name || "اختر الفرع"}</p>
+                    <p className="text-xs font-bold text-white truncate leading-none">{tData(salon?.name || "اختر الفرع", "ar")}</p>
                 </div>
 
                 {/* Chevron */}
@@ -133,7 +134,7 @@ export default function BranchSwitcher() {
                             {branches.map((branch) => {
                                 const isActive = branch.id === salon?.id;
                                 const isLoading = switching === branch.id;
-                                const initial = branch.name.charAt(0).toUpperCase();
+                                const initial = tData(branch.name, "ar").charAt(0).toUpperCase();
 
                                 return (
                                     <button
@@ -177,7 +178,7 @@ export default function BranchSwitcher() {
                                             {assetUrl(branch.logo_path) ? (
                                                 <img
                                                     src={assetUrl(branch.logo_path)!}
-                                                    alt={branch.name}
+                                                    alt={tData(branch.name, "ar")}
                                                     className="w-full h-full object-cover"
                                                     onError={(e) => {
                                                         (e.target as HTMLImageElement).style.display = "none";
@@ -192,7 +193,7 @@ export default function BranchSwitcher() {
                                         {/* Info */}
                                         <div className="flex-1 text-right min-w-0">
                                             <p className={`text-xs font-bold truncate ${isActive ? "text-accent-lime" : "text-[var(--color-text-secondary)]"}`}>
-                                                {branch.name}
+                                                {tData(branch.name, "ar")}
                                             </p>
                                             <p className="text-[10px] text-[var(--color-text-muted)] truncate">/{branch.slug}</p>
                                         </div>

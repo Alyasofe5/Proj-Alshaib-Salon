@@ -8,6 +8,7 @@ import {
     Scissors, FileText, Plus, Check, AlertCircle, Loader2,
     Pencil, Trash2
 } from "lucide-react";
+import { tData } from "@/lib/i18n";
 
 interface CalendarBooking {
     id: number;
@@ -555,7 +556,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                     {/* Services */}
                                                     <div className="flex items-center gap-1.5 mb-1.5">
                                                         <Scissors size={10} className="text-accent-lime/50 flex-shrink-0" />
-                                                        <span className="text-[10px] sm:text-[11px] text-accent-lime/80 font-semibold truncate">{b.services}</span>
+                                                        <span className="text-[10px] sm:text-[11px] text-accent-lime/80 font-semibold truncate">{tData(b.services, "ar")}</span>
                                                     </div>
 
                                                     {/* Employee + Phone row */}
@@ -567,9 +568,9 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                                     color: "var(--color-accent)",
                                                                     border: "1px solid rgba(195,216,9,.1)",
                                                                 }}>
-                                                                    {b.employee_name.charAt(0).toUpperCase()}
+                                                                    {tData(b.employee_name, "ar").charAt(0).toUpperCase()}
                                                                 </span>
-                                                                {b.employee_name}
+                                                                {tData(b.employee_name, "ar")}
                                                             </span>
                                                         )}
                                                         <a href={`tel:${b.customer_phone}`} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-accent-lime transition-colors">
@@ -740,7 +741,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 }}
                                             >
                                                 <User size={12} className="inline ml-1" />
-                                                {emp.name}
+                                                {tData(emp.name, "ar")}
                                             </button>
                                         ))}
                                     </div>
@@ -767,7 +768,7 @@ export default function BookingCalendar({ role = "admin" }: BookingCalendarProps
                                                 <span className="flex items-center gap-1.5">
                                                     {formData.service_ids.includes(svc.id) && <Check size={12} />}
                                                     <Scissors size={10} className="opacity-50" />
-                                                    {svc.name}
+                                                    {tData(svc.name, "ar")}
                                                 </span>
                                                 <span className="text-[10px] text-gray-500">{Number(svc.price).toFixed(2)} د.أ</span>
                                             </button>

@@ -23,7 +23,6 @@ const config: Config = {
         "disabled-gray": "var(--color-surface)",   // Disabled elements
         
         // Legacy compatibility aliases (Golden -> Lime)
-        "accent-lime": "#C3D809",
         "gold-light": "#D4EC0A",
         "gold": "#C3D809",
 

@@ -24,6 +24,7 @@ import {
 import { useState, useEffect } from "react";
 import BranchSwitcher from "@/components/BranchSwitcher";
 import { assetUrl } from "@/lib/assets";
+import { tData } from "@/lib/i18n";
 
 // Feature keys that each link requires (undefined = always visible)
 type FeatureKey = "has_booking_page" | "has_advanced_reports" | "has_whatsapp" | "has_multi_branch" | "has_custom_api" | "has_priority_support" | "has_full_customize";
@@ -102,7 +103,7 @@ export default function Sidebar({ role }: SidebarProps) {
     const isEmployee = role === "employee" || user?.role === "employee";
     const rawLinks = isEmployee ? employeeLinks : adminLinks;
     const panelName = isEmployee ? "EMPLOYEE PANEL" : "MANAGEMENT SYSTEM";
-    const salonName = salon?.name || "Maqass";
+    const salonName = tData(salon?.name || "Maqass", "ar");
     const salonLogo = salon?.logo;
     const planType = salon?.plan_type || "basic";
     const badge = planBadges[planType] || planBadges.basic;

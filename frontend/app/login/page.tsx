@@ -156,14 +156,12 @@ export default function LoginPage() {
             >
                 {/* Logo Area */}
                 <div className="text-center mb-10 group">
-                    <div className="flex justify-center mb-6 relative">
-                        {/* Multi-layered Glow (Bloom) */}
-                        <div className="absolute inset-0 rounded-full blur-[40px] opacity-20 bg-[var(--color-accent)] animate-pulse" />
-                        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 w-full blur-2xl opacity-10 bg-[var(--color-accent)]" />
+                    <div className="flex justify-center mb-8 relative">
+                        {/* Minimal Luxury Depth */}
+                        <div className="absolute inset-0 rounded-full blur-[60px] opacity-10 bg-[var(--color-accent)] pointer-events-none" />
 
-                        <div className="relative w-28 h-28 rounded-full flex items-center justify-center p-[2px] transition-all duration-1000 group-hover:scale-105"
-                            style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.05) 100%)" }}>
-                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-1.5 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] overflow-hidden border border-[#C3D809]/20">
+                        <div className="relative w-24 h-24 rounded-full flex items-center justify-center p-[1px] transition-all duration-1000 group-hover:scale-105 bg-white/10">
+                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-1.5 border border-white/5 overflow-hidden">
                                 <img src="/images/logo_black_bg_hd.png" alt="Maqass Logo"
                                     width="256"
                                     height="256"
@@ -172,12 +170,8 @@ export default function LoginPage() {
                         </div>
                     </div>
                     <div className="flex flex-col items-center">
-                        <span className="text-5xl font-black tracking-tighter leading-none maqass-brand bg-clip-text text-transparent bg-gradient-to-b from-[var(--color-accent)] to-[#d4ec0a] drop-shadow-[0_10px_25px_rgba(195,216,9,0.2)]">MAQASS</span>
-                        <div className="flex items-center gap-2 mt-4 opacity-70">
-                            <div className="h-[1px] w-4 bg-[var(--color-accent)]/30" />
-                            <span className="text-[9px] font-bold tracking-[.5em] uppercase" style={{ color: "#F5F2EC" }}>Salon management platform</span>
-                            <div className="h-[1px] w-4 bg-[var(--color-accent)]/30" />
-                        </div>
+                        <span className="text-4xl font-light tracking-tight maqass-brand text-white italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>MAQASS</span>
+                        <span className="text-[9px] font-medium tracking-[0.4em] uppercase text-white/30 mt-3" style={{ fontFamily: "var(--font-space-mono)" }}>Salon Management</span>
                     </div>
                 </div>
 
@@ -196,10 +190,7 @@ export default function LoginPage() {
                     {/* Inner Accent Line */}
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent)]/30 to-transparent" />
 
-                    <h2 className="text-xl font-black text-white mb-8 text-center flex items-center justify-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
-                            <LogIn size={18} className="text-accent-lime" />
-                        </div>
+                    <h2 className="text-lg font-medium text-white mb-8 text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>
                         تسجيل الدخول
                     </h2>
 
@@ -236,7 +227,7 @@ export default function LoginPage() {
                         className="space-y-6"
                     >
                         <div className="relative group/input">
-                            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2">
+                            <label className="text-[12px] font-bold text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
                                 <User size={12} className="text-accent-lime" />
                                 اسم المستخدم
                             </label>
@@ -253,7 +244,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="relative group/input">
-                            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2">
+                            <label className="text-[12px] font-bold text-[var(--color-accent)] mb-2 block opacity-80 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
                                 <Lock size={12} className="text-accent-lime" />
                                 كلمة المرور
                             </label>
@@ -283,11 +274,11 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest transition-all relative overflow-hidden group/btn hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3"
+                            className="w-full h-14 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all relative overflow-hidden group/btn disabled:opacity-50 flex items-center justify-center gap-3"
                             style={{ 
-                                background: "linear-gradient(135deg, var(--color-accent) 0%, #d4ec0a 100%)", 
+                                background: "#C3D809", 
                                 color: "#000",
-                                boxShadow: "0 10px 30px rgba(195,216,9,0.3)"
+                                fontFamily: "'Noto Sans Arabic', sans-serif"
                             }}
                         >
                             {loading ? (
@@ -295,11 +286,9 @@ export default function LoginPage() {
                             ) : (
                                 <>
                                     <span>دخول</span>
-                                    <LogIn size={18} className="transition-transform group-hover/btn:translate-x-[-4px]" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover/btn:-translate-x-1"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
                                 </>
                             )}
-                            {/* Shine effect */}
-                            <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
                         </button>
                     </form>
                 </motion.div>

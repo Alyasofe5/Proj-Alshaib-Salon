@@ -1,7 +1,7 @@
 export interface Service { id: number; name: string; price: string; duration_minutes: number | null; image: string | null; video?: string | null; }
 export interface Employee { id: number; name: string; avatar?: string; role?: string; specialty?: string; }
 export interface SalonInfo {
-    name: string; slug: string; logo: string | null; phone: string | null;
+    name: string; slug: string; logo: string | null; logo_path?: string | null; phone: string | null;
     description: string; secondary_description?: string; address: string; instagram: string;
     whatsapp?: string; facebook?: string; booking_message: string;
     hero_image: string | null;

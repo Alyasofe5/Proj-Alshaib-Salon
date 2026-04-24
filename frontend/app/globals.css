@@ -427,6 +427,15 @@ html {
   scrollbar-width: none;
 }
 
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ===== Sidebar ===== */
 .sidebar {
   position: fixed;

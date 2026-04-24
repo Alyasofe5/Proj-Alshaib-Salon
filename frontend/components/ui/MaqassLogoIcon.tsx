@@ -20,7 +20,6 @@ export default function MaqassLogoIcon({ size = 40, className = "" }: MaqassLogo
                 height={size * 2}
                 quality={100}
                 className="w-full h-full object-contain"
-                style={{ imageRendering: "high-quality" }}
                 priority
             />
         </div>

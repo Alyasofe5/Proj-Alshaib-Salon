@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import UpgradeCard from "@/components/UpgradeCard";
 import { assetUrl } from "@/lib/assets";
+import { tData } from "@/lib/i18n";
 
 interface Branch {
     id: number;
@@ -191,7 +192,7 @@ export default function BranchManager() {
                                     {assetUrl(branch.logo) ? (
                                         <img
                                             src={assetUrl(branch.logo)!}
-                                            alt={branch.name}
+                                            alt={tData(branch.name, "ar")}
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).style.display = "none";
@@ -200,13 +201,13 @@ export default function BranchManager() {
                                             }}
                                         />
                                     ) : null}
-                                    <span style={{ display: assetUrl(branch.logo) ? "none" : "flex" }}>{branch.name.charAt(0).toUpperCase()}</span>
+                                    <span style={{ display: assetUrl(branch.logo) ? "none" : "flex" }}>{tData(branch.name, "ar").charAt(0).toUpperCase()}</span>
                                 </div>
 
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold text-white truncate">{branch.name}</span>
+                                        <span className="text-sm font-bold text-white truncate">{tData(branch.name, "ar")}</span>
                                         {branch.is_current && (
                                             <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent-lime/20 text-accent-lime font-bold flex-shrink-0">الحالي</span>
                                         )}

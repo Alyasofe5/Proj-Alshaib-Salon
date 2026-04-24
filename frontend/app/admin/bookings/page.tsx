@@ -225,11 +225,11 @@ export default function AdminBookings() {
             </div>
 
             {/* Bookings List */}
-            <div className="space-y-3">
+            <div className="space-y-4">
                 <AnimatePresence>
                     {bookings.map((b) => {
                         const sc = statusConfig[b.status];
-                        const isAnyBarber = !b.employee_id; // حجز "أي حلاق"
+                        const isAnyBarber = !b.employee_id;
                         return (
                             <motion.div
                                 key={b.id}
@@ -237,90 +237,128 @@ export default function AdminBookings() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, x: -50 }}
-                                className={`chart-card border ${sc.bg} p-3 md:p-4`}
+                                className="group rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-4 md:p-5 hover:border-[#C3D809]/20 hover:shadow-[0_8px_30px_rgba(195,216,9,0.08)] transition-all duration-300"
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                    {/* Info */}
-                                    <div className="flex-1 space-y-1.5 md:space-y-2">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.color}`}>
+                                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                                    {/* Main Info */}
+                                    <div className="flex-1 min-w-0 space-y-3">
+                                        {/* Header Row: Status + Name + Phone */}
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${sc.bg} ${sc.color}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${sc.color.replace('text-', 'bg-')}`} />
                                                 {sc.label}
                                             </span>
-                                            {/* Badge "أي حلاق" إذا لم يُعيَّن حلاق بعد */}
                                             {isAnyBarber && b.status === "pending" && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center gap-1">
-                                                    <UserCheck size={9} /> يحتاج تعيين حلاق
-                                                </span>
-                                            )}
-                                            <span className="text-white text-sm md:text-base font-bold">{b.customer_name}</span>
-                                            <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-xs md:text-sm flex items-center gap-1 hover:text-accent-lime mr-auto md:mr-0">
-                                                <Phone size={10} /> <span dir="ltr">{b.customer_phone}</span>
-                                            </a>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-xs md:text-sm text-gray-400 flex-wrap">
-                                            <span className="flex items-center gap-1">
-                                                <CalendarDays size={10} className="text-accent-lime" />
-                                                {dayName(b.booking_date)} {b.booking_date}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={10} className="text-accent-lime" />
-                                                {formatTime(b.booking_time)}
-                                            </span>
-                                            <span className="text-accent-lime font-semibold">{b.service_names || b.service_name}</span>
-                                            {b.employee_name ? (
-                                                <span className="flex items-center gap-1">
-                                                    <User size={9} /> {b.employee_name}
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-1 text-purple-400">
-                                                    <User size={9} /> أي حلاق متاح
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#C3D809]/15 border border-[#C3D809]/30 text-[#C3D809]">
+                                                    <UserCheck size={12} />
+                                                    يحتاج تعيين حلاق
                                                 </span>
                                             )}
                                         </div>
-                                        {b.notes && <p className="text-[11px] md:text-xs text-gray-500 mt-1 pl-2 border-r-2 border-gray-700"><FileText size={10} className="inline mr-1" /> {b.notes}</p>}
+                                        
+                                        {/* Customer Info */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C3D809] to-[#8FA807] flex items-center justify-center text-[#0A0A0B] font-bold text-lg">
+                                                {b.customer_name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-white font-bold text-base">{b.customer_name}</h3>
+                                                <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-sm flex items-center gap-1.5 hover:text-[#C3D809] transition-colors" dir="ltr">
+                                                    <Phone size={14} />
+                                                    {b.customer_phone}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Details Grid */}
+                                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                                            <div className="flex items-center gap-2 text-gray-300 bg-white/5 px-3 py-1.5 rounded-lg">
+                                                <CalendarDays size={16} className="text-[#C3D809]" />
+                                                <span>{dayName(b.booking_date)}</span>
+                                                <span className="text-gray-500">|</span>
+                                                <span dir="ltr">{b.booking_date}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-300 bg-white/5 px-3 py-1.5 rounded-lg">
+                                                <Clock size={16} className="text-[#C3D809]" />
+                                                <span>{formatTime(b.booking_time)}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Services & Barber */}
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <div className="flex items-center gap-2 text-[#C3D809] bg-[#C3D809]/10 px-3 py-1.5 rounded-lg text-sm font-medium">
+                                                <ClipboardList size={16} />
+                                                {b.service_names || b.service_name}
+                                            </div>
+                                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${b.employee_name ? 'bg-white/5 text-gray-300' : 'bg-[#C3D809]/10 text-[#C3D809]'}`}>
+                                                <User size={16} className={b.employee_name ? 'text-gray-400' : 'text-[#C3D809]'} />
+                                                {b.employee_name || "أي حلاق متاح"}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Notes */}
+                                        {b.notes && (
+                                            <div className="flex items-start gap-2 text-gray-400 text-sm bg-white/[0.03] p-3 rounded-xl border border-white/[0.04]">
+                                                <FileText size={16} className="text-gray-500 flex-shrink-0 mt-0.5" />
+                                                <p>{b.notes}</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-1.5 md:gap-2 flex-wrap mt-2 md:mt-0">
-                                        {b.status === "pending" && (
-                                            <>
+                                    <div className="flex flex-col gap-2 lg:min-w-[200px]">
+                                        {/* Primary Actions */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {b.status === "pending" && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleConfirmClick(b)}
+                                                        disabled={actionLoading === b.id}
+                                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 hover:border-emerald-500/40 transition-all disabled:opacity-50"
+                                                    >
+                                                        <Check size={16} />
+                                                        {isAnyBarber ? "تعيين وتأكيد" : "تأكيد"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleStatus(b.id, "cancelled")}
+                                                        disabled={actionLoading === b.id}
+                                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 hover:border-red-500/40 transition-all disabled:opacity-50"
+                                                    >
+                                                        <XIcon size={16} />
+                                                        رفض
+                                                    </button>
+                                                </>
+                                            )}
+                                            {b.status === "confirmed" && (
                                                 <button
-                                                    onClick={() => handleConfirmClick(b)}
+                                                    onClick={() => handleStatus(b.id, "completed")}
                                                     disabled={actionLoading === b.id}
-                                                    className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all"
+                                                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-blue-500/15 border border-blue-500/30 text-blue-400 hover:bg-blue-500/25 hover:border-blue-500/40 transition-all disabled:opacity-50"
                                                 >
-                                                    <Check size={10} /> {isAnyBarber ? "تعيين وتأكيد" : "تأكيد"}
+                                                    <CheckCheck size={16} />
+                                                    إكمال
                                                 </button>
-                                                <button
-                                                    onClick={() => handleStatus(b.id, "cancelled")}
-                                                    disabled={actionLoading === b.id}
-                                                    className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
-                                                >
-                                                    <XIcon size={10} /> رفض
-                                                </button>
-                                            </>
-                                        )}
-                                        {b.status === "confirmed" && (
-                                            <button
-                                                onClick={() => handleStatus(b.id, "completed")}
-                                                disabled={actionLoading === b.id}
-                                                className="flex-1 md:flex-none justify-center flex items-center gap-1 px-3 py-2 md:py-1.5 rounded-lg text-xs font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-all"
-                                            >
-                                                <CheckCheck size={10} /> إكمال
-                                            </button>
-                                        )}
-                                        <div className="flex gap-1.5 items-center justify-end w-full md:w-auto mt-2 md:mt-0">
+                                            )}
+                                        </div>
+                                        
+                                        {/* Secondary Actions */}
+                                        <div className="flex gap-2 pt-2 border-t border-white/5">
                                             <button
                                                 onClick={() => {
                                                     const phone = b.customer_phone.replace(/^0/, "962");
                                                     window.open(`https://wa.me/${phone}`, "_blank");
                                                 }}
-                                                className="flex-1 md:flex-none flex items-center justify-center p-2 rounded-lg text-green-500 bg-green-500/10 border border-green-500/20 hover:text-green-400 hover:bg-green-500/20 transition-all"
-                                            ><FaWhatsapp size={14} /></button>
+                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 hover:border-green-500/30 transition-all"
+                                            >
+                                                <FaWhatsapp size={18} />
+                                                واتساب
+                                            </button>
                                             <button
                                                 onClick={() => handleDelete(b.id)}
-                                                className="flex-1 md:flex-none flex items-center justify-center p-2 rounded-lg text-gray-400 bg-gray-500/10 border border-gray-500/20 hover:text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all"
-                                            ><Trash2 size={12} /></button>
+                                                className="flex items-center justify-center p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

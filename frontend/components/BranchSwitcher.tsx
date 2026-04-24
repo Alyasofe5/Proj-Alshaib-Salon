@@ -87,7 +87,7 @@ export default function BranchSwitcher() {
 
                 {/* Name + label */}
                 <div className="flex-1 text-right min-w-0">
-                    <p className="text-[11px] text-accent-lime/60 font-medium leading-none mb-0.5">الفرع الحالي</p>
+                    <p className="text-[11px] text-accent-lime/60 font-medium leading-none mb-1">الفرع الحالي</p>
                     <p className="text-xs font-bold text-white truncate leading-none">{tData(salon?.name || "اختر الفرع", "ar")}</p>
                 </div>
 

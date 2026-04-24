@@ -534,7 +534,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 className="absolute top-[3px] bottom-[3px] rounded-[11px] transition-all duration-[350ms]"
                                 style={{
                                     width: 'calc(50% - 3px)',
-                                    left: lang === 'ar' ? 'calc(50%)' : '3px',
+                                    left: lang === 'ar' ? '3px' : 'calc(50%)',
                                     background: 'linear-gradient(135deg, #d4ea0a 0%, #C3D809 60%, #a8bc08 100%)',
                                     boxShadow: '0 0 14px rgba(195,216,9,0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
                                     transitionTimingFunction: 'cubic-bezier(0.34,1.4,0.64,1)',
@@ -546,8 +546,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     onClick={() => setLang(l)}
                                     aria-pressed={lang === l}
                                     className={`relative z-10 w-[46px] py-[7px] text-[10px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 select-none ${lang === l
-                                            ? 'text-white/50 hover:text-white/80'
-                                            : '!text-black'
+                                            ? '!text-black'
+                                            : 'text-white/50 hover:text-white/80'
                                         }`}
                                 >
                                     {l === 'ar' ? 'AR' : 'EN'}
@@ -1107,8 +1107,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             >
                                 {/* Timeline container — avatars positioned absolutely on the exact curve */}
                                 {(() => {
-                                    // Curve goes top-right → bulges left → bottom-right. Avatars ride this path via CSS offset-path.
-                                    const CURVE = "M 190 30 C 50 30, 50 230, 190 230";
+                                    // Curve: bulges toward text side (left in Arabic, right in English)
+                                    const CURVE = lang === 'ar'
+                                        ? "M 190 30 C 50 30, 50 230, 190 230"   // bulges left
+                                        : "M 70 30 C 210 30, 210 230, 70 230";  // bulges right (mirrored)
                                     const reviewsCount = mockReviews.length;
 
                                     // Build the 3 currently visible items. Each keyed by its "birth" cycle so
@@ -1205,14 +1207,14 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                                 )}
                                                             </motion.div>
 
-                                                            {/* Name + rating — always to the LEFT of the avatar */}
+                                                            {/* Name + rating — to the LEFT in Arabic, RIGHT in English */}
                                                             <div
                                                                 className="absolute whitespace-nowrap pointer-events-none"
                                                                 style={{
                                                                     top: "50%",
-                                                                    right: "calc(100% + 12px)",
+                                                                    [lang === 'ar' ? 'right' : 'left']: "calc(100% + 12px)",
                                                                     transform: "translateY(-50%)",
-                                                                    textAlign: "right",
+                                                                    textAlign: lang === 'ar' ? "right" : "left",
                                                                 }}
                                                             >
                                                                 <h4
@@ -1226,7 +1228,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                                 {customerRole && (
                                                                     <div className="text-[10px] text-white/50 mb-1">{customerRole}</div>
                                                                 )}
-                                                                <div className="flex items-center gap-1.5 flex-row-reverse justify-start">
+                                                                <div className={`flex items-center gap-1.5 ${lang === 'ar' ? 'flex-row-reverse' : 'flex-row'} justify-start`}>
                                                                     <Star size={11} fill="#C3D809" stroke="#C3D809" strokeWidth={1.5} />
                                                                     <span className="text-[11px] font-semibold text-[#C3D809]">{rating.toFixed(1)}</span>
                                                                 </div>

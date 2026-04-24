@@ -73,7 +73,7 @@ interface SalonSettings {
     gallery_subtitle: string;
     reviews_title?: string;
     reviews_subtitle?: string;
-    reviews?: { customer_name: string; comment: string; rating: number; role?: string }[];
+    reviews?: { customer_name: string; comment: string; rating: number; role?: string; photo?: string }[];
     // Stats fields
     stats_years: string;
     stats_clients: string;
@@ -370,6 +370,35 @@ export default function BookingSettingsPage() {
             }
         } catch (e) { console.error(e); }
         finally { setter(false); }
+    };
+
+    const [reviewPhotoUploading, setReviewPhotoUploading] = useState<number | null>(null);
+    const handleReviewPhotoUpload = async (index: number, file: File) => {
+        setReviewPhotoUploading(index);
+        try {
+            const fd = new FormData();
+            fd.append("image", file);
+            // Intentionally omit Content-Type so axios lets the browser add the correct multipart boundary.
+            const res = await axios.post(`${API_BASE}/salon/review-image.php`, fd, {
+                headers: { ...authH() },
+            });
+            const path = res.data?.data?.path;
+            if (!path) {
+                alert(res.data?.message || "فشل رفع الصورة — لم يرجع مسار من السيرفر");
+                return;
+            }
+            if (settings) {
+                setSettings({
+                    ...settings,
+                    reviews: (settings.reviews ?? []).map((r, i) => i === index ? { ...r, photo: path } : r),
+                });
+            }
+        } catch (e: any) {
+            console.error("Review photo upload failed:", e);
+            const msg = e?.response?.data?.message || e?.message || "فشل رفع الصورة";
+            alert(`فشل رفع الصورة: ${msg}`);
+        }
+        finally { setReviewPhotoUploading(null); }
     };
 
     const handleImageUpload = async (serviceId: number, file: File) => {
@@ -1148,6 +1177,30 @@ export default function BookingSettingsPage() {
                         <div className="space-y-4">
                             {(settings.reviews ?? []).map((review, index) => (
                                 <div key={index} className="rounded-2xl p-5 bg-[var(--color-surface)] border border-[var(--border-subtle)] space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <label className="relative flex-shrink-0 group cursor-pointer">
+                                            <div className="w-20 h-20 rounded-full overflow-hidden border-2 bg-black flex items-center justify-center" style={{ borderColor: review.photo ? gold : "var(--border-subtle)" }}>
+                                                {reviewPhotoUploading === index ? (
+                                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                ) : review.photo ? (
+                                                    <img src={assetUrl(review.photo) || review.photo} alt="" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
+                                                ) : (
+                                                    <FaCamera className="text-white/40" size={18} />
+                                                )}
+                                            </div>
+                                            <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60">
+                                                <FaCamera className="text-white" size={16} />
+                                            </div>
+                                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleReviewPhotoUpload(index, f); e.currentTarget.value = ""; }} />
+                                        </label>
+                                        <div className="flex-1 text-xs text-[var(--color-text-muted)] pt-1">
+                                            <div className="font-bold mb-1">صورة العميل</div>
+                                            <div>اضغط على الدائرة لرفع صورة (JPG / PNG / WEBP — حتى 5MB)</div>
+                                            {review.photo && (
+                                                <button type="button" onClick={() => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, photo: "" } : item) })} className="mt-2 text-[11px] text-red-400 hover:text-red-300">حذف الصورة</button>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <BilingualInput label={`اسم العميل ${index + 1}`} value={review.customer_name} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, customer_name: v } : item) })} gold={gold} placeholderAr="اسم العميل" placeholderEn="Client Name" />
                                         <BilingualInput label="الصفة" value={review.role ?? ""} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, role: v } : item) })} gold={gold} placeholderAr="مثال: عميل موثق" placeholderEn="e.g. Verified Client" />

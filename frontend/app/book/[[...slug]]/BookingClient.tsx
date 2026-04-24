@@ -101,6 +101,17 @@ function BookingContent({ params }: { params: { slug: string } }) {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [activeServiceIndex, setActiveServiceIndex] = useState(0);
     const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+    // Review carousel slots: [top, middle, bottom] holding indices into mockReviews.
+    // Middle slot = active/displayed review. Auto-rotates: bottom→top, top→middle, middle→bottom.
+    // Review carousel: `reviewCycle` ticks up every interval. At each tick, a new review enters at
+    // the top slot (fades in), all existing items slide one slot down along the curve, and the
+    // oldest item at the bottom fades out. Each on-screen item lives for 3 cycles (top → middle → bottom).
+    const [reviewCycle, setReviewCycle] = useState(0);
+
+    useEffect(() => {
+        const t = setInterval(() => setReviewCycle(c => c + 1), 4500);
+        return () => clearInterval(t);
+    }, []);
     const [notFound, setNotFound] = useState(false);
     const [noBookingPage, setNoBookingPage] = useState(false);
 
@@ -429,7 +440,11 @@ function BookingContent({ params }: { params: { slug: string } }) {
         { id: 2, customer_name: "محمد خالد || Mohammed Khaled", rating: 5, comment: "مكان راقٍ جداً والتزام ممتاز. أنصح بتجربة قسم العناية بالبشرة. || Very elegant place and excellent commitment. I recommend trying the skincare section." },
         { id: 3, customer_name: "سالم المري || Salem Al-Marri", rating: 5, comment: "تجربة رائعة والحجز سهل جداً. السعر مناسب مقابل الجودة. || Great experience and booking app is very easy. The price is reasonable for the quality." }
     ];
-    const currentReview = mockReviews[Math.min(activeReviewIndex, Math.max(mockReviews.length - 1, 0))];
+    // Active review (shown in the quote column) = whoever is in the middle slot right now.
+    const middleReviewIndex = mockReviews.length > 0
+        ? (((reviewCycle - 1) % mockReviews.length) + mockReviews.length) % mockReviews.length
+        : 0;
+    const currentReview = mockReviews[middleReviewIndex];
     const mockFaqs = salon.faqs?.length ? salon.faqs : [
         { id: 1, question: "هل تتوفر مواقف للسيارات؟||Is there parking available?", answer: "نعم، نوفر مواقف مجانية لعملائنا أمام الصالون مباشرة.||Yes, we provide free parking for our customers directly in front of the salon." },
         { id: 2, question: "هل يمكنني إلغاء أو تعديل الموعد؟||Can I cancel or reschedule my appointment?", answer: "بالتأكيد، يرجى التواصل معنا قبل موعدك بساعتين على الأقل.||Of course, please contact us at least two hours before your appointment." },
@@ -1047,176 +1062,229 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     </div>
                 </section>
 
-                {/* --- REVIEWS (Exact Match to Reference) --- */}
-                <section id="reviews" className="py-20 sm:py-28 lg:py-32 px-6 lg:px-12 relative overflow-hidden bg-white">
+                {/* --- REVIEWS (Reference-accurate redesign) --- */}
+                <section id="reviews" className="py-20 sm:py-28 lg:py-32 px-6 lg:px-12 relative overflow-hidden bg-[#050505]" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+                    {/* Subtle brand glow — on-brand dark backdrop */}
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 opacity-60"
+                        style={{
+                            background: "radial-gradient(ellipse 60% 50% at 80% 20%, rgba(195,216,9,0.08), transparent 70%)",
+                        }}
+                    />
+
                     <div className="max-w-6xl mx-auto relative z-10">
-                        
-                        {/* Section Header - Left aligned like reference */}
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }} 
-                            whileInView={{ opacity: 1, y: 0 }} 
+
+                        {/* Section Header */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className={`mb-12 sm:mb-16 ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                            className="mb-16 sm:mb-20"
                         >
-                            {/* Brand accent line */}
-                            <div 
-                                className={`w-12 h-1.5 rounded-full mb-5 ${lang === 'ar' ? 'mr-auto' : 'ml-0'}`}
+                            <div
+                                className="w-10 h-[3px] rounded-full mb-4"
                                 style={{ backgroundColor: "#C3D809" }}
                             />
-                            <h2 
-                                className="text-[#1a1a1a] font-black tracking-tight text-3xl sm:text-4xl"
+                            <h2
+                                className="text-white font-extrabold tracking-tight text-2xl sm:text-3xl"
                                 style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                             >
-                                {lang === 'ar' ? "آراء العملاء" : "Customer Reviews"}
+                                {tData(salon.reviews_title, lang) || (lang === 'ar' ? "آراء العملاء" : "Customer Reviews")}
                             </h2>
                         </motion.div>
 
-                        {/* Main Content - Avatar List + Quote Side by Side */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-                            
-                            {/* Left Side - Customer Avatars List */}
-                            <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                        {/* Two columns: vertical review list with curved timeline | quote */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+
+                            {/* Review list */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.5 }}
-                                className="relative"
+                                transition={{ duration: 0.6 }}
+                                className="lg:col-span-5 relative"
                             >
-                                {/* Curved connecting line - positioned like reference */}
-                                <svg 
-                                    className="absolute top-10 left-8 w-16 h-[calc(100%-80px)] hidden lg:block pointer-events-none"
-                                    viewBox="0 0 60 300"
-                                    fill="none"
-                                >
-                                    <motion.path
-                                        d="M 30 0 Q 60 75 30 150 Q 0 225 30 300"
-                                        stroke="#C3D809"
-                                        strokeWidth="1.5"
-                                        fill="none"
-                                        initial={{ pathLength: 0 }}
-                                        whileInView={{ pathLength: 1 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 1.2, ease: "easeInOut" }}
-                                    />
-                                </svg>
+                                {/* Timeline container — avatars positioned absolutely on the exact curve */}
+                                {(() => {
+                                    // Curve goes top-right → bulges left → bottom-right. Avatars ride this path via CSS offset-path.
+                                    const CURVE = "M 190 30 C 50 30, 50 230, 190 230";
+                                    const reviewsCount = mockReviews.length;
 
-                                <div className="space-y-6 relative">
-                                    {mockReviews.slice(0, 3).map((review: any, index: number) => {
-                                        const isActive = activeReviewIndex === index;
-                                        const customerName = tData(review?.customer_name, lang) || 
-                                            (lang === 'ar' 
-                                                ? ["ديانا جونستون", "لورين كونتريراس", "إدوارد ألكسندر"][index]
-                                                : ["Diana Johnston", "Lauren Contreras", "Edward Alexander"][index]
-                                            );
-                                        
-                                        return (
-                                            <motion.div
-                                                key={index}
-                                                initial={{ opacity: 0, x: -15 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                viewport={{ once: true }}
-                                                transition={{ delay: index * 0.1, duration: 0.4 }}
-                                                onClick={() => setActiveReviewIndex(index)}
-                                                className={`group flex items-center gap-4 cursor-pointer ${lang === 'ar' ? 'flex-row-reverse' : ''}`}
+                                    // Build the 3 currently visible items. Each keyed by its "birth" cycle so
+                                    // AnimatePresence can cleanly mount new entries and unmount exiting ones.
+                                    const visible = reviewsCount > 0
+                                        ? [0, 1, 2].map(slot => {
+                                              const birth = reviewCycle - slot;
+                                              const idx = ((birth % reviewsCount) + reviewsCount) % reviewsCount;
+                                              return { slot, birth, review: mockReviews[idx], reviewIdx: idx };
+                                          })
+                                        : [];
+
+                                    return (
+                                        <div className="relative mx-auto" style={{ width: 260, height: 260 }}>
+                                            {/* Curve line — shared path */}
+                                            <svg
+                                                className="absolute inset-0 w-full h-full pointer-events-none"
+                                                viewBox="0 0 260 260"
+                                                preserveAspectRatio="none"
+                                                fill="none"
+                                                aria-hidden
                                             >
-                                                {/* Avatar Circle */}
-                                                <div className={`relative flex-shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 transition-all duration-300 ${
-                                                    isActive 
-                                                        ? "border-[#C3D809] shadow-lg" 
-                                                        : "border-gray-200 grayscale opacity-80 group-hover:opacity-100"
-                                                }`}>
-                                                    <div 
-                                                        className="w-full h-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600"
-                                                    >
-                                                        {customerName.charAt(0)}
-                                                    </div>
-                                                </div>
+                                                <motion.path
+                                                    d={CURVE}
+                                                    stroke="rgba(255,255,255,0.18)"
+                                                    strokeWidth="1.2"
+                                                    fill="none"
+                                                    initial={{ pathLength: 0 }}
+                                                    whileInView={{ pathLength: 1 }}
+                                                    viewport={{ once: true }}
+                                                    transition={{ duration: 1.4, ease: "easeInOut" }}
+                                                />
+                                            </svg>
 
-                                                {/* Customer Info */}
-                                                <div className={`flex-1 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                                                    <h4 className={`font-bold text-sm mb-1 transition-colors ${
-                                                        isActive ? "text-[#1a1a1a]" : "text-gray-500 group-hover:text-[#1a1a1a]"
-                                                    }`}>
-                                                        {customerName}
-                                                    </h4>
-                                                    <div className={`flex items-center gap-1.5 ${lang === 'ar' ? 'justify-end' : 'justify-start'}`}>
-                                                        <Star 
-                                                            size={12} 
-                                                            fill={isActive ? "#C3D809" : "none"}
-                                                            stroke={isActive ? "#C3D809" : "#9ca3af"}
-                                                            strokeWidth={1.5}
-                                                        />
-                                                        <span className={`text-xs font-medium ${isActive ? "text-[#7a8a00]" : "text-gray-400"}`}>
-                                                            4.9
-                                                        </span>
-                                                        <span className="text-[10px] text-gray-400">
-                                                            on 29 Aug, 2017
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
-                                </div>
+                                            <AnimatePresence initial={false}>
+                                                {visible.map(({ slot, birth, review, reviewIdx }) => {
+                                                    const isActive = slot === 1;
+                                                    const size = isActive ? 68 : 46;
+                                                    const customerName = tData(review?.customer_name, lang) ||
+                                                        (lang === 'ar'
+                                                            ? ["ديانا جونستون", "لورين كونتريراس", "إدوارد ألكسندر"][reviewIdx % 3]
+                                                            : ["Diana Johnston", "Lauren Contreras", "Edward Alexander"][reviewIdx % 3]
+                                                        );
+                                                    const customerRole = tData((review as any)?.role, lang);
+                                                    const rating = Number(review?.rating) || 5;
+                                                    const photoUrl = (review as any)?.photo ? resolveMediaUrl((review as any).photo) : '';
+                                                    const offsetPct = slot * 50; // 0% → 50% → 100% along the curve
+
+                                                    return (
+                                                        <motion.div
+                                                            key={birth}
+                                                            initial={{ opacity: 0, offsetDistance: "0%", scale: 0.6 } as any}
+                                                            animate={{
+                                                                opacity: isActive ? 1 : 0.65,
+                                                                offsetDistance: `${offsetPct}%`,
+                                                                scale: 1,
+                                                            } as any}
+                                                            exit={{ opacity: 0, scale: 0.6 }}
+                                                            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                                                            className="absolute top-0 left-0"
+                                                            style={{
+                                                                width: size,
+                                                                height: size,
+                                                                // @ts-ignore — CSS motion-path properties
+                                                                offsetPath: `path("${CURVE}")`,
+                                                                offsetRotate: "0deg",
+                                                                offsetAnchor: "center",
+                                                            } as React.CSSProperties}
+                                                        >
+                                                            {/* Avatar ring + monogram */}
+                                                            <motion.div
+                                                                animate={{ width: size, height: size }}
+                                                                transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                                                                className={`relative rounded-full overflow-hidden border-2 ${
+                                                                    isActive
+                                                                        ? "border-[#C3D809] shadow-[0_8px_28px_rgba(195,216,9,0.35)]"
+                                                                        : "border-white/10 grayscale"
+                                                                }`}
+                                                            >
+                                                                {photoUrl ? (
+                                                                    <img
+                                                                        src={photoUrl}
+                                                                        alt={customerName}
+                                                                        className="w-full h-full object-cover"
+                                                                        draggable={false}
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="w-full h-full flex items-center justify-center font-bold bg-gradient-to-br from-white/10 to-white/5 text-white/80"
+                                                                        style={{ fontSize: isActive ? 20 : 14 }}
+                                                                    >
+                                                                        {customerName.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </motion.div>
+
+                                                            {/* Name + rating — always to the LEFT of the avatar */}
+                                                            <div
+                                                                className="absolute whitespace-nowrap pointer-events-none"
+                                                                style={{
+                                                                    top: "50%",
+                                                                    right: "calc(100% + 12px)",
+                                                                    transform: "translateY(-50%)",
+                                                                    textAlign: "right",
+                                                                }}
+                                                            >
+                                                                <h4
+                                                                    className={`font-bold mb-0.5 ${
+                                                                        isActive ? "text-white text-[15px] sm:text-base" : "text-white/70 text-[13px]"
+                                                                    }`}
+                                                                    style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
+                                                                >
+                                                                    {customerName}
+                                                                </h4>
+                                                                {customerRole && (
+                                                                    <div className="text-[10px] text-white/50 mb-1">{customerRole}</div>
+                                                                )}
+                                                                <div className="flex items-center gap-1.5 flex-row-reverse justify-start">
+                                                                    <Star size={11} fill="#C3D809" stroke="#C3D809" strokeWidth={1.5} />
+                                                                    <span className="text-[11px] font-semibold text-[#C3D809]">{rating.toFixed(1)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </AnimatePresence>
+                                        </div>
+                                    );
+                                })()}
                             </motion.div>
 
-                            {/* Right Side - Quote Display */}
-                            <motion.div 
+                            {/* Quote */}
+                            <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                className={`relative ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                                transition={{ duration: 0.6, delay: 0.15 }}
+                                className={`lg:col-span-7 relative ${lang === 'ar' ? 'text-right' : 'text-left'}`}
                             >
                                 <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={activeReviewIndex}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
+                                    <motion.blockquote
+                                        key={middleReviewIndex}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -8 }}
+                                        transition={{ duration: 0.35 }}
+                                        className="relative text-white/90"
+                                        style={{
+                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', Georgia, serif" : "'Noto Sans Arabic', sans-serif",
+                                            fontSize: "clamp(1.15rem, 2vw, 1.5rem)",
+                                            lineHeight: "1.75",
+                                            fontStyle: lang === 'en' ? 'italic' : 'normal',
+                                        }}
                                     >
-                                        {/* Stars Row */}
-                                        <div className={`flex items-center gap-1 mb-6 ${lang === 'ar' ? 'justify-start' : 'justify-start'}`}>
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star 
-                                                    key={i} 
-                                                    size={14} 
-                                                    fill="#C3D809" 
-                                                    stroke="#C3D809"
-                                                    strokeWidth={1.5}
-                                                />
-                                            ))}
-                                        </div>
-
-                                        {/* Quote with Drop Cap */}
-                                        <blockquote 
-                                            className="text-gray-700 leading-relaxed mb-6"
-                                            style={{ 
-                                                fontFamily: lang === 'en' ? "Georgia, 'Times New Roman', serif" : "'Noto Sans Arabic', sans-serif",
-                                                fontSize: "clamp(1.1rem, 2.5vw, 1.35rem)",
-                                                lineHeight: "1.7"
-                                            }}
+                                        <span
+                                            aria-hidden
+                                            className={`absolute -top-8 ${lang === 'ar' ? '-right-2' : '-left-2'} text-6xl sm:text-7xl leading-none text-[#C3D809]/80 select-none`}
+                                            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal' }}
                                         >
-                                            {lang === 'ar' ? (
-                                                <>
-                                                    <span className="text-3xl font-serif text-[#1a1a1a] font-bold">"</span>
-                                                    {tData(currentReview?.comment, lang) || "أفضل صالون تعامل جيد جدا وشغل عالمي"}
-                                                    <span className="text-3xl font-serif text-[#1a1a1a] font-bold">"</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span className="text-4xl font-serif text-[#1a1a1a] font-bold float-left mr-2 -mt-1">B</span>
-                                                    een working with appscrip for a number of years now with a variety of different apps. They have my recommendation. They are a great team.
-                                                </>
-                                            )}
-                                        </blockquote>
+                                            &ldquo;
+                                        </span>
 
-                                        {/* Customer Name */}
-                                        <p className={`text-sm font-bold text-[#1a1a1a] ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                                            {tData(currentReview?.customer_name, lang) || (lang === 'ar' ? "وسيم العزام" : "Lauren Contreras")}
-                                        </p>
-                                    </motion.div>
+                                        {lang === 'ar' ? (
+                                            <span>{tData(currentReview?.comment, lang) || "أفضل صالون، تعامل جيد جدًا وشغل عالمي"}</span>
+                                        ) : (
+                                            <>
+                                                <span
+                                                    className="float-left text-5xl sm:text-6xl leading-none pr-2 pt-1 font-semibold text-white"
+                                                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' }}
+                                                >
+                                                    T
+                                                </span>
+                                                {tData(currentReview?.comment, lang) || "hey have awesome customer service. I wouldn't recommend going to anyone else. All of you guys are awesome. Definitely love the way appscrip works."}
+                                            </>
+                                        )}
+                                    </motion.blockquote>
                                 </AnimatePresence>
                             </motion.div>
                         </div>

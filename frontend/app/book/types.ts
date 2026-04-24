@@ -8,7 +8,7 @@ export interface SalonInfo {
     hero_video?: string | null;
     hero_type?: string;
     gallery?: string[];
-    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; }[];
+    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; photo?: string; }[];
     faqs?: { id: number; question: string; answer: string; }[];
     // New Content Fields
     hero_title?: string;

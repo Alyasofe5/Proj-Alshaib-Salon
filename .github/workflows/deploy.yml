@@ -114,9 +114,16 @@ jobs:
           local-dir: ./deploy_combined/
           protocol: ftps
           dangerous-clean-slate: false
+          # Prevent control-socket timeout on slow hosts (default 30s is too low for 30MB+ packages).
+          timeout: 300000
+          # Standard log keeps the CI log readable while still surfacing file-level progress.
+          log-level: standard
+          # Incremental sync: skips unchanged files on subsequent deploys (huge speedup, avoids timeouts).
+          state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*
             **/.github/**
             **/node_modules/**
             **/uploads/**
             **/backups/**
+            **/.ftp-deploy-sync-state.json

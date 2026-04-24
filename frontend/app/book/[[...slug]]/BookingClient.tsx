@@ -534,7 +534,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 className="absolute top-[3px] bottom-[3px] rounded-[11px] transition-all duration-[350ms]"
                                 style={{
                                     width: 'calc(50% - 3px)',
-                                    left: lang === 'ar' ? '3px' : 'calc(50%)',
+                                    left: lang === 'ar' ? 'calc(50%)' : '3px',
                                     background: 'linear-gradient(135deg, #d4ea0a 0%, #C3D809 60%, #a8bc08 100%)',
                                     boxShadow: '0 0 14px rgba(195,216,9,0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
                                     transitionTimingFunction: 'cubic-bezier(0.34,1.4,0.64,1)',
@@ -546,8 +546,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     onClick={() => setLang(l)}
                                     aria-pressed={lang === l}
                                     className={`relative z-10 w-[46px] py-[7px] text-[10px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 select-none ${lang === l
-                                            ? '!text-black'
-                                            : 'text-white/50 hover:text-white/80'
+                                            ? 'text-white/50 hover:text-white/80'
+                                            : '!text-black'
                                         }`}
                                 >
                                     {l === 'ar' ? 'AR' : 'EN'}
@@ -1355,92 +1355,201 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     </div>
                 </section>
 
-                {/* --- CTA (Minimal Punch) --- */}
-                {/* High-Impact High-Visibility Sticker Backdrop */}
-                <section className="relative py-48 lg:py-80 overflow-hidden bg-[#020202] flex items-center justify-center">
-
-                    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
-
-                        {/* Realistic Floating Tools (Photos from NEW-PIC - Now 100% Transparent) */}
-
-
-
+                {/* --- CTA (World-class editorial) --- */}
+                <section
+                    className="relative overflow-hidden bg-[#030303] py-[clamp(96px,18vw,200px)] px-6 lg:px-12"
+                    dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                >
+                    {/* Background system — grid + radial brand glow + slow conic halo + vignette */}
+                    <div aria-hidden className="absolute inset-0 pointer-events-none">
+                        <div
+                            className="absolute inset-0 opacity-[0.06]"
+                            style={{
+                                backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.8) 1px, transparent 0)",
+                                backgroundSize: "28px 28px",
+                                maskImage: "radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 85%)",
+                                WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 85%)",
+                            }}
+                        />
                         <motion.div
-                            initial={{ opacity: 0, y: -50, rotate: -15 }}
-                            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-                            animate={{ y: [15, -15, 15], rotate: [-5, 5, -5] }}
-                            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute bottom-[25%] left-[8%] w-[clamp(100px,25vw,240px)] z-[5] opacity-[0.8]"
-                        >
-                            <img src="/images/sticker_spray.svg" alt="Spray"
-                                className="w-full h-auto object-contain filter drop-shadow-[0_0_30px_rgba(195,216,9,0.4)]"
-                                style={{
-                                    filter: "invert(84%) sepia(82%) saturate(4156%) hue-rotate(24deg) brightness(101%) contrast(98%)",
-                                    mixBlendMode: 'screen'
-                                }} />
-                        </motion.div>
-
-
-
-
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true, margin: "-20% 0px" }}
+                            transition={{ duration: 1.2, ease: "easeOut" }}
+                            className="absolute inset-0"
+                            style={{
+                                background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(195,216,9,0.18), transparent 70%)",
+                            }}
+                        />
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] h-[140vw] max-w-[1400px] max-h-[1400px] opacity-[0.22]"
+                            style={{
+                                background: "conic-gradient(from 180deg at 50% 50%, transparent 0deg, rgba(195,216,9,0.25) 60deg, transparent 120deg, transparent 240deg, rgba(195,216,9,0.15) 300deg, transparent 360deg)",
+                                filter: "blur(80px)",
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#030303] via-transparent to-[#030303]" />
 
 
                     </div>
 
-                    {/* Dramatic Depth Overlays */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black z-[1] pointer-events-none" />
-                    <div className="absolute inset-0 bg-black/20 z-[0] pointer-events-none" />
-
-                    <div className="relative z-10 text-center px-6">
-                        <motion.div
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            {hasDiscount && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-[#C3D809]/30 bg-[#C3D809]/5 backdrop-blur-md mb-8"
-                                >
-                                    <div className="w-2 h-2 rounded-full bg-[#C3D809] animate-pulse" />
-                                    <span className="text-[#C3D809] text-xs font-black tracking-widest uppercase">
-                                        {lang === 'ar' ? `خصم خاص ${discountPercent}% للزوار الجدد` : `${discountPercent}% SPECIAL DISCOUNT FOR NEW GUESTS`}
-                                    </span>
-                                </motion.div>
-                            )}
-
-                            <h2
-                                className="text-white font-bold leading-[1.1] tracking-tight mb-12 italic"
-                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "clamp(2.5rem, 8vw, 4.5rem)" }}
+                    <div className="relative z-10 max-w-5xl mx-auto text-center">
+                        {hasDiscount && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 12 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5 }}
+                                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#C3D809]/25 bg-white/[0.03] backdrop-blur-sm mb-10"
                             >
-                                {lang === 'ar' ? <>استعد <span className="text-[#C3D809]">لإطلالتك</span> <br className="hidden sm:block" /> القادمة</> : <>Get Ready For <br className="sm:hidden" /> <span className="text-[#C3D809]">Your Next</span> <br className="hidden sm:block" /> Look</>}
-                            </h2>
+                                <span className="relative flex h-1.5 w-1.5">
+                                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#C3D809] opacity-75 animate-ping" />
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C3D809]" />
+                                </span>
+                                <span className="text-[#C3D809] text-[11px] font-semibold tracking-[0.18em] uppercase">
+                                    {lang === 'ar' ? `خصم ${discountPercent}% للزوار الجدد` : `${discountPercent}% off for new guests`}
+                                </span>
+                            </motion.div>
+                        )}
 
+                        {/* Editorial headline — bold + italic gradient accent line */}
+                        <motion.h2
+                            initial={{ opacity: 0, y: 24 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                            className="text-white font-bold tracking-[-0.035em] leading-[0.95] mb-8"
+                            style={{
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', 'Playfair Display', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
+                            }}
+                        >
+                            {lang === 'ar' ? (
+                                <>
+                                    <span className="block">استعد لإطلالتك</span>
+                                    <span
+                                        className="block italic"
+                                        style={{
+                                            background: "linear-gradient(135deg, #C3D809 0%, #E4F65A 50%, #C3D809 100%)",
+                                            WebkitBackgroundClip: "text",
+                                            WebkitTextFillColor: "transparent",
+                                            backgroundClip: "text",
+                                        }}
+                                    >
+                                        القادمة
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="block">Get ready for</span>
+                                    <span
+                                        className="block italic"
+                                        style={{
+                                            background: "linear-gradient(135deg, #C3D809 0%, #E4F65A 50%, #C3D809 100%)",
+                                            WebkitBackgroundClip: "text",
+                                            WebkitTextFillColor: "transparent",
+                                            backgroundClip: "text",
+                                        }}
+                                    >
+                                        your next look.
+                                    </span>
+                                </>
+                            )}
+                        </motion.h2>
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 16 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: 0.1 }}
+                            className="text-white/60 max-w-xl mx-auto mb-12 leading-relaxed"
+                            style={{
+                                fontFamily: lang === 'en' ? "'Inter', sans-serif" : "'Noto Sans Arabic', sans-serif",
+                                fontSize: "clamp(0.95rem, 1.5vw, 1.125rem)",
+                            }}
+                        >
+                            {lang === 'ar'
+                                ? "احجز موعدك في دقائق. تجربة راقية، أيدٍ خبيرة، ونتيجة تعكس شخصيتك."
+                                : "Book in under a minute. Crafted experience, skilled hands, and a look that feels unmistakably yours."}
+                        </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 12 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+                        >
                             <button
+                                type="button"
                                 onClick={() => setIsBookingOpen(true)}
-                                className="signature-btn group scale-125 sm:scale-150 mx-auto"
+                                className="group relative inline-flex items-center gap-3 rounded-full px-8 py-4 font-semibold text-[15px] text-black bg-[#C3D809] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3D809] focus-visible:ring-offset-2 focus-visible:ring-offset-[#030303]"
                                 style={{
-                                    fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif"
+                                    fontFamily: lang === 'en' ? "'Inter', sans-serif" : "'Noto Sans Arabic', sans-serif",
+                                    boxShadow: "0 10px 40px -10px rgba(195,216,9,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                                 }}
                             >
-                                <span className="btn-content">
-                                    <span className="btn-label">{lang === 'ar' ? "احجز زيارتك" : "Book Your Visit"}</span>
-                                    <span className="btn-icon-wrapper" aria-hidden="true">
-                                        {lang === 'ar' ? (
-                                            <>
-                                                <ArrowLeft className="icon-main" size={20} />
-                                                <ArrowLeft className="icon-hover" size={20} />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ArrowRight className="icon-main" size={20} />
-                                                <ArrowRight className="icon-hover" size={20} />
-                                            </>
-                                        )}
-                                    </span>
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out"
+                                    style={{
+                                        background: "linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.45) 50%, transparent 80%)",
+                                    }}
+                                />
+                                <span className="relative z-10">
+                                    {lang === 'ar' ? "احجز زيارتك" : "Book your visit"}
+                                </span>
+                                <span className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
+                                    {lang === 'ar' ? <ArrowLeft size={18} strokeWidth={2.25} /> : <ArrowRight size={18} strokeWidth={2.25} />}
                                 </span>
                             </button>
+
+                            {salon.whatsapp && (
+                                <a
+                                    href={`https://wa.me/${String(salon.whatsapp).replace(/[^0-9]/g, '')}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="group inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors text-[14px] font-medium"
+                                    style={{ fontFamily: lang === 'en' ? "'Inter', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
+                                >
+                                    <span className="border-b border-white/20 group-hover:border-white/80 transition-colors pb-0.5">
+                                        {lang === 'ar' ? "أو تواصل عبر واتساب" : "Or chat on WhatsApp"}
+                                    </span>
+                                </a>
+                            )}
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, delay: 0.35 }}
+                            className="mt-14 flex items-center justify-center gap-6 sm:gap-10 flex-wrap text-white/50"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={14} fill="#C3D809" stroke="#C3D809" strokeWidth={1.5} />
+                                    ))}
+                                </div>
+                                <span className="text-[12px] font-medium tracking-wide">
+                                    {lang === 'ar' ? "4.9 من تقييمات العملاء" : "4.9 from client reviews"}
+                                </span>
+                            </div>
+                            <div className="hidden sm:block w-px h-4 bg-white/15" />
+                            <div className="text-[12px] font-medium tracking-wide">
+                                {lang === 'ar'
+                                    ? `${tData(salon.stats_clients, lang) || '15K+'} عميل راضٍ`
+                                    : `${tData(salon.stats_clients, lang) || '15K+'} happy clients`}
+                            </div>
+                            <div className="hidden sm:block w-px h-4 bg-white/15" />
+                            <div className="text-[12px] font-medium tracking-wide">
+                                {lang === 'ar'
+                                    ? `${tData(salon.stats_years, lang) || '7+'} سنوات من الخبرة`
+                                    : `${tData(salon.stats_years, lang) || '7+'} years of craft`}
+                            </div>
                         </motion.div>
                     </div>
                 </section>
@@ -1451,7 +1560,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-12" dir="ltr">
                         {/* Brand Info */}
                         <div className="space-y-10" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-                            <h3 className="text-white font-black tracking-tighter" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 5vw, 2.5rem)" }}>
+                            <h3 className="text-white font-black tracking-tighter whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 5vw, 2.5rem)" }}>
                                 {tData(salon.name, lang)}<span className="text-[#C3D809]">.</span>
                             </h3>
                             <p className="text-white/30 leading-relaxed text-[clamp(12px,2vw,14px)] max-w-[280px]" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>

@@ -161,7 +161,7 @@ export default function DashboardPage() {
 
             <div className="content-area">
                 {/* ===== Stat Cards ===== */}
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
                     <StatCard
                         icon={<Users size={18} />}
                         value={data.today.customers}
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                             <UserCheck size={15} color="var(--color-accent)" />
                             <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>أداء الموظفين اليوم</span>
                         </div>
-                        <table>
+                        <table data-mobile-cards>
                             <thead>
                                 <tr>
                                     <th>الموظف</th>
@@ -360,14 +360,14 @@ export default function DashboardPage() {
                             <tbody>
                                 {data.employees_today.map((emp, i) => (
                                     <tr key={i}>
-                                        <td className="text-white font-semibold">{emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name}</td>
-                                        <td>
+                                        <td data-label="الموظف" className="text-white font-semibold">{emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name}</td>
+                                        <td data-label="الزبائن">
                                             <span className="badge badge-blue">{emp.cnt}</span>
                                         </td>
-                                        <td className="text-accent-lime font-bold">
+                                        <td data-label="المبيعات" className="text-accent-lime font-bold">
                                             {Number(emp.total).toFixed(3)} د.أ
                                         </td>
-                                        <td className="text-green-400">
+                                        <td data-label="العمولة" className="text-green-400">
                                             {emp.salary_type === "commission"
                                                 ? `${(Number(emp.total) * emp.commission_rate / 100).toFixed(3)} د.أ`
                                                 : <span className="text-gray-500">ثابت</span>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                             <Receipt size={15} color="var(--color-accent)" />
                             <span className="font-bold text-sm" style={{ color: "var(--text-main)" }}>آخر العمليات</span>
                         </div>
-                        <table>
+                        <table data-mobile-cards>
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -409,12 +409,12 @@ export default function DashboardPage() {
                             <tbody>
                                 {data.last_transactions.map((tx, i) => (
                                     <tr key={tx.id}>
-                                        <td className="text-gray-600">#{i + 1}</td>
-                                        <td>{tx.emp_name?.includes("||") ? tx.emp_name.split("||")[0].trim() : tx.emp_name}</td>
-                                        <td className="text-accent-lime font-bold">
+                                        <td data-label="#" className="text-gray-600">#{i + 1}</td>
+                                        <td data-label="الموظف">{tx.emp_name?.includes("||") ? tx.emp_name.split("||")[0].trim() : tx.emp_name}</td>
+                                        <td data-label="المبلغ" className="text-accent-lime font-bold">
                                             {Number(tx.total_amount).toFixed(3)} د.أ
                                         </td>
-                                        <td>
+                                        <td data-label="الدفع">
                                             <span className="badge badge-green">
                                                 {tx.payment_method === "cash" ? "نقداً" : "تحويل"}
                                             </span>

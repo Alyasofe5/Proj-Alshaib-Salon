@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { servicesAPI, transactionsAPI } from "@/lib/api";
 import { Scissors, ChevronRight, ReceiptText, MousePointerClick, Banknote, ArrowLeftRight, CheckCircle2, Loader2 } from "lucide-react";
 import { FaArrowRight } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
 
 interface Service {
     id: number;
@@ -92,7 +93,7 @@ export default function NewCustomerPage() {
                                         <div className="flex justify-center mb-2">
                                             <Scissors size={22} className={isSelected ? "text-accent-lime" : "text-gray-500"} />
                                         </div>
-                                        <div className="text-sm font-semibold text-gray-300">{svc.name}</div>
+                                        <div className="text-sm font-semibold text-gray-300">{tData(svc.name, 'ar')}</div>
                                         <div className="text-accent-lime font-extrabold mt-1">{Number(svc.price).toFixed(3)} د.أ</div>
                                     </motion.div>
                                 );
@@ -114,7 +115,7 @@ export default function NewCustomerPage() {
                                 <div className="mb-4">
                                     {Object.values(selected).map(svc => (
                                         <div key={svc.id} className="flex justify-between items-center py-2 border-b border-dark-5">
-                                            <span className="text-gray-300 text-sm">{svc.name}</span>
+                                            <span className="text-gray-300 text-sm">{tData(svc.name, 'ar')}</span>
                                             <span className="text-accent-lime font-bold">{Number(svc.price).toFixed(3)} د.أ</span>
                                         </div>
                                     ))}

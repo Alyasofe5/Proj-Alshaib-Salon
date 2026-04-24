@@ -9,6 +9,7 @@ import {
     UserCheck, BarChart3, CalendarDays
 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { tData } from "@/lib/i18n";
 
 type Period = "daily" | "monthly" | "yearly";
 
@@ -41,8 +42,8 @@ export default function ReportsPage() {
             {/* ===== Topbar ===== */}
             <div className="topbar">
                 <div className="topbar-title">
-                    <BarChart3 size={18} style={{ display: "inline", marginLeft: "8px", color: "#C3D809", verticalAlign: "middle" }} />
-                    <span>التقارير الشاملة</span>
+                    <BarChart3 size={18} className="inline-block align-middle ml-2 text-accent-lime" />
+                    التقارير <span>الشاملة</span>
                 </div>
                 <div className="flex gap-2">
                     {(["daily", "monthly", "yearly"] as Period[]).map((p) => (
@@ -82,7 +83,7 @@ export default function ReportsPage() {
                 {/* ===== Daily Report ===== */}
                 {period === "daily" && data && (
                     <>
-                        <div className="grid grid-cols-3 gap-3 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                             <StatCard icon={<Users size={18} />} value={(data as { total_customers: number }).total_customers} label="زبائن اليوم" color="lime" />
                             <StatCard icon={<Banknote size={18} />} value={Number((data as { total_income: number }).total_income).toFixed(3)} label="دخل اليوم (د.أ)" color="green" />
                             <StatCard icon={<UserCheck size={18} />} value={((data as { employee_stats: unknown[] }).employee_stats || []).length} label="موظفون عملوا" color="blue" />
@@ -93,15 +94,15 @@ export default function ReportsPage() {
                                     <UserCheck size={14} color="#C3D809" />
                                     <span className="text-gray-300 font-bold">أداء الموظفين</span>
                                 </div>
-                                <table>
+                                <table data-mobile-cards>
                                     <thead><tr><th>الموظف</th><th>الزبائن</th><th>المبيعات</th><th>العمولة</th></tr></thead>
                                     <tbody>
                                         {((data as { employee_stats: Array<{ name: string; cnt: number; total: number; salary_type: string; commission_rate: number }> }).employee_stats || []).map((e, i) => (
                                             <tr key={i}>
-                                                <td>{e.name}</td>
-                                                <td><span className="badge badge-blue">{e.cnt}</span></td>
-                                                <td className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
-                                                <td className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
+                                                <td data-label="الموظف">{tData(e.name, 'ar')}</td>
+                                                <td data-label="الزبائن"><span className="badge badge-blue">{e.cnt}</span></td>
+                                                <td data-label="المبيعات" className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
+                                                <td data-label="العمولة" className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -112,16 +113,16 @@ export default function ReportsPage() {
                                     <Receipt size={14} color="#C3D809" />
                                     <span className="text-gray-300 font-bold">تفاصيل العمليات</span>
                                 </div>
-                                <table>
+                                <table data-mobile-cards>
                                     <thead><tr><th>#</th><th>الموظف</th><th>المبلغ</th><th>الدفع</th><th>الوقت</th></tr></thead>
                                     <tbody>
                                         {((data as { transactions: Array<{ id: number; emp_name: string; total_amount: number; payment_method: string; created_at: string }> }).transactions || []).map((tx, i) => (
                                             <tr key={tx.id}>
-                                                <td className="text-gray-600">#{i + 1}</td>
-                                                <td>{tx.emp_name}</td>
-                                                <td className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
-                                                <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
-                                                <td className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
+                                                <td data-label="#" className="text-gray-600">#{i + 1}</td>
+                                                <td data-label="الموظف">{tData(tx.emp_name, 'ar')}</td>
+                                                <td data-label="المبلغ" className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
+                                                <td data-label="الدفع"><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
+                                                <td data-label="الوقت" className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
                                             </tr>
                                         ))}
                                         {((data as { transactions: unknown[] }).transactions || []).length === 0 && <tr><td colSpan={5} className="text-center text-gray-600 py-6">لا توجد عمليات</td></tr>}
@@ -166,14 +167,14 @@ export default function ReportsPage() {
                                     <UserCheck size={14} color="#C3D809" />
                                     <span className="text-gray-300 font-bold">أداء الموظفين</span>
                                 </div>
-                                <table>
+                                <table data-mobile-cards>
                                     <thead><tr><th>الموظف</th><th>المبيعات</th><th>العمولة</th></tr></thead>
                                     <tbody>
                                         {((data as { employee_stats: Array<{ name: string; total: number; salary_type: string; commission_rate: number }> }).employee_stats || []).map((e, i) => (
                                             <tr key={i}>
-                                                <td>{e.name}</td>
-                                                <td className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
-                                                <td className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
+                                                <td data-label="الموظف">{tData(e.name, 'ar')}</td>
+                                                <td data-label="المبيعات" className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
+                                                <td data-label="العمولة" className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -186,16 +187,16 @@ export default function ReportsPage() {
                                 <Receipt size={14} color="#C3D809" />
                                 <span className="text-gray-300 font-bold">تفاصيل العمليات</span>
                             </div>
-                            <table>
+                            <table data-mobile-cards>
                                 <thead><tr><th>#</th><th>الموظف</th><th>المبلغ</th><th>الدفع</th><th>التاريخ</th></tr></thead>
                                 <tbody>
                                     {((data as { transactions: Array<{ id: number; emp_name: string; total_amount: number; payment_method: string; created_at: string }> }).transactions || []).map((tx, i) => (
                                         <tr key={tx.id}>
-                                            <td className="text-gray-600">#{i + 1}</td>
-                                            <td>{tx.emp_name}</td>
-                                            <td className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
-                                            <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
-                                            <td className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })} {new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
+                                            <td data-label="#" className="text-gray-600">#{i + 1}</td>
+                                            <td data-label="الموظف">{tData(tx.emp_name, 'ar')}</td>
+                                            <td data-label="المبلغ" className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
+                                            <td data-label="الدفع"><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
+                                            <td data-label="التاريخ" className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })} {new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
                                         </tr>
                                     ))}
                                     {((data as { transactions: unknown[] }).transactions || []).length === 0 && <tr><td colSpan={5} className="text-center text-gray-600 py-6">لا توجد عمليات</td></tr>}
@@ -256,15 +257,15 @@ export default function ReportsPage() {
                                 <UserCheck size={15} color="#C3D809" />
                                 <span className="text-gray-300 font-bold">أداء الموظفين سنة {year}</span>
                             </div>
-                            <table>
+                            <table data-mobile-cards>
                                 <thead><tr><th>الموظف</th><th>العمليات</th><th>المبيعات</th><th>العمولة</th></tr></thead>
                                 <tbody>
                                     {((data as { employee_stats: Array<{ name: string; cnt: number; total: number; salary_type: string; commission_rate: number }> }).employee_stats || []).map((e, i) => (
                                         <tr key={i}>
-                                            <td className="font-semibold text-white">{e.name}</td>
-                                            <td><span className="badge badge-blue">{e.cnt}</span></td>
-                                            <td className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
-                                            <td className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
+                                            <td data-label="الموظف" className="font-semibold text-white">{tData(e.name, 'ar')}</td>
+                                            <td data-label="العمليات"><span className="badge badge-blue">{e.cnt}</span></td>
+                                            <td data-label="المبيعات" className="text-accent-lime font-bold">{Number(e.total).toFixed(3)} د.أ</td>
+                                            <td data-label="العمولة" className="text-green-500">{e.salary_type === "commission" ? `${(Number(e.total) * e.commission_rate / 100).toFixed(3)} د.أ` : <span className="text-gray-600">ثابت</span>}</td>
                                         </tr>
                                     ))}
                                     {((data as { employee_stats: unknown[] }).employee_stats || []).length === 0 && (

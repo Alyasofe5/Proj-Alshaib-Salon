@@ -97,17 +97,17 @@ function ReportsContent() {
                         <div className="p-4 border-b border-white/5">
                             <span className="text-gray-300 font-bold">تفاصيل العمليات</span>
                         </div>
-                        <table>
+                        <table data-mobile-cards>
                             <thead><tr><th>#</th><th>الخدمات</th><th>الملاحظات</th><th>المبلغ</th><th>الدفع</th><th>الوقت</th></tr></thead>
                             <tbody>
                                 {data.transactions.map((tx: any, i: number) => (
                                     <tr key={tx.id}>
-                                        <td className="text-gray-600">#{i + 1}</td>
-                                        <td className="text-gray-300">{tx.services || "—"}</td>
-                                        <td className="text-gray-500 text-sm">{tx.notes || "—"}</td>
-                                        <td className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
-                                        <td><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
-                                        <td className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
+                                        <td data-label="#" className="text-gray-600">#{i + 1}</td>
+                                        <td data-label="الخدمات" className="text-gray-300">{tx.services || "—"}</td>
+                                        <td data-label="الملاحظات" className="text-gray-500 text-sm">{tx.notes || "—"}</td>
+                                        <td data-label="المبلغ" className="text-accent-lime font-bold">{Number(tx.total_amount).toFixed(3)} د.أ</td>
+                                        <td data-label="الدفع"><span className="badge badge-green">{tx.payment_method === "cash" ? "نقداً" : "تحويل"}</span></td>
+                                        <td data-label="الوقت" className="text-gray-600 text-xs">{new Date(tx.created_at).toLocaleTimeString("ar-JO", { hour: "2-digit", minute: "2-digit" })}</td>
                                     </tr>
                                 ))}
                                 {data.transactions.length === 0 && <tr><td colSpan={6} className="text-center text-gray-600 py-8">لا توجد عمليات</td></tr>}
@@ -132,15 +132,15 @@ function ReportsContent() {
                             </ResponsiveContainer>
                         </motion.div>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="custom-table">
-                            <table>
+                            <table data-mobile-cards>
                                 <thead><tr><th>اليوم</th><th>الزبائن</th><th>المبيعات</th><th>العمولة</th></tr></thead>
                                 <tbody>
                                     {data.daily_breakdown.filter((d: any) => d.cnt > 0).map((dd: any) => (
                                         <tr key={dd.day}>
-                                            <td className="text-gray-400">{dd.day}</td>
-                                            <td><span className="badge badge-blue">{dd.cnt}</span></td>
-                                            <td className="text-accent-lime">{Number(dd.total).toFixed(3)} د.أ</td>
-                                            <td className="text-green-400">{(Number(dd.total) * commissionRate / 100).toFixed(3)} د.أ</td>
+                                            <td data-label="اليوم" className="text-gray-400">{dd.day}</td>
+                                            <td data-label="الزبائن"><span className="badge badge-blue">{dd.cnt}</span></td>
+                                            <td data-label="المبيعات" className="text-accent-lime">{Number(dd.total).toFixed(3)} د.أ</td>
+                                            <td data-label="العمولة" className="text-green-400">{(Number(dd.total) * commissionRate / 100).toFixed(3)} د.أ</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -165,15 +165,15 @@ function ReportsContent() {
                             </ResponsiveContainer>
                         </motion.div>
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="custom-table">
-                            <table>
+                            <table data-mobile-cards>
                                 <thead><tr><th>الشهر</th><th>الزبائن</th><th>المبيعات</th><th>العمولة</th></tr></thead>
                                 <tbody>
                                     {data.monthly_breakdown.map((md: any, i: number) => (
                                         <tr key={i}>
-                                            <td className="text-gray-400">{md.month}</td>
-                                            <td><span className="badge badge-blue">{md.cnt}</span></td>
-                                            <td className="text-accent-lime">{Number(md.total).toFixed(3)} د.أ</td>
-                                            <td className="text-green-400">{(Number(md.total) * commissionRate / 100).toFixed(3)} د.أ</td>
+                                            <td data-label="الشهر" className="text-gray-400">{md.month}</td>
+                                            <td data-label="الزبائن"><span className="badge badge-blue">{md.cnt}</span></td>
+                                            <td data-label="المبيعات" className="text-accent-lime">{Number(md.total).toFixed(3)} د.أ</td>
+                                            <td data-label="العمولة" className="text-green-400">{(Number(md.total) * commissionRate / 100).toFixed(3)} د.أ</td>
                                         </tr>
                                     ))}
                                 </tbody>

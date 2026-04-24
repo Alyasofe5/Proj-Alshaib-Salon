@@ -6,6 +6,7 @@ import { usersAPI } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { useAuthStore } from "@/lib/store";
 import { FaUserCog, FaUserPlus, FaKey, FaTrash, FaBan, FaCheck, FaCrown, FaUserTie } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
 
 interface User {
     id: number;
@@ -88,12 +89,19 @@ export default function UsersPage() {
 
     return (
         <>
-            <div className="topbar flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                    <FaUserCog className="text-accent-lime" /> إدارة <span className="text-accent-lime font-black">المستخدمين</span>
+            <div className="topbar">
+                <div className="topbar-title">
+                    <FaUserCog className="inline-block align-middle ml-2 text-accent-lime" />
+                    إدارة <span>المستخدمين</span>
                 </div>
-                <button className="btn-lime flex items-center justify-center gap-2 px-4 py-2" onClick={() => { setForm({ name: "", username: "", password: "", role: "employee", employee_id: "" }); setShowAddModal(true); }}>
-                    <FaUserPlus /> إضافة مستخدم
+                <button
+                    className="btn-lime inline-flex items-center justify-center gap-2 shrink-0"
+                    style={{ padding: "8px 14px", minHeight: "40px" }}
+                    onClick={() => { setForm({ name: "", username: "", password: "", role: "employee", employee_id: "" }); setShowAddModal(true); }}
+                    aria-label="إضافة مستخدم"
+                >
+                    <FaUserPlus />
+                    <span className="hidden sm:inline">إضافة مستخدم</span>
                 </button>
             </div>
 
@@ -101,22 +109,22 @@ export default function UsersPage() {
                 {flash && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={flash.type === "success" ? "flash-success" : "flash-error"}>{flash.msg}</motion.div>}
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="custom-table overflow-x-auto">
-                    <table className="min-w-full">
+                    <table className="min-w-full" data-mobile-cards>
                         <thead><tr><th>#</th><th>الاسم</th><th>اسم الدخول</th><th>الدور</th><th>الموظف المرتبط</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                         <tbody>
                             {users.map(u => (
                                 <tr key={u.id}>
-                                    <td className="text-gray-600">{u.id}</td>
-                                    <td className="text-white font-semibold">{u.name}</td>
-                                    <td className="text-gray-500 font-mono">{u.username}</td>
-                                    <td>
+                                    <td data-label="#" className="text-gray-600">{u.id}</td>
+                                    <td data-label="الاسم" className="text-white font-semibold">{tData(u.name, 'ar')}</td>
+                                    <td data-label="اسم الدخول" className="text-gray-500 font-mono">{u.username}</td>
+                                    <td data-label="الدور">
                                         <span className={`badge ${u.role === "admin" ? "badge-lime" : "badge-blue"}`}>
                                             {u.role === "admin" ? <><FaCrown className="inline ml-1" size={10} /> مدير</> : <><FaUserTie className="inline ml-1" size={10} /> موظف</>}
                                         </span>
                                     </td>
-                                    <td className="text-gray-500">{u.emp_name || "-"}</td>
-                                    <td><span className={`badge ${u.is_active ? "badge-green" : "badge-red"}`}>{u.is_active ? "نشط" : "موقوف"}</span></td>
-                                    <td>
+                                    <td data-label="الموظف" className="text-gray-500">{u.emp_name ? tData(u.emp_name, 'ar') : "-"}</td>
+                                    <td data-label="الحالة"><span className={`badge ${u.is_active ? "badge-green" : "badge-red"}`}>{u.is_active ? "نشط" : "موقوف"}</span></td>
+                                    <td data-label="إجراءات">
                                         <div className="flex gap-1">
                                             <button onClick={() => { setResetUser(u); setNewPassword(""); setShowResetModal(true); }} className="p-2 rounded-lg" style={{ background: "rgba(195,216,9,0.1)", border: "1px solid rgba(195,216,9,0.3)", color: "var(--color-accent)" }}>
                                                 <FaKey size={11} />
@@ -158,7 +166,7 @@ export default function UsersPage() {
                             <label className="form-label">ربط بموظف</label>
                             <select className="form-input" value={form.employee_id} onChange={e => setForm({ ...form, employee_id: e.target.value })}>
                                 <option value="">-- اختر موظف --</option>
-                                {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                                {employees.map(e => <option key={e.id} value={e.id}>{tData(e.name, 'ar')}</option>)}
                             </select>
                         </div>
                     )}

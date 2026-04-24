@@ -9,6 +9,7 @@ import {
     User, ClipboardList, Banknote, ArrowLeftRight,
     TrendingUp, Users, Percent, FileText
 } from "lucide-react";
+import { tData } from "@/lib/i18n";
 
 export default function PrintReportPage() {
     const { user, salon } = useAuthStore();
@@ -40,10 +41,10 @@ export default function PrintReportPage() {
     const totalSales = Number(data.stats?.income || 0);
     const commission = Number(data.stats?.commission || 0);
     const commissionRate = data.employee?.commission_rate || 0;
-    const empName = data.employee?.name || user?.employee_name || user?.name || "موظف";
+    const empName = tData(data.employee?.name || user?.employee_name || user?.name, 'ar') || "موظف";
     const transactions = data.transactions || [];
     const dateLabel = period === "daily" ? date : month;
-    const salonName = salon?.name || "Maqass";
+    const salonName = tData(salon?.name, 'ar') || "Maqass";
 
     return (
         <div style={{ direction: "rtl" }}>
@@ -56,8 +57,8 @@ export default function PrintReportPage() {
                         <ArrowRight size={14} /> العودة
                     </Link>
                     <div className="topbar-title">
-                        <FileText size={16} className="inline ml-2 text-accent-lime" />
-                        <span>طباعة التقرير</span>
+                        <FileText size={16} className="inline-block align-middle ml-2 text-accent-lime" />
+                        طباعة <span>التقرير</span>
                     </div>
                 </div>
 
@@ -122,7 +123,7 @@ export default function PrintReportPage() {
                             </svg>
                         </div>
                     </div>
-                    <h1 style={{ fontSize: "20px", color: "var(--color-accent)", letterSpacing: "3px", margin: "0 0 6px", fontWeight: 900 }}>
+                    <h1 style={{ fontSize: "clamp(16px, 4.5vw, 22px)", color: "var(--color-accent)", letterSpacing: "0.5px", margin: "0 0 6px", fontWeight: 900, overflowWrap: "anywhere" }}>
                         {salonName}
                     </h1>
                     <h2 style={{ fontSize: "14px", color: "#aaa", fontWeight: 400, margin: "0 0 14px" }}>

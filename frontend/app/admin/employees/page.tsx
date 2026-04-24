@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { employeesAPI } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { FaUsers, FaPlus, FaEdit, FaTrash, FaPhone, FaCalendarTimes, FaExclamationTriangle } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
 
 interface Employee {
     id: number;
@@ -58,7 +59,7 @@ export default function EmployeesPage() {
     const handleEmergency = async (emp: Employee) => {
         const reason = prompt("ما هو سبب الظرف الطارئ؟", "ظرف طارئ");
         if (!reason) return;
-        if (!confirm(`سيتم إلغاء جميع حجوزات ${emp.name} لليوم وإبلاغ العملاء. هل أنت متأكد؟`)) return;
+        if (!confirm(`سيتم إلغاء جميع حجوزات ${tData(emp.name, 'ar')} لليوم وإبلاغ العملاء. هل أنت متأكد؟`)) return;
         try {
             await employeesAPI.declareEmergency({ employee_id: emp.id, date: new Date().toISOString().split('T')[0], reason });
             setFlash({ type: "success", msg: "تم إلغاء الحجوزات وتسجيل الإجازة الطارئة" });
@@ -150,11 +151,17 @@ export default function EmployeesPage() {
         <>
             <div className="topbar">
                 <div className="topbar-title">
-                    <FaUsers className="inline ml-2 text-accent-lime" />
+                    <FaUsers className="inline-block align-middle ml-2 text-accent-lime" />
                     إدارة <span>الموظفين</span>
                 </div>
-                <button className="btn-lime flex items-center gap-2" onClick={openAddModal}>
-                    <FaPlus /> إضافة موظف
+                <button
+                    className="btn-lime inline-flex items-center justify-center gap-2 shrink-0"
+                    style={{ padding: "8px 14px", minHeight: "40px" }}
+                    onClick={openAddModal}
+                    aria-label="إضافة موظف"
+                >
+                    <FaPlus />
+                    <span className="hidden sm:inline">إضافة موظف</span>
                 </button>
             </div>
 
@@ -174,7 +181,7 @@ export default function EmployeesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="custom-table"
                 >
-                    <table>
+                    <table data-mobile-cards>
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -190,9 +197,9 @@ export default function EmployeesPage() {
                         <tbody>
                             {employees.map((emp, i) => (
                                 <tr key={emp.id}>
-                                    <td className="text-gray-600">{i + 1}</td>
-                                    <td className="text-white font-semibold">{emp.name}</td>
-                                    <td>
+                                    <td data-label="#" className="text-gray-600">{i + 1}</td>
+                                    <td data-label="الاسم" className="text-white font-semibold">{tData(emp.name, 'ar')}</td>
+                                    <td data-label="الهاتف">
                                         {emp.phone ? (
                                             <span className="flex items-center gap-1">
                                                 <FaPhone className="text-green-500" size={10} />
@@ -202,23 +209,23 @@ export default function EmployeesPage() {
                                             "-"
                                         )}
                                     </td>
-                                    <td>
+                                    <td data-label="نوع الراتب">
                                         <span className={`badge ${emp.salary_type === "commission" ? "badge-lime" : "badge-blue"}`}>
                                             {emp.salary_type === "commission" ? "عمولة %" : "راتب ثابت"}
                                         </span>
                                     </td>
-                                    <td className="text-accent-lime font-bold">
+                                    <td data-label="النسبة/الراتب" className="text-accent-lime font-bold">
                                         {emp.salary_type === "commission"
                                             ? `${emp.commission_rate}%`
                                             : `${Number(emp.base_salary).toFixed(3)} د.أ`}
                                     </td>
-                                    <td>
+                                    <td data-label="العمليات">
                                         <span className="badge badge-blue">{emp.tx_count}</span>
                                     </td>
-                                    <td className="text-accent-lime font-bold">
+                                    <td data-label="المبيعات" className="text-accent-lime font-bold">
                                         {Number(emp.total_sales).toFixed(3)} د.أ
                                     </td>
-                                    <td>
+                                    <td data-label="إجراءات">
                                         <div className="flex gap-1">
                                             <button
                                                 onClick={() => openEditModal(emp)}

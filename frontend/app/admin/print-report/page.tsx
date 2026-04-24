@@ -5,6 +5,7 @@ import Link from "next/link";
 import { reportsAPI, expensesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { FaPrint, FaArrowRight, FaFileAlt, FaCoins, FaMoneyBillWave, FaChartLine, FaUsers, FaCalendarAlt, FaCut, FaClipboardList, FaReceipt, FaUserTie, FaMoneyBill, FaUniversity, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
 
 export default function AdminPrintReportPage() {
     const { salon } = useAuthStore();
@@ -53,64 +54,79 @@ export default function AdminPrintReportPage() {
     const netProfit = totalRevenue - totalExpenses;
     const isProfit = netProfit >= 0;
     const dateLabel = period === "daily" ? date : month;
-    const salonName = salon?.name || "Maqass";
+    const salonName = tData(salon?.name, 'ar') || "Maqass";
 
     return (
-        <div style={{ direction: "rtl", fontFamily: "Tajawal, sans-serif" }}>
+        <div style={{ direction: "rtl", fontFamily: "var(--font-app)" }}>
 
-            {/* ===== Control Bar (Screen Only) ===== */}
-            <div className="no-print topbar flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <Link href="/admin/reports" className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+            {/* ===== Topbar (Screen Only) ===== */}
+            <div className="no-print topbar">
+                <div className="flex items-center gap-3 min-w-0">
+                    <Link href="/admin/reports" className="btn-secondary shrink-0" style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none", padding: "8px 12px", minHeight: "40px" }}>
                         <FaArrowRight />
-                        <span className="hidden md:inline">العودة للتقارير</span>
+                        <span className="hidden lg:inline">العودة</span>
                     </Link>
                     <div className="topbar-title m-0">
-                        <FaFileAlt style={{ display: "inline", marginLeft: "8px", color: "#C3D809" }} />
-                        <span>طباعة التقرير</span>
+                        <FaFileAlt className="inline-block align-middle ml-2 text-accent-lime" />
+                        طباعة <span>التقرير</span>
                     </div>
                 </div>
+                {/* Desktop print button lives in topbar; mobile moves it to controls card below */}
+                <button
+                    onClick={() => window.print()}
+                    className="btn-lime hidden md:inline-flex items-center gap-2 shrink-0"
+                    style={{ padding: "8px 16px" }}
+                >
+                    <FaPrint /> <span>طباعة</span>
+                </button>
+            </div>
 
-                <div className="flex gap-2.5 items-center flex-wrap w-full md:w-auto">
-                    <button
-                        onClick={() => setPeriod("daily")}
-                        className={period === "daily" ? "btn-lime flex-1 md:flex-none justify-center" : "btn-outline-lime flex-1 md:flex-none justify-center"}
-                        style={{ fontSize: "13px", padding: "8px 16px" }}
-                    >
-                        يومي
-                    </button>
-                    <button
-                        onClick={() => setPeriod("monthly")}
-                        className={period === "monthly" ? "btn-lime flex-1 md:flex-none justify-center" : "btn-outline-lime flex-1 md:flex-none justify-center"}
-                        style={{ fontSize: "13px", padding: "8px 16px" }}
-                    >
-                        شهري
-                    </button>
+            {/* ===== Controls Card ===== */}
+            <div className="no-print" style={{ padding: "14px 16px 0" }}>
+                <div className="rounded-2xl border border-white/5 bg-[var(--color-cards)] p-3 md:p-4 space-y-3">
+                    {/* Segmented period toggle */}
+                    <div role="tablist" aria-label="نوع التقرير" className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-white/5 border border-white/5">
+                        {([["daily", "يومي"], ["monthly", "شهري"]] as const).map(([key, label]) => {
+                            const active = period === key;
+                            return (
+                                <button
+                                    key={key}
+                                    role="tab"
+                                    aria-selected={active}
+                                    onClick={() => setPeriod(key)}
+                                    className={`py-2.5 rounded-lg text-sm font-bold transition-all ${active ? "bg-[var(--color-accent)] text-[#0A0A0B] shadow-sm" : "text-white/60 hover:text-white"}`}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+                    {/* Date picker + mobile print button */}
+                    <div className="flex gap-2">
                         {period === "daily" ? (
                             <input
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="form-input flex-1 md:w-[160px]"
+                                className="form-input flex-1"
+                                aria-label="اختر اليوم"
                             />
                         ) : (
                             <input
                                 type="month"
                                 value={month}
                                 onChange={(e) => setMonth(e.target.value)}
-                                className="form-input flex-1 md:w-[160px]"
+                                className="form-input flex-1"
+                                aria-label="اختر الشهر"
                             />
                         )}
-
                         <button
                             onClick={() => window.print()}
-                            className="btn-lime justify-center flex-1 md:flex-none"
-                            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                            className="btn-lime md:hidden inline-flex items-center justify-center gap-2 px-4 shrink-0"
+                            aria-label="طباعة"
                         >
-                            <FaPrint />
-                            <span className="md:inline">طباعة</span>
+                            <FaPrint /> <span className="sm:inline">طباعة</span>
                         </button>
                     </div>
                 </div>
@@ -140,7 +156,7 @@ export default function AdminPrintReportPage() {
                     }}>
                         <FaCut />
                     </div>
-                    <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#C3D809", letterSpacing: "2px", margin: "0 0 6px" }}>
+                    <h1 style={{ fontSize: "clamp(18px, 5vw, 24px)", fontWeight: 900, color: "#C3D809", letterSpacing: "0.5px", margin: "0 0 6px", overflowWrap: "anywhere" }}>
                         {salonName}
                     </h1>
                     <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#e0e0e0", margin: "0 0 8px" }}>
@@ -213,24 +229,12 @@ export default function AdminPrintReportPage() {
 
                 {/* ===== Transactions Table ===== */}
                 <div style={{ marginBottom: "28px" }}>
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        marginBottom: "14px",
-                        paddingBottom: "10px",
-                        borderBottom: "1px solid rgba(201, 168, 76, 0.2)"
-                    }}>
-                        <div style={{
-                            width: "4px",
-                            height: "20px",
-                            background: "#C3D809",
-                            borderRadius: "2px"
-                        }} />
-                        <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                            <FaClipboardList style={{ display: "inline", marginLeft: "6px", color: "#C3D809" }} /> تفاصيل العمليات
+                    <div className="flex items-center gap-2.5 mb-3 pb-2.5" style={{ borderBottom: "1px solid rgba(201, 168, 76, 0.2)" }}>
+                        <div style={{ width: "4px", height: "18px", background: "#C3D809", borderRadius: "2px" }} />
+                        <span className="flex items-center gap-1.5 font-bold" style={{ fontSize: "14px", color: "#ddd" }}>
+                            <FaClipboardList style={{ color: "#C3D809" }} /> تفاصيل العمليات
                         </span>
-                        <span className="badge badge-lime" style={{ marginRight: "auto" }}>
+                        <span className="badge badge-lime mr-auto">
                             {transactions.length} عملية
                         </span>
                     </div>
@@ -296,24 +300,12 @@ export default function AdminPrintReportPage() {
 
                 {/* ===== Expenses Table ===== */}
                 <div style={{ marginBottom: "28px" }}>
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        marginBottom: "14px",
-                        paddingBottom: "10px",
-                        borderBottom: "1px solid rgba(231, 76, 60, 0.2)"
-                    }}>
-                        <div style={{
-                            width: "4px",
-                            height: "20px",
-                            background: "#e74c3c",
-                            borderRadius: "2px"
-                        }} />
-                        <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                            <FaReceipt style={{ display: "inline", marginLeft: "6px", color: "#e74c3c" }} /> المصاريف
+                    <div className="flex items-center gap-2.5 mb-3 pb-2.5" style={{ borderBottom: "1px solid rgba(231, 76, 60, 0.2)" }}>
+                        <div style={{ width: "4px", height: "18px", background: "#e74c3c", borderRadius: "2px" }} />
+                        <span className="flex items-center gap-1.5 font-bold" style={{ fontSize: "14px", color: "#ddd" }}>
+                            <FaReceipt style={{ color: "#e74c3c" }} /> المصاريف
                         </span>
-                        <span className="badge badge-red" style={{ marginRight: "auto" }}>
+                        <span className="badge badge-red mr-auto">
                             {expenses.length} بند
                         </span>
                     </div>
@@ -379,24 +371,12 @@ export default function AdminPrintReportPage() {
                 {/* ===== Employee Stats Table ===== */}
                 {empStats.length > 0 && (
                     <div style={{ marginBottom: "28px" }}>
-                        <div style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            marginBottom: "14px",
-                            paddingBottom: "10px",
-                            borderBottom: "1px solid rgba(52, 152, 219, 0.2)"
-                        }}>
-                            <div style={{
-                                width: "4px",
-                                height: "20px",
-                                background: "#3498db",
-                                borderRadius: "2px"
-                            }} />
-                            <span style={{ fontSize: "15px", fontWeight: 800, color: "#ddd" }}>
-                                <FaUserTie style={{ display: "inline", marginLeft: "6px", color: "#3498db" }} /> أداء الموظفين
+                        <div className="flex items-center gap-2.5 mb-3 pb-2.5" style={{ borderBottom: "1px solid rgba(52, 152, 219, 0.2)" }}>
+                            <div style={{ width: "4px", height: "18px", background: "#3498db", borderRadius: "2px" }} />
+                            <span className="flex items-center gap-1.5 font-bold" style={{ fontSize: "14px", color: "#ddd" }}>
+                                <FaUserTie style={{ color: "#3498db" }} /> أداء الموظفين
                             </span>
-                            <span className="badge badge-blue" style={{ marginRight: "auto" }}>
+                            <span className="badge badge-blue mr-auto">
                                 {empStats.length} موظف
                             </span>
                         </div>

@@ -7,7 +7,8 @@
       "Read(//c/Users/WASEEM/.gemini/**)",
       "Read(//c/Users/WASEEM/.qwen/**)",
       "Bash(python3 -c ':*)",
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(npx tsc *)"
     ]
   }
 }

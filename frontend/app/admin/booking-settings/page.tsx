@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp, FaEye, FaEyeSlash, FaCog } from "react-icons/fa";
 import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -578,30 +578,43 @@ export default function BookingSettingsPage() {
     );
 
     return (
-        <div className="text-[var(--color-text-primary)]" dir="rtl" style={{ fontFamily: "'Noto Sans Arabic', sans-serif" }}>
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
-            `}</style>
-
+        <div className="text-[var(--color-text-primary)]" dir="rtl" style={{ fontFamily: "var(--font-app)" }}>
             {/* Topbar — High-end Header matching Dashboard */}
             <div className="topbar">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => router.push("/admin/dashboard")} className="p-2 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all">
-                        <FaArrowRight size={18} />
+                <div className="flex items-center gap-3 min-w-0">
+                    <button
+                        onClick={() => router.push("/admin/dashboard")}
+                        className="btn-secondary inline-flex items-center justify-center shrink-0"
+                        style={{ padding: "8px 12px", minHeight: "40px" }}
+                        aria-label="رجوع"
+                    >
+                        <FaArrowRight />
                     </button>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight">إعدادات الحجز</h1>
-                        <p className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-wider opacity-60">تخصيص صفحة الزبائن والخدمات</p>
+                    <div className="min-w-0">
+                        <div className="topbar-title">
+                            <FaCog className="inline-block align-middle ml-2 text-accent-lime" />
+                            إعدادات <span>الحجز</span>
+                        </div>
+                        <div className="topbar-date">تخصيص صفحة الزبائن والخدمات</div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => window.open(`${baseUrl}/book/?s=${settings?.slug || salon?.slug}`, '_blank')}
-                        className="btn-outline-lime hidden md:flex items-center gap-2 h-10 px-4">
+                <div className="flex items-center gap-2 shrink-0">
+                    <button
+                        onClick={() => window.open(`${baseUrl}/book/?s=${settings?.slug || salon?.slug}`, '_blank')}
+                        className="btn-outline-lime hidden md:inline-flex items-center gap-2"
+                        style={{ padding: "8px 14px", minHeight: "40px" }}
+                    >
                         <FaExternalLinkAlt size={11} /> <span>المعاينة</span>
                     </button>
-                    <button onClick={handleSaveSettings} disabled={saving} className="btn-lime min-w-[120px] h-10 flex border-none items-center justify-center gap-2">
+                    <button
+                        onClick={handleSaveSettings}
+                        disabled={saving}
+                        className="btn-lime inline-flex border-none items-center justify-center gap-2"
+                        style={{ padding: "8px 14px", minHeight: "40px" }}
+                        aria-label={saved ? "تم الحفظ" : "حفظ التغييرات"}
+                    >
                         {saving ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-black" /> : <FaSave size={14} />}
-                        <span>{saved ? "تم الحفظ" : "حفظ التغييرات"}</span>
+                        <span className="hidden sm:inline">{saved ? "تم الحفظ" : "حفظ التغييرات"}</span>
                     </button>
                 </div>
             </div>

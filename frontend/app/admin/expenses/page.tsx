@@ -88,16 +88,31 @@ export default function ExpensesPage() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><BarChart2 size={18} className="inline ml-2 text-accent-lime" /> المالية <span>والمصاريف</span></div>
-                <div className="flex gap-2 items-center">
-                    <input type="month" className="form-input" style={{ width: 160 }} value={month} onChange={e => setMonth(e.target.value)} />
-                    <button className="btn-lime flex items-center gap-2" onClick={() => { setForm({ title: "", amount: 0, type: "rent", notes: "" }); setShowModal(true); }}>
-                        <FaPlus /> إضافة مصروف
+                <div className="topbar-title">
+                    <BarChart2 size={18} className="inline-block align-middle ml-2 text-accent-lime" />
+                    المالية <span>والمصاريف</span>
+                </div>
+                <div className="flex gap-2 items-center shrink-0">
+                    <input type="month" className="form-input hidden sm:block" style={{ width: 160 }} value={month} onChange={e => setMonth(e.target.value)} />
+                    <button
+                        className="btn-lime inline-flex items-center justify-center gap-2"
+                        style={{ padding: "8px 14px", minHeight: "40px" }}
+                        onClick={() => { setForm({ title: "", amount: 0, type: "rent", notes: "" }); setShowModal(true); }}
+                        aria-label="إضافة مصروف"
+                    >
+                        <FaPlus />
+                        <span className="hidden sm:inline">إضافة مصروف</span>
                     </button>
                 </div>
             </div>
 
             <div className="content-area">
+                {/* Mobile month picker */}
+                <div className="sm:hidden mb-4">
+                    <label className="form-label block mb-1.5">الشهر</label>
+                    <input type="month" className="form-input w-full" value={month} onChange={e => setMonth(e.target.value)} />
+                </div>
+
                 {flash && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={flash.type === "success" ? "flash-success" : "flash-error"}>{flash.msg}</motion.div>}
 
                 {/* Stat Cards */}
@@ -149,18 +164,18 @@ export default function ExpensesPage() {
                         <span className="text-gray-300 font-bold text-sm flex items-center gap-2"><ClipboardList size={15} /> تفاصيل المصاريف</span>
                         <span className="text-red-500 text-sm font-bold">{summary?.total_expenses?.toFixed(3) || "0"} د.أ</span>
                     </div>
-                    <table>
+                    <table data-mobile-cards>
                         <thead><tr><th>#</th><th>العنوان</th><th>النوع</th><th>المبلغ</th><th>الملاحظات</th><th>التاريخ</th><th>حذف</th></tr></thead>
                         <tbody>
                             {expenses.map((exp, i) => (
                                 <tr key={exp.id}>
-                                    <td className="text-gray-600">{i + 1}</td>
-                                    <td className="text-white font-semibold">{exp.title}</td>
-                                    <td><span className="badge badge-lime">{typeLabels[exp.type] || exp.type}</span></td>
-                                    <td className="text-red-500 font-bold">{Number(exp.amount).toFixed(3)} د.أ</td>
-                                    <td className="text-gray-500 text-sm">{exp.notes || "-"}</td>
-                                    <td className="text-gray-600 text-xs">{new Date(exp.created_at).toLocaleDateString("ar-JO")}</td>
-                                    <td>
+                                    <td data-label="#" className="text-gray-600">{i + 1}</td>
+                                    <td data-label="العنوان" className="text-white font-semibold">{exp.title}</td>
+                                    <td data-label="النوع"><span className="badge badge-lime">{typeLabels[exp.type] || exp.type}</span></td>
+                                    <td data-label="المبلغ" className="text-red-500 font-bold">{Number(exp.amount).toFixed(3)} د.أ</td>
+                                    <td data-label="الملاحظات" className="text-gray-500 text-sm">{exp.notes || "-"}</td>
+                                    <td data-label="التاريخ" className="text-gray-600 text-xs">{new Date(exp.created_at).toLocaleDateString("ar-JO")}</td>
+                                    <td data-label="حذف">
                                         <button onClick={() => handleDelete(exp.id)} className="p-2 rounded-lg" style={{ background: "rgba(231,76,60,0.15)", border: "1px solid rgba(231,76,60,0.3)", color: "#e74c3c" }}>
                                             <FaTrash size={12} />
                                         </button>

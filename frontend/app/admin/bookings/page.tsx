@@ -8,6 +8,8 @@ import {
     CheckCheck, Filter, ClipboardList, MessageCircle, Trash2, FileText, UserCheck
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
+import CustomSelect from "@/components/CustomSelect";
 
 interface Booking {
     id: number;
@@ -162,20 +164,22 @@ export default function AdminBookings() {
     }
 
     return (
-        <div className="space-y-4 md:space-y-6 animate-fadeIn px-4 md:px-0 py-4 md:py-0">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <>
+            <div className="topbar">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <ClipboardList size={18} className="text-accent-lime" /> إدارة الحجوزات
-                    </h1>
-                    <p className="text-gray-500 text-sm mt-1">إدارة مواعيد الزبائن</p>
+                    <div className="topbar-title">
+                        <ClipboardList size={18} className="inline-block align-middle ml-2 text-accent-lime" />
+                        إدارة <span>الحجوزات</span>
+                    </div>
+                    <div className="topbar-date">إدارة مواعيد الزبائن</div>
                 </div>
             </div>
 
+            <div className="content-area space-y-4 md:space-y-6">
+
             {/* Stats */}
             {stats && (
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
                     {[
                         { label: "اليوم", value: stats.today, color: "text-accent-lime" },
                         { label: "بانتظار", value: stats.pending, color: "text-accent-lime" },
@@ -183,46 +187,70 @@ export default function AdminBookings() {
                         { label: "مكتمل", value: stats.completed, color: "text-blue-400" },
                         { label: "ملغي", value: stats.cancelled, color: "text-red-400" },
                     ].map((s, i) => (
-                        <div key={i} className={`chart-card text-center py-2 md:py-3 ${i === 0 || i === 1 ? 'col-span-1' : ''}`}>
-                            <p className={`text-lg md:text-2xl font-bold ${s.color}`}>{s.value}</p>
-                            <p className="text-[10px] md:text-xs text-gray-400">{s.label}</p>
+                        <div key={i} className="chart-card flex flex-col items-center justify-center text-center py-3 px-2 min-h-[72px]">
+                            <p className={`text-xl md:text-2xl font-bold leading-none ${s.color}`} style={{ fontVariantNumeric: 'tabular-nums' }}>{s.value}</p>
+                            <p className="text-[11px] md:text-xs text-gray-400 mt-1.5">{s.label}</p>
                         </div>
                     ))}
                 </div>
             )}
 
             {/* Filters */}
-            <div className="flex gap-2 items-center overflow-x-auto hide-scrollbar pb-1 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
-                <div className="flex-shrink-0">
-                    <Filter size={14} className="text-gray-500 hidden md:block" />
-                </div>
-                {[
+            {(() => {
+                const periodOptions = [
                     { key: "today", label: "اليوم" },
                     { key: "tomorrow", label: "غداً" },
                     { key: "week", label: "هذا الأسبوع" },
                     { key: "month", label: "هذا الشهر" },
                     { key: "all", label: "الكل" },
-                ].map((f) => (
-                    <button key={f.key} onClick={() => setPeriod(f.key)}
-                        className={`flex-shrink-0 px-3 py-1.5 md:py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-white/10 text-accent-lime border border-accent-lime/20" : "bg-dark text-gray-400 hover:text-white"
-                            }`}
-                    >{f.label}</button>
-                ))}
-
-                <div className="mx-1 h-4 w-px bg-gray-700 flex-shrink-0" />
-
-                {[
+                ];
+                const statusOptions = [
                     { key: "", label: "الكل" },
                     { key: "pending", label: "بانتظار" },
                     { key: "confirmed", label: "مؤكد" },
                     { key: "completed", label: "مكتمل" },
-                ].map((f) => (
-                    <button key={f.key} onClick={() => setStatusFilter(f.key)}
-                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${statusFilter === f.key ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"
-                            }`}
-                    >{f.label}</button>
-                ))}
-            </div>
+                ];
+                return (
+                    <>
+                        {/* Mobile: themed dropdowns */}
+                        <div className="grid grid-cols-2 gap-2 md:hidden min-w-0">
+                            <CustomSelect
+                                value={period}
+                                onChange={setPeriod}
+                                options={periodOptions.map((f) => ({ value: f.key, label: f.label }))}
+                                leadingIcon={<Filter size={14} />}
+                                ariaLabel="الفترة"
+                            />
+                            <CustomSelect
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                options={statusOptions.map((f) => ({ value: f.key, label: f.label }))}
+                                ariaLabel="الحالة"
+                            />
+                        </div>
+
+                        {/* Desktop / tablet: chip row */}
+                        <div className="hidden md:flex gap-2 items-center overflow-x-auto hide-scrollbar pb-1 scroll-smooth">
+                            <div className="flex-shrink-0">
+                                <Filter size={14} className="text-gray-500" />
+                            </div>
+                            {periodOptions.map((f) => (
+                                <button key={f.key} onClick={() => setPeriod(f.key)}
+                                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${period === f.key ? "bg-white/10 text-accent-lime border border-accent-lime/20" : "bg-dark text-gray-400 hover:text-white"
+                                        }`}
+                                >{f.label}</button>
+                            ))}
+                            <div className="mx-1 h-4 w-px bg-gray-700 flex-shrink-0" />
+                            {statusOptions.map((f) => (
+                                <button key={f.key} onClick={() => setStatusFilter(f.key)}
+                                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${statusFilter === f.key ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"
+                                        }`}
+                                >{f.label}</button>
+                            ))}
+                        </div>
+                    </>
+                );
+            })()}
 
             {/* Bookings List */}
             <div className="space-y-4">
@@ -425,9 +453,9 @@ export default function AdminBookings() {
                                                 }`}
                                         >
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${selectedEmpId === emp.id ? "bg-accent-lime/20 text-accent-lime" : "bg-white/10 text-gray-400"}`}>
-                                                {emp.name.charAt(0)}
+                                                {tData(emp.name, 'ar').charAt(0)}
                                             </div>
-                                            {emp.name}
+                                            {tData(emp.name, 'ar')}
                                             {selectedEmpId === emp.id && (
                                                 <Check size={14} className="mr-auto text-accent-lime" />
                                             )}
@@ -454,6 +482,7 @@ export default function AdminBookings() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+            </div>
+        </>
     );
 }

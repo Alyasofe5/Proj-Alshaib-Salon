@@ -97,6 +97,24 @@ function BookingContent({ params }: { params: { slug: string } }) {
     const [bookingDays, setBookingDays] = useState(7);
 
     const [isBookingOpen, setIsBookingOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            const prev = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            return () => { document.body.style.overflow = prev; };
+        }
+    }, [mobileMenuOpen]);
+
+    // Close menu on Escape
+    useEffect(() => {
+        if (!mobileMenuOpen) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileMenuOpen(false); };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [mobileMenuOpen]);
     const [scrolled, setScrolled] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [activeServiceIndex, setActiveServiceIndex] = useState(0);
@@ -585,8 +603,14 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             </span>
                         </button>
 
-                        {/* Hamburger — refined minimal (Hidden on desktop if nav is visible) */}
-                        <button className="flex lg:hidden flex-col gap-[5px] p-2 group min-h-[44px] min-w-[44px] items-center justify-center">
+                        {/* Hamburger (mobile/tablet) */}
+                        <button
+                            type="button"
+                            aria-label={lang === 'ar' ? "القائمة" : "Menu"}
+                            aria-expanded={mobileMenuOpen}
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="flex lg:hidden flex-col gap-[5px] p-2 group min-h-[44px] min-w-[44px] items-center justify-center"
+                        >
                             <div className="w-5 h-[1.5px] bg-white group-hover:bg-[#C3D809] transition-all duration-300" />
                             <div className="w-4 h-[1.5px] bg-white/70 group-hover:bg-[#C3D809] transition-all duration-300 ml-auto" />
                             <div className="w-5 h-[1.5px] bg-white/40 group-hover:bg-[#C3D809] transition-all duration-300" />
@@ -594,6 +618,123 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     </div>
                 </div>
             </header>
+
+            {/* --- MOBILE MENU DRAWER --- */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 z-[99] lg:hidden bg-black/70 backdrop-blur-sm"
+                            onClick={() => setMobileMenuOpen(false)}
+                        />
+                        <motion.aside
+                            initial={{ x: lang === 'ar' ? "100%" : "-100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: lang === 'ar' ? "100%" : "-100%" }}
+                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                            className={`fixed top-0 bottom-0 z-[100] lg:hidden w-[min(320px,85vw)] flex flex-col ${lang === 'ar' ? 'right-0 border-l' : 'left-0 border-r'}`}
+                            style={{
+                                background: "#0A0A0A",
+                                borderColor: "rgba(255,255,255,0.06)",
+                                fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif",
+                                paddingTop: "env(safe-area-inset-top)",
+                                paddingBottom: "env(safe-area-inset-bottom)",
+                            }}
+                            dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+                                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 900, letterSpacing: "-0.03em" }} className="text-white truncate">
+                                    {tData(salon.name, lang)}
+                                </span>
+                                <button
+                                    type="button"
+                                    aria-label={lang === 'ar' ? "إغلاق" : "Close"}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="p-2 -mx-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+                                >
+                                    <X size={20} className="text-white/70" />
+                                </button>
+                            </div>
+
+                            {/* Nav links */}
+                            <nav className="flex-1 overflow-y-auto px-2 py-4">
+                                {(lang === 'ar'
+                                    ? [{ name: "الخدمات", id: "services" }, { name: "قصتنا", id: "about" }, { name: "الفريق", id: "team" }, { name: "الأسئلة الشائعة", id: "faq" }]
+                                    : [{ name: "Services", id: "services" }, { name: "Story", id: "about" }, { name: "Team", id: "team" }, { name: "FAQ", id: "faq" }]
+                                ).map(item => (
+                                    <a
+                                        key={item.id}
+                                        href={`#${item.id}`}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center justify-between px-4 py-4 rounded-xl text-white/80 hover:text-[#C3D809] hover:bg-white/5 transition-colors text-[15px] font-bold tracking-wide"
+                                    >
+                                        <span>{item.name}</span>
+                                        {lang === 'ar' ? <ArrowLeft size={16} className="opacity-40" /> : <ArrowRight size={16} className="opacity-40" />}
+                                    </a>
+                                ))}
+                            </nav>
+
+                            {/* Language switcher */}
+                            <div className="px-5 pt-4 pb-3 border-t border-white/5">
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 font-bold" style={{ fontFamily: "'Space Mono', monospace" }}>
+                                    {lang === 'ar' ? "اللغة" : "Language"}
+                                </p>
+                                <div
+                                    role="group"
+                                    aria-label="Language switcher"
+                                    className="flex items-center relative p-[3px] rounded-2xl"
+                                    style={{
+                                        fontFamily: "'Space Mono', monospace",
+                                        background: 'rgba(255,255,255,0.04)',
+                                        border: '1px solid rgba(255,255,255,0.06)',
+                                    }}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className="absolute top-[3px] bottom-[3px] rounded-[11px] transition-all duration-[350ms]"
+                                        style={{
+                                            width: 'calc(50% - 3px)',
+                                            left: lang === 'ar' ? '3px' : 'calc(50%)',
+                                            background: 'linear-gradient(135deg, #d4ea0a 0%, #C3D809 60%, #a8bc08 100%)',
+                                            boxShadow: '0 0 14px rgba(195,216,9,0.35)',
+                                            transitionTimingFunction: 'cubic-bezier(0.34,1.4,0.64,1)',
+                                        }}
+                                    />
+                                    {(['ar', 'en'] as const).map((l) => (
+                                        <button
+                                            key={l}
+                                            onClick={() => setLang(l)}
+                                            aria-pressed={lang === l}
+                                            className={`relative z-10 flex-1 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 ${lang === l ? '!text-black' : 'text-white/50'}`}
+                                        >
+                                            {l === 'ar' ? 'AR' : 'EN'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Book Now CTA */}
+                            <div className="px-5 pb-5 pt-3">
+                                <button
+                                    onClick={() => { setMobileMenuOpen(false); setIsBookingOpen(true); }}
+                                    className="w-full py-3.5 rounded-xl font-black uppercase tracking-[0.15em] text-[13px] text-black transition-transform active:scale-[0.98]"
+                                    style={{
+                                        background: "linear-gradient(135deg, #d4ea0a 0%, #C3D809 60%, #a8bc08 100%)",
+                                        boxShadow: "0 8px 30px rgba(195,216,9,0.35)",
+                                    }}
+                                >
+                                    {lang === 'ar' ? "احجز الآن" : "Book Now"}
+                                </button>
+                            </div>
+                        </motion.aside>
+                    </>
+                )}
+            </AnimatePresence>
 
             <main>
                 {/* --- SALON & CO. MINIMAL SPLIT HERO --- */}
@@ -696,7 +837,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 {/* Signature Action Button */}
                                 <button
                                     onClick={() => setIsBookingOpen(true)}
-                                    className="signature-btn group scale-110 sm:scale-125 origin-right lg:mx-0 mx-auto"
+                                    className="signature-btn group sm:scale-125 origin-right lg:mx-0 mx-auto"
                                     style={{
                                         fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif"
                                     }}
@@ -738,18 +879,26 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     </div>
                 </section>
 
-                {/* --- SERVICES TICKER --- */}
+                {/* --- SERVICES TICKER ---
+                    Seamless marquee that never breaks, even with 1 item.
+                    Strategy: pad each "set" to >= 100vw so two identical copies
+                    always span >= 200vw. Animating x from 0% -> -50% moves
+                    exactly one set width, so the loop is frame-perfect. */}
                 <div className="w-full bg-[#050505] border-t border-b border-white/5 py-5 overflow-hidden flex whitespace-nowrap z-20 relative pointer-events-none" dir="ltr">
                     <motion.div
                         animate={{ x: ["0%", "-50%"] }}
                         transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
                         className="flex items-center w-max"
                     >
-                        {/* 2 continuous sets for perfect infinite scrolling loop */}
                         {[...Array(2)].map((_, i) => (
-                            <div key={i} className="flex items-center pr-8 lg:pr-16">
+                            <div
+                                key={i}
+                                className="flex items-center justify-around shrink-0"
+                                style={{ minWidth: "100vw" }}
+                                aria-hidden={i === 1}
+                            >
                                 {serviceTickerItems.map((service, j) => (
-                                    <div key={j} className="flex items-center gap-8 lg:gap-16 pr-8 lg:pr-16">
+                                    <div key={j} className="flex items-center gap-6 md:gap-10 lg:gap-16 px-4 md:px-6 lg:px-8 shrink-0">
                                         <span className="text-white/60 text-[13px] md:text-[15px] font-bold" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
                                             {lang === 'en' ? service.en : service.ar}
                                         </span>
@@ -803,8 +952,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     const suffixPart = stat.n.toString().replace(/[0-9]/g, "");
                                     return (
                                         <div key={i} className="space-y-2.5">
-                                            <h4 className="font-black text-[clamp(1.2rem,4.5vw,2.75rem)] tracking-tighter bg-gradient-to-br from-[#C3D809] to-[#8A9A06] bg-clip-text text-transparent sm:text-[#C3D809] sm:bg-none sm:bg-clip-padding"
-                                                style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif" }}>
+                                            <h4 className="font-black text-[clamp(1.75rem,7vw,2.75rem)] tracking-tighter text-[#C3D809] leading-none"
+                                                style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif", textShadow: "0 0 24px rgba(195,216,9,0.25)" }}>
                                                 <AnimatedCounter target={numPart} suffix={suffixPart} />
                                             </h4>
                                             <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]"
@@ -986,16 +1135,27 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 </motion.div>
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 lg:gap-16">
+                            {/* Mobile: horizontal snap-scroll carousel. Desktop: grid. */}
+                            <div
+                                className="team-scroll flex gap-4 overflow-x-auto lg:overflow-visible lg:grid lg:grid-cols-3 lg:gap-16 snap-x snap-mandatory scroll-px-6 -mx-6 px-6 pb-4 lg:pb-0 lg:mx-0 lg:px-0"
+                                style={{ scrollbarWidth: "none" }}
+                            >
                                 {employees.map((emp, i) => (
-                                    <motion.div key={emp.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.8 }} className="group relative">
+                                    <motion.div
+                                        key={emp.id}
+                                        initial={{ opacity: 0, y: 40 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: i * 0.1, duration: 0.8 }}
+                                        className="group relative flex-shrink-0 snap-start basis-[70%] sm:basis-[45%] lg:basis-auto lg:flex-shrink"
+                                    >
                                         <div className="relative overflow-hidden aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03]">
                                             <img src={resolveMediaUrl(emp.avatar) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
-                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={tData(emp.name, lang)} />
+                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={tData(emp.name, lang)} loading="lazy" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-30" />
                                             <div className="absolute inset-0 border-[0.5px] border-white/0 group-hover:border-white/10 transition-all duration-700 m-3 sm:m-4 rounded-[1.25rem] sm:rounded-[1.5rem] pointer-events-none" />
                                         </div>
-                                        <div className="mt-8 px-4">
+                                        <div className="mt-6 sm:mt-8 px-2 sm:px-4">
                                             <span style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif", fontSize: "0.7rem", fontWeight: 900, letterSpacing: "0.1em", color: "#C3D809", textTransform: "uppercase" }}>{tData(emp.specialty || (lang === 'ar' ? 'خبير نخبة' : 'Elite Expert'), lang)}</span>
                                             <h3 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{tData(emp.name, lang)}</h3>
                                         </div>
@@ -1095,15 +1255,15 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         </motion.div>
 
                         {/* Two columns: vertical review list with curved timeline | quote */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20 items-center">
 
-                            {/* Review list */}
+                            {/* Review list (DESKTOP ONLY — the animated curve) */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
-                                className="lg:col-span-5 relative"
+                                className="hidden lg:block lg:col-span-5 relative"
                             >
                                 {/* Timeline container — avatars positioned absolutely on the exact curve */}
                                 {(() => {
@@ -1241,6 +1401,71 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     );
                                 })()}
                             </motion.div>
+
+                            {/* MOBILE-ONLY reviewer header — clean vertical layout */}
+                            <div className="lg:hidden flex items-center gap-4">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={`m-${middleReviewIndex}`}
+                                        initial={{ opacity: 0, scale: 0.85 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.85 }}
+                                        transition={{ duration: 0.35 }}
+                                        className="shrink-0 w-16 h-16 rounded-full overflow-hidden border-2 border-[#C3D809] shadow-[0_8px_24px_rgba(195,216,9,0.3)]"
+                                    >
+                                        {(() => {
+                                            const photo = (currentReview as any)?.photo ? resolveMediaUrl((currentReview as any).photo) : '';
+                                            const name = tData(currentReview?.customer_name, lang) || "";
+                                            return photo ? (
+                                                <img src={photo} alt={name} className="w-full h-full object-cover" draggable={false} />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center font-bold bg-gradient-to-br from-white/10 to-white/5 text-white/90 text-xl">
+                                                    {name.charAt(0)}
+                                                </div>
+                                            );
+                                        })()}
+                                    </motion.div>
+                                </AnimatePresence>
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={`m-meta-${middleReviewIndex}`}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -6 }}
+                                        transition={{ duration: 0.3 }}
+                                        className={`flex-1 min-w-0 ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                                    >
+                                        <h4
+                                            className="text-white font-bold text-[15px] truncate"
+                                            style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
+                                        >
+                                            {tData(currentReview?.customer_name, lang)}
+                                        </h4>
+                                        <div className={`flex items-center gap-1 mt-1 ${lang === 'ar' ? 'flex-row-reverse justify-end' : 'flex-row'}`}>
+                                            {Array.from({ length: Math.round(Number(currentReview?.rating) || 5) }).map((_, k) => (
+                                                <Star key={k} size={12} fill="#C3D809" stroke="#C3D809" strokeWidth={1.5} />
+                                            ))}
+                                            <span className="text-[11px] font-semibold text-[#C3D809] ms-1">
+                                                {(Number(currentReview?.rating) || 5).toFixed(1)}
+                                            </span>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+                                {/* Dots indicator */}
+                                <div className="shrink-0 flex items-center gap-1.5">
+                                    {mockReviews.map((_, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="block rounded-full transition-all duration-300"
+                                            style={{
+                                                width: idx === middleReviewIndex ? 18 : 6,
+                                                height: 6,
+                                                background: idx === middleReviewIndex ? "#C3D809" : "rgba(255,255,255,0.15)",
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* Quote */}
                             <motion.div

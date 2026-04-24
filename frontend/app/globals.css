@@ -376,7 +376,7 @@
 }
 
 body {
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
   background: var(--color-background);
   color: var(--color-text-primary);
   direction: rtl;
@@ -591,7 +591,7 @@ html {
   cursor: pointer;
   transition: all 0.2s;
   text-decoration: none;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
 }
 
 .btn-logout:hover {
@@ -623,10 +623,19 @@ html {
   font-size: 20px;
   font-weight: 800;
   color: var(--color-text-primary);
+  font-family: var(--font-app);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
-.topbar-title span {
+/* Accent only the DIRECT child span — the "second word" of the title.
+   Prevents nested wrapper spans from becoming entirely lime. */
+.topbar-title > span {
   color: var(--color-accent);
+  font-weight: inherit;
 }
 
 .topbar-date {
@@ -778,7 +787,7 @@ html {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
 }
 
 .btn-lime:hover {
@@ -806,7 +815,7 @@ html {
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
 }
 
 .btn-outline-lime:hover {
@@ -911,7 +920,7 @@ html {
   border-radius: 8px;
   color: var(--color-text-primary);
   font-size: 14px;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
   transition: border-color 0.2s, box-shadow 0.2s;
   direction: rtl;
 }
@@ -967,7 +976,7 @@ input[type="time"].form-input::-webkit-calendar-picker-indicator {
   border-radius: 10px;
   color: var(--color-text-primary);
   font-size: 14px;
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
   transition: all 0.3s;
   direction: rtl;
 }
@@ -1010,7 +1019,7 @@ textarea.input {
   padding: 10px 24px;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
   color: var(--color-cta-text);
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
   font-size: 14px;
   font-weight: 700;
   border: none;
@@ -1043,7 +1052,7 @@ textarea.input {
   padding: 8px 18px;
   background: var(--color-surface);
   color: var(--color-accent);
-  font-family: 'Noto Sans Arabic', sans-serif;
+  font-family: var(--font-app);
   font-size: 13px;
   font-weight: 600;
   border: 1px solid var(--border-accent-lime);
@@ -1406,3 +1415,475 @@ textarea.input {
     padding: 10px 12px;
   }
 }
+
+/* =========================================================================
+   ===== Mobile Polish Layer — World-class responsive defaults (2026) =====
+   Cascades across all admin/employee pages. Component-agnostic.
+   ========================================================================= */
+
+/* --- Safer touch targets everywhere --- */
+@media (max-width: 768px) {
+  .custom-table td button,
+  .custom-table td a,
+  table td .action-btn,
+  .row-action,
+  .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --- Table → Card list transformation on small phones ---
+   Opt-in: add data-mobile-cards to <table> to enable. Keeps tabular markup
+   intact for screen readers while rendering as stacked cards on ≤640px. */
+@media (max-width: 640px) {
+  table[data-mobile-cards] {
+    min-width: 0 !important;
+    display: block;
+  }
+  table[data-mobile-cards] thead {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  table[data-mobile-cards] tbody,
+  table[data-mobile-cards] tr {
+    display: block;
+  }
+  table[data-mobile-cards] tr {
+    background: var(--color-cards);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: block;
+    position: relative;
+  }
+  table[data-mobile-cards] td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0 !important;
+    border: none !important;
+    white-space: normal !important;
+    font-size: 13.5px;
+    line-height: 1.4;
+    min-width: 0;
+    text-align: start;
+  }
+  table[data-mobile-cards] td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    letter-spacing: .02em;
+    flex-shrink: 0;
+  }
+  /* The `#` cell becomes a small corner pill, not the title.
+     In RTL, visual top-left of the card is inset-inline-end. */
+  table[data-mobile-cards] td[data-label="#"] {
+    position: absolute;
+    top: 10px;
+    inset-inline-end: 14px;
+    padding: 2px 8px !important;
+    margin: 0 !important;
+    border-radius: 999px;
+    background: var(--border-subtle);
+    color: var(--color-text-muted);
+    font-size: 10px !important;
+    font-weight: 600;
+    gap: 3px;
+    border: 1px solid var(--border-subtle) !important;
+    min-width: 0;
+  }
+  table[data-mobile-cards] td[data-label="#"]::before {
+    content: "#";
+    font-size: 10px;
+    letter-spacing: 0;
+    opacity: .8;
+  }
+
+  /* Title row: first cell if it's NOT `#`, otherwise the second cell.
+     Skip empty-state cells that use colSpan. The title IS the primary value,
+     so we hide its redundant label. */
+  table[data-mobile-cards] tr > td:first-child:not([data-label="#"]):not([colspan]),
+  table[data-mobile-cards] tr > td[data-label="#"] + td {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    padding: 0 0 10px 0 !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    margin-bottom: 8px;
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  /* Reserve right-inset only when a # pill actually exists in this row */
+  table[data-mobile-cards] tr:has(td[data-label="#"]) > td[data-label="#"] + td {
+    padding-inline-end: 56px !important;
+  }
+  /* Hide the redundant label on the title row */
+  table[data-mobile-cards] tr > td:first-child:not([data-label="#"]):not([colspan])::before,
+  table[data-mobile-cards] tr > td[data-label="#"] + td::before {
+    display: none !important;
+  }
+
+  /* Empty-state rows (e.g., <td colSpan=N>لا توجد عمليات</td>): simple centered text */
+  table[data-mobile-cards] td[colspan] {
+    display: block !important;
+    text-align: center !important;
+    color: var(--color-text-muted) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 14px 0 !important;
+    border: none !important;
+    margin: 0 !important;
+  }
+  table[data-mobile-cards] td[colspan]::before {
+    display: none !important;
+  }
+  /* Action-cell: full-width row of buttons */
+  table[data-mobile-cards] td:last-child:has(button),
+  table[data-mobile-cards] td[data-label="إجراءات"],
+  table[data-mobile-cards] td[data-label="حذف"] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 10px !important;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-subtle) !important;
+  }
+  table[data-mobile-cards] td[data-label="إجراءات"]::before,
+  table[data-mobile-cards] td[data-label="حذف"]::before {
+    margin-inline-end: auto;
+    align-self: center;
+  }
+  table[data-mobile-cards] td[data-label="إجراءات"] > div,
+  table[data-mobile-cards] td[data-label="حذف"] > div {
+    display: flex;
+    gap: 8px;
+  }
+  table[data-mobile-cards] td[data-label="إجراءات"] button,
+  table[data-mobile-cards] td[data-label="حذف"] button {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --- Horizontal chip/filter scrollers --- */
+.chip-scroll,
+[data-chip-row] {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+}
+.chip-scroll::-webkit-scrollbar,
+[data-chip-row]::-webkit-scrollbar { display: none; }
+.chip-scroll > *,
+[data-chip-row] > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  min-height: 40px;
+}
+
+/* --- Modal becomes a bottom-sheet on phones --- */
+@media (max-width: 640px) {
+  .modal-content,
+  [data-modal-content] {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    margin: 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    transform: none !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    animation: sheetUp .28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: .6; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* --- Topbar: wrap actions gracefully --- */
+@media (max-width: 640px) {
+  .topbar {
+    padding: 12px 14px;
+  }
+  .topbar-title {
+    font-size: 17px !important;
+    line-height: 1.2;
+  }
+  .topbar > * { min-width: 0; }
+  .topbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+  .topbar-actions > * { flex: 1 1 auto; }
+}
+
+/* --- Stat cards on tiny phones --- */
+@media (max-width: 400px) {
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-value {
+    font-size: 18px !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.3px;
+    overflow-wrap: anywhere;
+  }
+  .stat-icon {
+    width: 34px; height: 34px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .stat-value { font-size: 16px !important; }
+}
+
+/* --- Recharts mobile adjustments --- */
+@media (max-width: 640px) {
+  .recharts-wrapper { font-size: 10px; }
+  .recharts-cartesian-axis-tick text { font-size: 10px !important; }
+  .recharts-tooltip-wrapper { font-size: 12px !important; }
+}
+
+/* --- Grid safety net: any grid-cols-3 forced on tiny screens becomes 2 cols --- */
+@media (max-width: 420px) {
+  .safe-grid-3.grid-cols-3,
+  .grid.grid-cols-3:not(.force-3) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Prevent horizontal overflow from stray wide content --- */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+@media (max-width: 1024px) {
+  .main-content { max-width: 100vw; overflow-x: hidden; }
+}
+
+/* --- Reduced motion respect --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Focus ring for keyboard nav --- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* --- Tab scroller (for booking-settings and similar) --- */
+.tab-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tab-scroll::-webkit-scrollbar { display: none; }
+.tab-scroll > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+/* --- Extra mobile polish --- */
+@media (max-width: 640px) {
+  /* Section title in chart-card */
+  .chart-card-title {
+    font-size: 14px !important;
+    line-height: 1.3;
+  }
+  .chart-card,
+  .custom-table {
+    margin-bottom: 14px;
+  }
+  /* Card-like sections spacing */
+  .content-area > .grid,
+  .content-area > [class*="grid-cols"] {
+    margin-bottom: 14px !important;
+  }
+  /* Badges — slightly larger for legibility */
+  .badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  /* Better long-name wrapping everywhere */
+  h1, h2, h3, .topbar-title {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  /* Outline/secondary action buttons shouldn't take full width alone */
+  .btn-outline-lime, .btn-secondary {
+    width: auto;
+  }
+}
+
+/* Bilingual name auto-break on extra-long strings */
+.bi-name {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* =========================================================================
+   ===== Type System — Fixed scale for Admin & Employee panels ============
+   One font family (Tajawal) + locked sizes per breakpoint.
+   Tokens are the source of truth — never hardcode a font-size in a page.
+   ========================================================================= */
+:root {
+  /* Font family tokens */
+  --font-app: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', 'Geist Mono', ui-monospace, monospace;
+
+  /* ── Type scale — Desktop (default, ≥768px) ── */
+  --text-h1: 22px;
+  --text-h2: 18px;
+  --text-h3: 16px;
+  --text-h4: 14px;
+  --text-body: 14px;
+  --text-small: 12px;
+  --text-label: 11px;
+  --text-micro: 10px;
+
+  /* Panel-specific tokens */
+  --text-topbar-title: 20px;
+  --text-stat-value: 26px;
+  --text-stat-label: 12px;
+  --text-card-title: 15px;
+  --text-table-cell: 13px;
+  --text-btn: 14px;
+  --text-input: 14px;
+
+  /* Line-height tokens */
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.7;
+
+  /* Font-weight tokens */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+}
+
+/* ── Mobile overrides (≤768px) ── */
+@media (max-width: 768px) {
+  :root {
+    --text-h1: 18px;
+    --text-h2: 16px;
+    --text-h3: 14px;
+    --text-h4: 13px;
+    --text-body: 14px;       /* keep 14 for legibility */
+    --text-small: 12px;
+    --text-label: 11px;
+    --text-micro: 10px;
+
+    --text-topbar-title: 17px;
+    --text-stat-value: 20px;
+    --text-stat-label: 11px;
+    --text-card-title: 14px;
+    --text-table-cell: 13px;
+    --text-btn: 14px;
+    --text-input: 16px;      /* 16 prevents iOS zoom on focus */
+  }
+}
+
+/* ── Apply font-family globally to the app shell ── */
+html, body {
+  font-family: var(--font-app);
+  font-feature-settings: "kern", "liga", "calt", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Force the app font on admin/employee shell — overrides inline fontFamily */
+.main-content,
+.main-content *,
+.topbar,
+.topbar *,
+.sidebar,
+.sidebar *,
+.modal-content,
+.modal-content *,
+.bottom-nav,
+.bottom-nav * {
+  font-family: var(--font-app) !important;
+}
+/* Code/pre keep mono; utility `.font-mono` is intentionally NOT excluded
+   so usernames and similar text use the app font for consistency. */
+.main-content code, .main-content pre {
+  font-family: var(--font-mono) !important;
+}
+
+/* ── Native headings use tokens ── */
+.main-content h1, .topbar h1 { font-size: var(--text-h1); line-height: var(--lh-tight); font-weight: var(--fw-bold); letter-spacing: -0.01em; }
+.main-content h2 { font-size: var(--text-h2); line-height: var(--lh-snug);  font-weight: var(--fw-bold); letter-spacing: -0.01em; }
+.main-content h3 { font-size: var(--text-h3); line-height: var(--lh-snug);  font-weight: var(--fw-semibold); }
+.main-content h4 { font-size: var(--text-h4); line-height: var(--lh-snug);  font-weight: var(--fw-semibold); }
+.main-content h5,
+.main-content h6 { font-size: var(--text-body); line-height: var(--lh-snug); font-weight: var(--fw-semibold); }
+.main-content p  { font-size: var(--text-body); line-height: var(--lh-normal); }
+
+/* ── Utility classes (for when you need a specific role, not a tag) ── */
+.text-app-h1       { font-size: var(--text-h1)    !important; line-height: var(--lh-tight);  font-weight: var(--fw-bold); letter-spacing: -0.01em; }
+.text-app-h2       { font-size: var(--text-h2)    !important; line-height: var(--lh-snug);   font-weight: var(--fw-bold); }
+.text-app-h3       { font-size: var(--text-h3)    !important; line-height: var(--lh-snug);   font-weight: var(--fw-semibold); }
+.text-app-h4       { font-size: var(--text-h4)    !important; line-height: var(--lh-snug);   font-weight: var(--fw-semibold); }
+.text-app-body     { font-size: var(--text-body)  !important; line-height: var(--lh-normal); }
+.text-app-small    { font-size: var(--text-small) !important; line-height: var(--lh-normal); }
+.text-app-label    { font-size: var(--text-label) !important; line-height: var(--lh-snug);   font-weight: var(--fw-semibold); letter-spacing: 0.04em; }
+.text-app-micro    { font-size: var(--text-micro) !important; line-height: var(--lh-snug); }
+.text-app-mono     { font-family: var(--font-mono) !important; }
+
+/* ── Anchor existing component classes to tokens ── */
+.topbar-title        { font-size: var(--text-topbar-title) !important; font-weight: var(--fw-black); line-height: var(--lh-tight); }
+.topbar-date         { font-size: var(--text-micro)        !important; }
+.stat-value          { font-size: var(--text-stat-value)   !important; font-weight: var(--fw-black); line-height: var(--lh-tight); font-variant-numeric: tabular-nums; }
+.stat-label          { font-size: var(--text-stat-label)   !important; font-weight: var(--fw-medium); }
+.chart-card-title    { font-size: var(--text-card-title)   !important; font-weight: var(--fw-bold); line-height: var(--lh-snug); }
+.badge               { font-size: var(--text-label)        !important; font-weight: var(--fw-semibold); letter-spacing: 0.02em; }
+.form-label          { font-size: var(--text-label)        !important; font-weight: var(--fw-semibold); letter-spacing: 0.03em; }
+.form-input,
+.input               { font-size: var(--text-input)        !important; }
+.btn-lime,
+.btn-primary,
+.btn-outline-lime,
+.btn-secondary       { font-size: var(--text-btn)          !important; font-weight: var(--fw-semibold); }
+.custom-table th     { font-size: var(--text-label)        !important; font-weight: var(--fw-semibold); letter-spacing: 0.03em; text-transform: none; }
+.custom-table td     { font-size: var(--text-table-cell)   !important; }
+
+/* Don't force font on recharts SVG text */
+.recharts-wrapper text { font-family: var(--font-app) !important; }

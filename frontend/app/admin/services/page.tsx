@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { servicesAPI } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { FaCut, FaPlus, FaEdit, FaTrash, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { tData } from "@/lib/i18n";
 
 interface Service {
     id: number;
@@ -77,28 +78,39 @@ export default function ServicesPage() {
     return (
         <>
             <div className="topbar">
-                <div className="topbar-title"><FaCut className="inline ml-2 text-accent-lime" /> إدارة <span>الخدمات</span></div>
-                <button className="btn-lime flex items-center gap-2" onClick={openAdd}><FaPlus /> إضافة خدمة</button>
+                <div className="topbar-title">
+                    <FaCut className="inline-block align-middle ml-2 text-accent-lime" />
+                    إدارة <span>الخدمات</span>
+                </div>
+                <button
+                    className="btn-lime inline-flex items-center justify-center gap-2 shrink-0"
+                    style={{ padding: "8px 14px", minHeight: "40px" }}
+                    onClick={openAdd}
+                    aria-label="إضافة خدمة"
+                >
+                    <FaPlus />
+                    <span className="hidden sm:inline">إضافة خدمة</span>
+                </button>
             </div>
 
             <div className="content-area">
                 {flash && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={flash.type === "success" ? "flash-success" : "flash-error"}>{flash.msg}</motion.div>}
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="custom-table">
-                    <table>
+                    <table data-mobile-cards>
                         <thead><tr><th>#</th><th>الخدمة</th><th>السعر</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                         <tbody>
                             {services.map((svc, i) => (
                                 <tr key={svc.id}>
-                                    <td className="text-gray-600">{i + 1}</td>
-                                    <td className="text-white font-semibold">{svc.name}</td>
-                                    <td className="text-accent-lime font-bold">{Number(svc.price).toFixed(3)} د.أ</td>
-                                    <td>
+                                    <td data-label="#" className="text-gray-600">{i + 1}</td>
+                                    <td data-label="الخدمة" className="text-white font-semibold">{tData(svc.name, 'ar')}</td>
+                                    <td data-label="السعر" className="text-accent-lime font-bold">{Number(svc.price).toFixed(3)} د.أ</td>
+                                    <td data-label="الحالة">
                                         <span className={`badge ${svc.is_active ? "badge-green" : "badge-red"}`}>
                                             {svc.is_active ? "نشطة" : "متوقفة"}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-label="إجراءات">
                                         <div className="flex gap-1">
                                             <button onClick={() => handleToggle(svc.id)} className="p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #333", color: "var(--color-text-muted)" }}>
                                                 {svc.is_active ? <FaToggleOn className="text-green-500" size={14} /> : <FaToggleOff size={14} />}

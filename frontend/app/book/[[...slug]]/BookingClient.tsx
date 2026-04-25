@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -536,6 +536,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                         {/* Language switcher */}
                         <div
+                            dir="ltr"
                             role="group"
                             aria-label="Language switcher"
                             className="hidden sm:flex items-center relative p-[3px] rounded-2xl"
@@ -564,8 +565,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     onClick={() => setLang(l)}
                                     aria-pressed={lang === l}
                                     className={`relative z-10 w-[46px] py-[7px] text-[10px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 select-none ${lang === l
-                                            ? '!text-black'
-                                            : 'text-white/50 hover:text-white/80'
+                                        ? '!text-black'
+                                        : 'text-white hover:text-white/80'
                                         }`}
                                 >
                                     {l === 'ar' ? 'AR' : 'EN'}
@@ -685,6 +686,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     {lang === 'ar' ? "اللغة" : "Language"}
                                 </p>
                                 <div
+                                    dir="ltr"
                                     role="group"
                                     aria-label="Language switcher"
                                     className="flex items-center relative p-[3px] rounded-2xl"
@@ -710,7 +712,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             key={l}
                                             onClick={() => setLang(l)}
                                             aria-pressed={lang === l}
-                                            className={`relative z-10 flex-1 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 ${lang === l ? '!text-black' : 'text-white/50'}`}
+                                            className={`relative z-10 flex-1 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-[11px] transition-all duration-200 ${lang === l ? '!text-black' : 'text-white'}`}
                                         >
                                             {l === 'ar' ? 'AR' : 'EN'}
                                         </button>
@@ -805,11 +807,25 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.8, delay: 0.2 }}
-                                        className="text-white font-black leading-[1.05] mb-6 flex flex-col items-start gap-1"
+                                        className="text-white font-bold tracking-[-0.02em] leading-[1.1] mb-8 text-start pr-4"
+                                        style={{ 
+                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                            fontSize: "clamp(2.75rem, 9vw, 6.5rem)"
+                                        }}
                                     >
-                                        {line1 && <span className="text-[clamp(1.5rem,5vw,2.75rem)] text-[#C3D809]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line1}</span>}
-                                        {line2 && <span className="text-[clamp(2.5rem,9vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line2}</span>}
-                                        {line3 && <span className="text-[clamp(2.2rem,8vw,4.5rem)] opacity-30" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>{line3}</span>}
+                                        <span className="block">{lang === 'ar' ? "استعد لإطلالتك" : "Prepare for your"}</span>
+                                        <span 
+                                            className="block italic" 
+                                            style={{ 
+                                                background: "linear-gradient(135deg, rgb(195, 216, 9) 0%, rgb(228, 246, 90) 50%, rgb(195, 216, 9) 100%)",
+                                                WebkitBackgroundClip: "text",
+                                                WebkitTextFillColor: "transparent",
+                                                backgroundClip: "text",
+                                                paddingRight: lang === 'ar' ? "0.1em" : "0"
+                                            }}
+                                        >
+                                            {lang === 'ar' ? "القادمة" : "NEXT LOOK"}
+                                        </span>
                                     </motion.h1>
                                 );
                             })()}
@@ -819,7 +835,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
-                                className="text-white/60 text-[clamp(13px,2.8vw,16px)] max-w-[320px] sm:max-w-md lg:max-w-xl whitespace-pre-line leading-[1.7] lg:leading-[1.8] mb-10 lg:mb-12 font-medium"
+                                className="text-white/60 text-[clamp(0.95rem,3vw,1.1rem)] sm:text-[clamp(13px,2.8vw,16px)] max-w-[320px] sm:max-w-md lg:max-w-xl whitespace-pre-line leading-[1.8] lg:leading-[1.8] mb-10 lg:mb-12 font-medium text-start"
                                 style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                             >
                                 {tData(salon.description || (lang === 'ar'
@@ -828,46 +844,36 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             </motion.p>
 
                             {/* Sharp Minimal Buttons */}
-                            <motion.div
+                            <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.6 }}
-                                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-5 sm:gap-14"
+                                className="flex flex-row items-center gap-4 sm:gap-14"
                             >
-                                {/* Signature Action Button */}
-                                <button
+                                <button 
                                     onClick={() => setIsBookingOpen(true)}
-                                    className="signature-btn group sm:scale-125 origin-right lg:mx-0 mx-auto"
-                                    style={{
-                                        fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif"
-                                    }}
+                                    className="signature-btn group scale-[0.85] sm:scale-125 origin-right lg:mx-0" 
+                                    style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                                 >
                                     <span className="btn-content">
-                                        <span className="btn-label">{lang === 'ar' ? "احجز زيارتك" : "Book Your Visit"}</span>
+                                        <span className="btn-label">{lang === 'ar' ? "احجز زيارتك" : "Book Visit"}</span>
                                         <span className="btn-icon-wrapper" aria-hidden="true">
-                                            {lang === 'ar' ? (
-                                                <>
-                                                    <ArrowLeft className="icon-main" size={18} />
-                                                    <ArrowLeft className="icon-hover" size={18} />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <ArrowRight className="icon-main" size={18} />
-                                                    <ArrowRight className="icon-hover" size={18} />
-                                                </>
-                                            )}
+                                            <ArrowLeft className={`icon-main ${lang === 'en' ? 'rotate-180' : ''}`} size={18} />
+                                            <ArrowLeft className={`icon-hover ${lang === 'en' ? 'rotate-180' : ''}`} size={18} />
                                         </span>
                                     </span>
                                 </button>
 
-                                {/* Text Link with Arrow */}
-                                <a
-                                    href="#services"
-                                    className="text-white/60 hover:text-white uppercase font-bold tracking-widest text-[11px] md:text-xs flex items-center justify-between sm:justify-start gap-3 transition-colors group px-4 py-3 border border-white/10 sm:border-transparent sm:px-0 sm:py-0"
+                                <a 
+                                    href="#services" 
+                                    className="text-white/50 hover:text-white uppercase font-black tracking-[0.15em] sm:tracking-[0.25em] text-[9px] sm:text-[11px] flex items-center justify-start gap-2 sm:gap-5 transition-all duration-500 group py-0" 
                                     style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                                 >
-                                    <span>{lang === 'ar' ? "استكشف الخدمات" : "Explore Services"}</span>
-                                    <ArrowLeft className={`w-4 h-4 sm:w-3 sm:h-3 transition-transform opacity-60 group-hover:opacity-100 ${lang === 'en' ? 'rotate-180 group-hover:translate-x-2' : 'group-hover:-translate-x-2'}`} />
+                                    <span className="relative whitespace-nowrap">
+                                        {lang === 'ar' ? "استكشف الخدمات" : "Services"}
+                                        <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-[#C3D809] transition-all duration-500 group-hover:w-full opacity-0 group-hover:opacity-100"></span>
+                                    </span>
+                                    <ArrowLeft className={`w-3 h-3 sm:w-3 sm:h-3 transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:text-[#C3D809] ${lang === 'ar' ? 'group-hover:-translate-x-2' : 'group-hover:translate-x-2 rotate-180'}`} />
                                 </a>
                             </motion.div>
 
@@ -922,15 +928,15 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
-                            className="w-full space-y-10"
+                            className={`w-full space-y-10 ${lang === 'ar' ? 'text-right' : 'text-left'}`}
                         >
                             <div className="space-y-6 lg:space-y-8">
-                                <h2 className="text-white font-black leading-[1.05] tracking-tight text-[clamp(2.1rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                <h2 className="text-white font-black leading-[1.1] tracking-tight text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
                                     {tData(salon.about_title || (lang === 'ar' ? "أكثر من مجرد صالون" : "More Than Just A Salon"), lang)}
                                 </h2>
                             </div>
 
-                            <div className="space-y-6 text-white/50 text-sm md:text-[15px] leading-[2] lg:leading-[2.2] max-w-xl font-medium" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
+                            <div className={`space-y-6 text-white/50 text-[clamp(0.9rem,2.5vw,1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] max-w-xl font-medium text-start ${lang === 'ar' ? 'lg:ml-auto lg:mr-0' : 'lg:mr-auto lg:ml-0'}`} style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
                                 <p>
                                     {tData(salon.about_description || (lang === 'ar' ? "وُلد صالوننا من شغف حقيقي بالحلاقة الرجالية الراقية. نؤمن أن كل عميل يستحق عناية تتجاوز المألوف، وأن كل تفصيلة صغيرة تصنع فرقاً واضحاً في إطلالته النهائية." : "Founded in the heart of the city out of genuine passion for the craft. We believe every client deserves care beyond traditional standards. We are the place where tranquility reigns and every detail plays a role in elevating your appearance."), lang)}
                                 </p>
@@ -940,21 +946,26 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                             <div className="grid grid-cols-3 gap-4 sm:gap-10 pt-4">
                                 {(lang === 'ar' ? [
-                                    { n: salon?.stats_years || "7+", label: "سنوات خبرة" },
-                                    { n: salon?.stats_clients || "250+", label: "عميل سعيد" },
-                                    { n: salon?.stats_experts || "3+", label: "خبراء متميزون" }
+                                    { n: salon?.stats_years || "7", label: "سنوات خبرة" },
+                                    { n: salon?.stats_clients || "250", label: "عميل سعيد" },
+                                    { n: salon?.stats_experts || "3", label: "خبراء متميزون" }
                                 ] : [
-                                    { n: salon?.stats_years || "7+", label: "Years Exp" },
-                                    { n: salon?.stats_clients || "250+", label: "Happy Client" },
-                                    { n: salon?.stats_experts || "3+", label: "Top Experts" }
+                                    { n: salon?.stats_years || "7", label: "Years Experience" },
+                                    { n: salon?.stats_clients || "250", label: "Happy Client" },
+                                    { n: salon?.stats_experts || "3", label: "Top Experts" }
                                 ]).map((stat, i) => {
                                     const numPart = parseInt(stat.n.toString()) || 0;
                                     const suffixPart = stat.n.toString().replace(/[0-9]/g, "");
                                     return (
-                                        <div key={i} className="space-y-2.5">
-                                            <h4 className="font-black text-[clamp(1.75rem,7vw,2.75rem)] tracking-tighter text-[#C3D809] leading-none"
+                                        <div key={i} className="space-y-2.5 flex flex-col items-center text-center">
+                                            <h4 className="font-black text-[clamp(1.75rem,7vw,2.75rem)] tracking-tighter text-[#C3D809] leading-none relative"
                                                 style={{ fontFamily: "'Playfair Display', 'Oswald', sans-serif", textShadow: "0 0 24px rgba(195,216,9,0.25)" }}>
-                                                <AnimatedCounter target={numPart} suffix={suffixPart} />
+                                                <span className="inline-block relative">
+                                                    <span className="relative z-10">
+                                                        <AnimatedCounter target={numPart} suffix={suffixPart} />
+                                                    </span>
+                                                    <span className="absolute inset-0 blur-xl bg-[#C3D809] rounded-full z-0 opacity-15 scale-125" aria-hidden="true"></span>
+                                                </span>
                                             </h4>
                                             <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]"
                                                 style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
@@ -1001,12 +1012,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         {/* Improved Header - Stacked Vertically per user request */}
                         <div className="flex flex-col items-start gap-8 border-b border-white/[0.05] pb-12 mb-16 sm:mb-20 lg:mb-24">
                             <div className="space-y-4 lg:space-y-6">
-                                <motion.h2 initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-white font-black leading-[1.05] tracking-tighter text-[clamp(2.5rem,5vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                <motion.h2 initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-white font-black leading-[1.1] tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}>
                                     {tData(salon.services_title || (lang === 'ar' ? "خدمات النخبة" : "Elite Services"), lang)}
                                 </motion.h2>
                             </div>
-                            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className={`${lang === 'ar' ? "text-right" : "text-left"} max-w-2xl`}>
-                                <p className="text-white/50 text-sm md:text-[15px] leading-[2] lg:leading-[2.2] font-medium" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
+                            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className={`${lang === 'ar' ? "text-right" : "text-left"} max-w-2xl text-start`}>
+                                <p className="text-white/50 text-[clamp(0.9rem,3vw,1.1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] font-medium" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
                                     {tData(salon.services_description || (lang === 'ar' ? "اختر الخدمة، شاهد لمحة فورية، ثم احجز بضغطة واحدة. تصميم واضح لتجربة راقية وعناية دقيقة تليق بك." : "Choose your service, view an instant glimpse, and book with one click. Clear design for an elegant experience and precise care you deserve."), lang)}
                                 </p>
                             </motion.div>
@@ -1122,13 +1133,13 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 {employees.length > 0 && (
                     <section id="team" className="py-[clamp(80px,10vw,160px)] px-[clamp(16px,5vw,48px)]" style={{ background: "#050505" }}>
                         <div className="max-w-[1400px] mx-auto">
-                            <div className="flex flex-col items-center text-center">
+                            <div className="flex flex-col items-start text-start">
                                 <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-10 sm:mb-20">
-                                    <h2 className="text-white font-black tracking-tighter text-[clamp(2rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                                    <h2 className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
                                         {tData(salon.team_title || (lang === 'ar' ? "فريقنا الإبداعي" : "Our Creative Team"), lang)}
                                     </h2>
                                     {salon.team_description && (
-                                        <p className="mt-6 max-w-2xl text-white/45 text-sm sm:text-base leading-8" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
+                                        <p className="mt-6 max-w-2xl text-white/45 text-[clamp(0.9rem,3vw,1rem)] sm:text-base leading-7 sm:leading-8" style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Tajawal', sans-serif" }}>
                                             {tData(salon.team_description, lang)}
                                         </p>
                                     )}
@@ -1169,8 +1180,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 {/* --- GALLERY (Atmospheric Minimalist) --- */}
                 <section className="py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#070707]">
                     <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-20 sm:mb-32">
-                        <div className="flex flex-col items-center text-center">
-                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white font-black tracking-tighter text-[clamp(2.2rem,7vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                        <div className="flex flex-col items-start text-start">
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
                                 {tData(salon.gallery_title || (lang === 'ar' ? "فلسفة الأناقة" : "Style Philosophy"), lang)}
                             </motion.h2>
                         </div>
@@ -1247,7 +1258,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 style={{ backgroundColor: "#C3D809" }}
                             />
                             <h2
-                                className="text-white font-extrabold tracking-tight text-2xl sm:text-3xl"
+                                className="text-white font-extrabold tracking-tight text-[clamp(1.3rem,5vw,2rem)] sm:text-3xl"
                                 style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                             >
                                 {tData(salon.reviews_title, lang) || (lang === 'ar' ? "آراء العملاء" : "Customer Reviews")}
@@ -1277,10 +1288,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     // AnimatePresence can cleanly mount new entries and unmount exiting ones.
                                     const visible = reviewsCount > 0
                                         ? [0, 1, 2].map(slot => {
-                                              const birth = reviewCycle - slot;
-                                              const idx = ((birth % reviewsCount) + reviewsCount) % reviewsCount;
-                                              return { slot, birth, review: mockReviews[idx], reviewIdx: idx };
-                                          })
+                                            const birth = reviewCycle - slot;
+                                            const idx = ((birth % reviewsCount) + reviewsCount) % reviewsCount;
+                                            return { slot, birth, review: mockReviews[idx], reviewIdx: idx };
+                                        })
                                         : [];
 
                                     return (
@@ -1344,11 +1355,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             <motion.div
                                                                 animate={{ width: size, height: size }}
                                                                 transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-                                                                className={`relative rounded-full overflow-hidden border-2 ${
-                                                                    isActive
+                                                                className={`relative rounded-full overflow-hidden border-2 ${isActive
                                                                         ? "border-[#C3D809] shadow-[0_8px_28px_rgba(195,216,9,0.35)]"
                                                                         : "border-white/10 grayscale"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {photoUrl ? (
                                                                     <img
@@ -1378,9 +1388,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                                 }}
                                                             >
                                                                 <h4
-                                                                    className={`font-bold mb-0.5 ${
-                                                                        isActive ? "text-white text-[15px] sm:text-base" : "text-white/70 text-[13px]"
-                                                                    }`}
+                                                                    className={`font-bold mb-0.5 ${isActive ? "text-white text-[15px] sm:text-base" : "text-white/70 text-[13px]"
+                                                                        }`}
                                                                     style={{ fontFamily: lang === 'en' ? "'Montserrat', sans-serif" : "'Noto Sans Arabic', sans-serif" }}
                                                                 >
                                                                     {customerName}
@@ -1473,7 +1482,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6, delay: 0.15 }}
-                                className={`lg:col-span-7 relative ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                                className={`lg:col-span-7 relative mt-10 lg:mt-0 ${lang === 'ar' ? 'text-center lg:text-right' : 'text-center lg:text-left'}`}
                             >
                                 <AnimatePresence mode="wait">
                                     <motion.blockquote
@@ -1482,7 +1491,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -8 }}
                                         transition={{ duration: 0.35 }}
-                                        className="relative text-white/90"
+                                        className="relative text-white/90 inline-block max-w-full"
                                         style={{
                                             fontFamily: lang === 'en' ? "'Cormorant Garamond', Georgia, serif" : "'Noto Sans Arabic', sans-serif",
                                             fontSize: "clamp(1.15rem, 2vw, 1.5rem)",
@@ -1522,8 +1531,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 {/* --- FAQ (Sophisticated Minimalist) --- */}
                 <section id="faq" className="py-[clamp(64px,12vw,160px)] px-[clamp(16px,5vw,64px)] bg-[#050505]" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
                     <div className="max-w-4xl mx-auto">
-                        <div className="flex flex-col items-center text-center mb-16 sm:mb-24">
-                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-3xl sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
+                        <div className="flex flex-col items-start text-start mb-16 sm:mb-24">
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-[clamp(1.75rem,6vw,4rem)] sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif" }}>
                                 {tData(salon.faq_title || (lang === 'ar' ? "الأسئلة الشائعة" : "Common Questions"), lang)}
                             </motion.h2>
                         </div>

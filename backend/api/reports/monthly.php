@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Monthly Report API (SaaS Multi-Tenant)
  * GET /api/reports/monthly.php?month=2026-03

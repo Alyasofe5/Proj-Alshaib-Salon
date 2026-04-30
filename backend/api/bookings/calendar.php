@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Bookings Calendar API
  * GET /api/bookings/calendar.php?month=2026-03

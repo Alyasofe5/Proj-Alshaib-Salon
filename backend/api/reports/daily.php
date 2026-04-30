@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Daily Reports API (SaaS Multi-Tenant)
  * GET /api/reports/daily.php?date=2026-03-07

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Switch Salon (Branch) API
  * POST /api/auth/switch-salon.php

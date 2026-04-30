@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Employees API (SaaS Multi-Tenant)
  * GET  /api/employees         → كل الموظفين (scoped by salon_id)

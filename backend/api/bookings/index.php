@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Admin Bookings API
  * GET    /api/bookings/index.php          → قائمة الحجوزات

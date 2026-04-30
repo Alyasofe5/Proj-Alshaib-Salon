@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Login API Endpoint (SaaS Multi-Tenant)
  * POST /api/auth/login

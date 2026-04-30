@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Current User Info API (SaaS Multi-Tenant)
  * GET /api/auth/me

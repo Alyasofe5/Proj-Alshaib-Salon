@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Dashboard Stats API (SaaS Multi-Tenant)
  * GET /api/dashboard/stats

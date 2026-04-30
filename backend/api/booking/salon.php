@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Public Salon Info API
  * GET /api/booking/salon.php?slug=alshaib

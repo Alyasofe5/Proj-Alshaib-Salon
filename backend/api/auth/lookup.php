@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Salon Lookup API (Public - No Auth Required)
  * GET /api/auth/lookup.php?username=waseem

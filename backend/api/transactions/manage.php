@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Single Transaction API (SaaS Multi-Tenant)
  * GET    /api/transactions/manage.php?id=1  → تفاصيل عملية

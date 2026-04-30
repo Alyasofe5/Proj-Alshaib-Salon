@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Users API (SaaS Multi-Tenant)
  * GET  /api/users        → كل المستخدمين (scoped by salon_id)

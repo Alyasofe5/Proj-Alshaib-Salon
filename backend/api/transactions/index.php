@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Transactions API (SaaS Multi-Tenant)
  * GET  /api/transactions        → العمليات (مع فلترة + scoped by salon_id)

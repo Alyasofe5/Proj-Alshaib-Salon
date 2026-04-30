@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Employee Leaves API
  * GET    /api/employees/leaves.php         → List leaves

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Employee Report API (SaaS Multi-Tenant)
  * GET /api/reports/employee.php?period=daily|monthly|yearly

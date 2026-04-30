@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Yearly Report API (SaaS Multi-Tenant)
  * GET /api/reports/yearly.php?year=2026

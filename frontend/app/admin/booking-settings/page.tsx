@@ -589,7 +589,7 @@ export default function BookingSettingsPage() {
                 <div className="flex items-center gap-3 min-w-0">
                     <button
                         onClick={() => router.push("/admin/dashboard")}
-                        className="btn-secondary inline-flex items-center justify-center shrink-0"
+                        className="btn-secondary lg:hidden inline-flex items-center justify-center shrink-0"
                         style={{ padding: "8px 12px", minHeight: "40px" }}
                         aria-label="رجوع"
                     >
@@ -1488,15 +1488,15 @@ export default function BookingSettingsPage() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div className="relative">
                                                     <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
-                                                    <input value={newName.includes("||") ? newName.split("||")[0].trim() : newName} 
-                                                        onChange={e => { const en = newName.includes("||") ? newName.split("||")[1]?.trim() ?? "" : ""; setNewName(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                    <input value={newName.includes("||") ? newName.split("||")[0] : newName}
+                                                        onChange={e => { const en = newName.includes("||") ? newName.split("||")[1] ?? "" : ""; setNewName(en ? `${e.target.value}||${en}` : e.target.value); }}
                                                         placeholder="حلاقة" dir="rtl"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
                                                 <div className="relative">
                                                     <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
-                                                    <input value={newName.includes("||") ? newName.split("||")[1]?.trim() ?? "" : ""} 
-                                                        onChange={e => { const ar = newName.includes("||") ? newName.split("||")[0].trim() : newName; setNewName(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                    <input value={newName.includes("||") ? newName.split("||")[1] ?? "" : ""}
+                                                        onChange={e => { const ar = newName.includes("||") ? newName.split("||")[0] : newName; setNewName(e.target.value ? `${ar}||${e.target.value}` : ar); }}
                                                         placeholder="Haircut" dir="ltr"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
@@ -1583,15 +1583,15 @@ export default function BookingSettingsPage() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div className="relative">
                                                     <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
-                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[0].trim() : newEmpName} 
-                                                        onChange={e => { const en = newEmpName.includes("||") ? newEmpName.split("||")[1]?.trim() ?? "" : ""; setNewEmpName(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[0] : newEmpName}
+                                                        onChange={e => { const en = newEmpName.includes("||") ? newEmpName.split("||")[1] ?? "" : ""; setNewEmpName(en ? `${e.target.value}||${en}` : e.target.value); }}
                                                         placeholder="الاسم بالعربي" dir="rtl"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
                                                 <div className="relative">
                                                     <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
-                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[1]?.trim() ?? "" : ""} 
-                                                        onChange={e => { const ar = newEmpName.includes("||") ? newEmpName.split("||")[0].trim() : newEmpName; setNewEmpName(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                    <input value={newEmpName.includes("||") ? newEmpName.split("||")[1] ?? "" : ""}
+                                                        onChange={e => { const ar = newEmpName.includes("||") ? newEmpName.split("||")[0] : newEmpName; setNewEmpName(e.target.value ? `${ar}||${e.target.value}` : ar); }}
                                                         placeholder="Name in EN" dir="ltr"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
@@ -1607,15 +1607,15 @@ export default function BookingSettingsPage() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div className="relative">
                                                     <span className="absolute top-2 right-2 text-[8px] font-black text-white/20 z-10">AR</span>
-                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0].trim() : newEmpSpecialty} 
-                                                        onChange={e => { const en = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1]?.trim() ?? "" : ""; setNewEmpSpecialty(en ? `${e.target.value}||${en}` : e.target.value); }} 
+                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0] : newEmpSpecialty}
+                                                        onChange={e => { const en = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1] ?? "" : ""; setNewEmpSpecialty(en ? `${e.target.value}||${en}` : e.target.value); }}
                                                         placeholder="مثال: حلاق محترف" dir="rtl"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
                                                 <div className="relative">
                                                     <span className="absolute top-2 left-2 text-[8px] font-black z-10" style={{ color: gold }}>EN</span>
-                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1]?.trim() ?? "" : ""} 
-                                                        onChange={e => { const ar = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0].trim() : newEmpSpecialty; setNewEmpSpecialty(e.target.value ? `${ar}||${e.target.value}` : ar); }} 
+                                                    <input value={newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[1] ?? "" : ""}
+                                                        onChange={e => { const ar = newEmpSpecialty.includes("||") ? newEmpSpecialty.split("||")[0] : newEmpSpecialty; setNewEmpSpecialty(e.target.value ? `${ar}||${e.target.value}` : ar); }}
                                                         placeholder="e.g. Master Barber" dir="ltr"
                                                         className="w-full pt-5 pb-2 px-3 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none border border-[var(--border-subtle)] focus:border-[var(--color-accent)] transition-all text-sm" />
                                                 </div>
@@ -1770,7 +1770,7 @@ export default function BookingSettingsPage() {
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    <button onClick={saveFaq} className="btn-lime h-8 px-4 text-[10px]">حفظ</button>
+                                                    <button onClick={saveFaq} className="btn-lime inline-flex items-center justify-center h-8 px-4 text-[10px]" style={{ padding: "0 16px", minHeight: "32px" }}>حفظ</button>
                                                     <button onClick={() => setEditingFaq(null)} className="text-[10px] font-bold px-3">إلغاء</button>
                                                 </div>
                                             </div>
@@ -1891,8 +1891,8 @@ function BilingualInput({ label, value, onChange, gold, placeholderAr, placehold
     label?: string; value: string; onChange: (v: string) => void; gold: string; placeholderAr?: string; placeholderEn?: string; compact?: boolean;
 }) {
     const hasDelimiter = value?.includes("||");
-    const arVal = hasDelimiter ? value.split("||")[0].trim() : (value ?? "");
-    const enVal = hasDelimiter ? value.split("||")[1]?.trim() ?? "" : "";
+    const arVal = hasDelimiter ? value.split("||")[0] : (value ?? "");
+    const enVal = hasDelimiter ? value.split("||")[1] ?? "" : "";
 
     const handleAr = (v: string) => onChange(enVal ? `${v}||${enVal}` : v);
     const handleEn = (v: string) => onChange(v ? `${arVal}||${v}` : arVal);
@@ -1933,8 +1933,8 @@ function BilingualTextArea({ label, value, onChange, gold, placeholderAr, placeh
     label?: string; value: string; onChange: (v: string) => void; gold: string; placeholderAr?: string; placeholderEn?: string; rows?: number;
 }) {
     const hasDelimiter = value?.includes("||");
-    const arVal = hasDelimiter ? value.split("||")[0].trim() : (value ?? "");
-    const enVal = hasDelimiter ? value.split("||")[1]?.trim() ?? "" : "";
+    const arVal = hasDelimiter ? value.split("||")[0] : (value ?? "");
+    const enVal = hasDelimiter ? value.split("||")[1] ?? "" : "";
 
     const handleAr = (v: string) => onChange(enVal ? `${v}||${enVal}` : v);
     const handleEn = (v: string) => onChange(v ? `${arVal}||${v}` : arVal);

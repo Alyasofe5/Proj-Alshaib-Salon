@@ -70,6 +70,11 @@ if ($method === 'GET') {
 if ($method === 'PUT') {
     $data = getRequestBody();
 
+    $email = trim($data['email'] ?? '');
+    if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        sendError('البريد الإلكتروني غير صحيح', 422);
+    }
+
     $stmt = $pdo->prepare("
         UPDATE platform_settings SET
             email = ?, phone = ?, whatsapp = ?, address = ?,

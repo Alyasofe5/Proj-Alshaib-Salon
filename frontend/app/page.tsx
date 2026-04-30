@@ -326,24 +326,14 @@ export default function LandingPage() {
                 {/* Gold accent line */}
                 <motion.div
                   initial={{ width: 0 }} animate={{ width: 80 }} transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-[3px] rounded-full mb-6 ml-auto"
+                  className="h-[3px] rounded-full mb-10 ml-auto"
                   style={{ background: "linear-gradient(to left, var(--color-accent), transparent)" }}
                 />
-
-                {/* Eyebrow */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
-                  style={{ background: "var(--color-accent-bg)", border: "1px solid var(--color-accent-border)", backdropFilter: "blur(8px)" }}
-                >
-                  <Rocket size={13} style={{ color: "var(--color-accent)" }} />
-                  <span className="text-xs font-semibold" style={{ color: "var(--color-accent)" }}>المنصة #1 لإدارة الصالونات</span>
-                </motion.div>
 
                 {/* Main Heading */}
                 <motion.h1
                   initial={{ opacity: 1, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  className="hero-h1 text-[42px] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.05] mb-6 sm:mb-8"
+                  className="hero-h1 text-[42px] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.2] mb-6 sm:mb-8"
                   style={{ color: "var(--color-text-primary)", letterSpacing: "-0.04em" }}>
                   أدِر صالونك <br />
                   <span className="relative inline-block mt-1">

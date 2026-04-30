@@ -497,7 +497,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
     // Repeat enough copies so the strip is always wider than the viewport — never shows a gap.
     // We render N copies; CSS animation scrolls exactly 1 copy-width (100% / N) then resets seamlessly.
-    const GALLERY_COPIES = 6;
+    const GALLERY_COPIES = 3;
     const galleryRowOne = Array(GALLERY_COPIES).fill(r1src).flat();
     const galleryRowTwo = Array(GALLERY_COPIES).fill(r2src).flat();
     const renderGalleryCard = (
@@ -509,7 +509,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
         <div
             key={key}
             className={`shrink-0 ${widthClass} overflow-hidden group rounded-[1.5rem] sm:rounded-[2.2rem] bg-white/5 border border-white/[0.04] relative`}
-            style={{ aspectRatio, transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+            style={{ aspectRatio, transform: "translateZ(0)", backfaceVisibility: "hidden", contain: "layout paint", contentVisibility: "auto" }}
             onMouseEnter={item.type === "video" ? (e) => {
                 const v = e.currentTarget.querySelector("video");
                 v?.play();
@@ -525,21 +525,21 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     loop
                     muted
                     playsInline
-                    preload="metadata"
-                    className="w-full h-full object-cover transition-all duration-[1.2s] group-hover:scale-105"
-                    style={{ filter: "brightness(0.8) contrast(1.1)" }}
+                    preload="none"
+                    className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105"
                 />
             ) : (
                 <img
                     src={item.url}
-                    className="w-full h-full object-cover transition-all duration-[1.2s] group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105"
                     alt=""
-                    style={{ filter: "brightness(0.8) contrast(1.1)" }}
+                    loading="lazy"
+                    decoding="async"
                 />
             )}
-            <div className="absolute inset-0 bg-black/10 group-hover:opacity-0 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-black/25 group-hover:bg-black/0 transition-colors duration-700 pointer-events-none" />
             {item.type === "video" && (
-                <div className="absolute top-6 right-6 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
+                <div className="absolute top-6 right-6 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center border border-white/10 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
                     <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[6px] border-l-white border-b-[4px] border-b-transparent translate-x-0.5" />
                 </div>
             )}
@@ -1112,23 +1112,27 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 {serviceCards.map((s, i) => {
                                     const isActive = activeServiceIndex === i;
                                     return (
-                                        <motion.button type="button"
+                                        <motion.div
                                             key={s.id ?? i}
                                             initial={{ opacity: 0, x: -15 }}
                                             whileInView={{ opacity: 1, x: 0 }}
                                             viewport={{ once: true }}
                                             transition={{ delay: i * 0.08, duration: 0.6, ease: "easeOut" }}
+                                            role="button"
+                                            tabIndex={0}
                                             className={[
-                                                "group relative isolate w-full overflow-hidden border-b border-white/[0.05] py-7 sm:py-9 px-4 sm:px-6 transition-all duration-500 outline-none",
+                                                "group relative isolate w-full overflow-hidden py-7 sm:py-9 px-4 sm:px-6 transition-all duration-500 outline-none cursor-pointer",
+                                                "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-white/[0.05] after:z-20 after:pointer-events-none",
                                                 lang === 'en' ? 'text-left' : 'text-right',
-                                                isActive ? "opacity-100 bg-white/[0.02]" : "opacity-50 hover:opacity-100",
+                                                isActive ? "opacity-100" : "opacity-50 hover:opacity-100",
                                             ].join(" ")}
-                                            onClick={() => setIsBookingOpen(true)}
+                                            onClick={() => setActiveServiceIndex(i)}
                                             onMouseEnter={() => setActiveServiceIndex(i)}
                                             onFocus={() => setActiveServiceIndex(i)}
-                                            aria-label={`عرض خدمة ${s.name}`}
+                                            aria-expanded={isActive}
+                                            aria-label={lang === 'ar' ? `معاينة خدمة ${tData(s.name, lang)}` : `Preview ${tData(s.name, lang)}`}
                                         >
-                                            <div className="absolute inset-0 pointer-events-none">
+                                            <div className="absolute -inset-px pointer-events-none">
                                                 <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-0"}`}>
                                                     {s.video ? (
                                                         <video
@@ -1146,27 +1150,26 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             className="absolute inset-0 h-full w-full object-cover"
                                                         />
                                                     )}
-                                                </div>
-                                                <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-0"}`}>
-                                                    <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.96)_0%,rgba(10,10,10,0.88)_38%,rgba(10,10,10,0.76)_100%)]" />
-                                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_32%,rgba(195,216,9,0.18),transparent_0_26%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.05),transparent_0_24%)]" />
+                                                    <div className="absolute inset-0 bg-black/80" />
                                                 </div>
                                             </div>
 
                                             <div className="relative z-10 flex flex-row items-center justify-between gap-6">
                                                 <div className="flex flex-row items-center gap-4 sm:gap-8 lg:gap-12">
 
-                                                    {/* Index Number */}
-                                                    <div className="relative">
-                                                        <div className={[
-                                                            "text-[0.8rem] sm:text-[0.95rem] font-medium tracking-[0.2em] transition-all duration-500 font-mono min-w-[2.5rem]",
-                                                            isActive ? "text-[#C3D809]" : "text-white/20",
-                                                        ].join(" ")}>
-                                                            {String(i + 1).padStart(2, "0")}
+                                                    {/* Index Number + (mobile-only inline eyebrow) */}
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                            <div className={[
+                                                                "text-[0.8rem] sm:text-[0.95rem] font-medium tracking-[0.2em] transition-all duration-500 font-mono min-w-[2.5rem]",
+                                                                isActive ? "text-[#C3D809]" : "text-white/20",
+                                                            ].join(" ")}>
+                                                                {String(i + 1).padStart(2, "0")}
+                                                            </div>
+                                                            {isActive && (
+                                                                <motion.div layoutId="idx-glow" className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
+                                                            )}
                                                         </div>
-                                                        {isActive && (
-                                                            <motion.div layoutId="idx-glow" className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
-                                                        )}
                                                     </div>
 
                                                     {/* Name & Expanded Body */}
@@ -1179,19 +1182,21 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                                             <span className={isActive ? "text-[#C3D809] transition-colors duration-500" : ""}>{tData(s.name, lang)}</span>
                                                         </h3>
-                                                        <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-20 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}>
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="h-[1px] w-6 bg-[#C3D809]" />
-                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
-                                                                    {lang === 'ar' ? "تجربة فاخرة وعناية متكاملة" : "Luxury experience & complete care"}
-                                                                </span>
-                                                            </div>
+                                                        <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-24 opacity-100 mt-3 sm:mt-4" : "max-h-0 opacity-0 mt-0"}`}>
+                                                            <span className="block text-[0.6rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
+                                                                {lang === 'ar' ? "تجربة فاخرة وعناية متكاملة" : "Luxury experience & complete care"}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Arrow */}
-                                                <div className="flex items-center justify-center shrink-0">
+                                                {/* Arrow — booking trigger */}
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); setActiveServiceIndex(i); setIsBookingOpen(true); }}
+                                                    aria-label={lang === 'ar' ? `احجز خدمة ${tData(s.name, lang)}` : `Book ${tData(s.name, lang)}`}
+                                                    className="flex items-center justify-center shrink-0 outline-none"
+                                                >
                                                     <div className={`p-3 rounded-full border transition-all duration-500 ${isActive ? "border-[#C3D809] bg-[#C3D809]/5" : "border-white/5 bg-white/[0.02]"}`}>
                                                         <ArrowRight size={20} strokeWidth={isActive ? 3 : 2} className={[
                                                             lang === 'en' ? "transition-all duration-500" : "-rotate-180 transition-all duration-500",
@@ -1200,9 +1205,9 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                                 : "text-white/20 group-hover:text-white/50",
                                                         ].join(" ")} />
                                                     </div>
-                                                </div>
+                                                </button>
                                             </div>
-                                        </motion.button>
+                                        </motion.div>
                                     );
                                 })}
                             </div>
@@ -1587,19 +1592,11 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             &ldquo;
                                         </span>
 
-                                        {lang === 'ar' ? (
-                                            <span>{tData(currentReview?.comment, lang) || "أفضل صالون، تعامل جيد جدًا وشغل عالمي"}</span>
-                                        ) : (
-                                            <>
-                                                <span
-                                                    className="float-left text-6xl sm:text-7xl lg:text-8xl leading-none pr-3 pt-2 font-semibold text-white"
-                                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontStyle: 'italic' }}
-                                                >
-                                                    T
-                                                </span>
-                                                {tData(currentReview?.comment, lang) || "hey have awesome customer service. I wouldn't recommend going to anyone else. All of you guys are awesome. Definitely love the way appscrip works."}
-                                            </>
-                                        )}
+                                        <span>
+                                            {lang === 'ar'
+                                                ? (tData(currentReview?.comment, lang) || "أفضل صالون، تعامل جيد جدًا وشغل عالمي")
+                                                : (tData(currentReview?.comment, lang) || "They have awesome customer service. I wouldn't recommend going to anyone else.")}
+                                        </span>
                                     </motion.blockquote>
                                 </AnimatePresence>
                             </motion.div>

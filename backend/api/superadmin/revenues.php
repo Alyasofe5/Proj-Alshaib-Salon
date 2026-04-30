@@ -67,6 +67,8 @@ if ($method === 'POST') {
 
     if ($amount <= 0) sendError('المبلغ يجب أن يكون أكبر من الصفر', 422);
     if (!$salon_name && !$salon_id) sendError('يرجى تحديد الصالون', 422);
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) sendError('تاريخ غير صحيح', 422);
+    if (mb_strlen($desc) > 500) sendError('الوصف طويل جداً', 422);
 
     // Resolve salon_name from salon_id if provided
     if ($salon_id && !$salon_name) {

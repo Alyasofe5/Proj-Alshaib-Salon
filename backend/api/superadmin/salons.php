@@ -75,45 +75,76 @@ if ($method === 'POST') {
     $ownerEmail = trim($data['owner_email'] ?? '');
     $ownerPhone = trim($data['owner_phone'] ?? '');
     $planId = (int) ($data['subscription_plan_id'] ?? 1);
-    $durationDays = (int) ($data['duration_days'] ?? 30);
+    $durationDays = max(1, (int) ($data['duration_days'] ?? 30));
+    $adminUsername = trim($data['admin_username'] ?? '');
+    $adminPasswordRaw = (string) ($data['admin_password'] ?? '');
 
-    if (empty($name)) sendError('اسم الصالون مطلوب');
-    if (empty($slug)) sendError('الرابط المخصص مطلوب');
+    if ($name === '') sendError('اسم الصالون مطلوب', 422);
+    if ($slug === '') sendError('الرابط المخصص مطلوب', 422);
+    if (!preg_match('/^[a-z0-9-]{2,50}$/i', $slug)) {
+        sendError('الرابط المخصص يجب أن يحتوي حروف إنجليزية وأرقام فقط (٢-٥٠ حرف)', 422);
+    }
+    if ($ownerEmail !== '' && !filter_var($ownerEmail, FILTER_VALIDATE_EMAIL)) {
+        sendError('البريد الإلكتروني غير صحيح', 422);
+    }
+    if ($adminUsername !== '' || $adminPasswordRaw !== '') {
+        if ($adminUsername === '' || $adminPasswordRaw === '') {
+            sendError('اسم الدخول وكلمة المرور للمدير مطلوبان معاً', 422);
+        }
+        if (strlen($adminPasswordRaw) < 6) {
+            sendError('كلمة مرور المدير يجب أن تكون ٦ أحرف على الأقل', 422);
+        }
+    }
 
     // تحقق من تكرار slug
     $stmt = $pdo->prepare("SELECT id FROM salons WHERE slug = ?");
     $stmt->execute([$slug]);
-    if ($stmt->fetch()) sendError('الرابط المخصص مستخدم مسبقاً');
+    if ($stmt->fetch()) sendError('الرابط المخصص مستخدم مسبقاً', 409);
 
-    // إنشاء الصالون
-    $stmt = $pdo->prepare("
-        INSERT INTO salons (name, slug, owner_name, owner_email, owner_phone, status, subscription_plan_id, subscription_starts_at, subscription_expires_at) 
-        VALUES (?,?,?,?,?,'active',?,CURDATE(),DATE_ADD(CURDATE(), INTERVAL ? DAY))
-    ");
-    $stmt->execute([$name, $slug, $ownerName, $ownerEmail, $ownerPhone, $planId, $durationDays]);
-    $salonId = (int) $pdo->lastInsertId();
-
-    // إنشاء حساب admin للصالون (اختياري)
-    if (!empty($data['admin_username']) && !empty($data['admin_password'])) {
-        $adminUsername = trim($data['admin_username']);
-        $adminPassword = password_hash($data['admin_password'], PASSWORD_BCRYPT);
-
-        // تحقق من تكرار اسم الدخول
+    // تحقق من تكرار اسم الدخول قبل البدء بالـ transaction
+    if ($adminUsername !== '') {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
         $stmt->execute([$adminUsername]);
-        if ($stmt->fetch()) {
-            sendError('اسم الدخول للمدير مستخدم مسبقاً');
-        }
-
-        $stmt = $pdo->prepare("INSERT INTO users (salon_id, name, username, password, role) VALUES (?,?,?,?,'admin')");
-        $stmt->execute([$salonId, $ownerName ?: $name . ' Admin', $adminUsername, $adminPassword]);
+        if ($stmt->fetch()) sendError('اسم الدخول للمدير مستخدم مسبقاً', 409);
     }
 
-    // سجل الاشتراك
-    $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, plan_id, created_by) VALUES (?,'created',?,?)")
-        ->execute([$salonId, $planId, $user['user_id']]);
+    // تحقق من وجود الباقة
+    $stmt = $pdo->prepare("SELECT id FROM subscription_plans WHERE id = ? AND is_active = 1");
+    $stmt->execute([$planId]);
+    if (!$stmt->fetch()) sendError('الباقة المختارة غير متاحة', 422);
 
-    sendSuccess(['id' => $salonId], 201, 'تم إنشاء الصالون بنجاح');
+    try {
+        $pdo->beginTransaction();
+
+        // إنشاء الصالون
+        $stmt = $pdo->prepare("
+            INSERT INTO salons (name, slug, owner_name, owner_email, owner_phone, status, subscription_plan_id, subscription_starts_at, subscription_expires_at)
+            VALUES (?, ?, ?, ?, ?, 'active', ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY))
+        ");
+        $stmt->execute([$name, $slug, $ownerName, $ownerEmail, $ownerPhone, $planId, $durationDays]);
+        $salonId = (int) $pdo->lastInsertId();
+        if ($salonId <= 0) throw new Exception('تعذّر إنشاء الصالون');
+
+        // إنشاء حساب admin للصالون (اختياري)
+        if ($adminUsername !== '' && $adminPasswordRaw !== '') {
+            $adminPassword = password_hash($adminPasswordRaw, PASSWORD_BCRYPT);
+            $adminDisplayName = $ownerName !== '' ? $ownerName : ($name . ' Admin');
+            $stmt = $pdo->prepare("INSERT INTO users (salon_id, name, username, password, role) VALUES (?, ?, ?, ?, 'admin')");
+            $stmt->execute([$salonId, $adminDisplayName, $adminUsername, $adminPassword]);
+        }
+
+        // سجل الاشتراك (آمن — لا يفشل العملية إذا فشل التسجيل)
+        try {
+            $pdo->prepare("INSERT INTO subscription_logs (salon_id, action, plan_id, created_by) VALUES (?, 'created', ?, ?)")
+                ->execute([$salonId, $planId, $user['user_id']]);
+        } catch (Exception $logErr) { /* ignore logging errors */ }
+
+        $pdo->commit();
+        sendSuccess(['id' => $salonId], 201, 'تم إنشاء الصالون بنجاح');
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        sendError('فشل إنشاء الصالون: ' . $e->getMessage(), 500);
+    }
 }
 
 // ===== PUT: تعديل صالون =====

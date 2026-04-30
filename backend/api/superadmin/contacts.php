@@ -39,16 +39,26 @@ if ($method === 'GET') {
 
 if ($method === 'PATCH') {
     $id   = intval($_GET['id'] ?? 0);
-    $body = json_decode(file_get_contents('php://input'), true);
-    $status = $body['status'] ?? null;
-    $notes  = $body['notes'] ?? null;
+    $body = json_decode(file_get_contents('php://input'), true) ?: [];
+    $status = isset($body['status']) ? trim((string)$body['status']) : null;
+    $notes  = isset($body['notes']) ? (string)$body['notes'] : null;
 
     if (!$id) sendError('ID مطلوب', 422);
 
     $fields = [];
     $vals   = [];
-    if ($status) { $fields[] = "status = ?"; $vals[] = $status; }
-    if ($notes !== null) { $fields[] = "notes = ?"; $vals[] = $notes; }
+    if ($status !== null && $status !== '') {
+        if (!in_array($status, ['new', 'contacted', 'done'], true)) {
+            sendError('حالة غير صحيحة', 422);
+        }
+        $fields[] = "status = ?";
+        $vals[]   = $status;
+    }
+    if ($notes !== null) {
+        if (mb_strlen($notes) > 5000) sendError('الملاحظات طويلة جداً', 422);
+        $fields[] = "notes = ?";
+        $vals[]   = $notes;
+    }
     if (empty($fields)) sendError('لا يوجد بيانات للتحديث', 422);
 
     $vals[] = $id;

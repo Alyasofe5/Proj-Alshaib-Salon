@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Current User Info API (SaaS Multi-Tenant)
  * GET /api/auth/me
@@ -22,7 +22,7 @@ $salonId = getSalonId($currentUser);
 $stmt = $pdo->prepare("
     SELECT u.id, u.name, u.username, u.role, u.employee_id, u.salon_id,
            u.is_active, u.created_at,
-           e.name as employee_name, e.phone, e.commission_rate, e.salary_type
+           e.name_ar as employee_name, e.name_en as employee_name_en, e.phone, e.commission_rate, e.salary_type
     FROM users u
     LEFT JOIN employees e ON u.employee_id = e.id
     WHERE u.id = ?

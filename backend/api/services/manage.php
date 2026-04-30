@@ -47,12 +47,13 @@ if ($method === 'PUT') {
     if ($name === '') sendError('اسم الخدمة مطلوب');
     if ($duration !== null && $duration <= 0) sendError('مدة الخدمة يجب أن تكون أكبر من صفر');
 
+    $bi = splitBilingual($name);
     $stmt = $pdo->prepare("
         UPDATE services
-        SET name = ?, price = ?, duration_minutes = ?
+        SET name_ar = ?, name_en = ?, price = ?, duration_minutes = ?
         WHERE id = ? AND salon_id = ?
     ");
-    $stmt->execute([$name, (float)($data['price'] ?? 0), $duration, $id, $salonId]);
+    $stmt->execute([$bi['ar'], $bi['en'], (float)($data['price'] ?? 0), $duration, $id, $salonId]);
 
     sendSuccess(null, 200, 'تم تعديل الخدمة');
 }

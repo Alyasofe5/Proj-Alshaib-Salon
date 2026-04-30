@@ -118,15 +118,16 @@ if ($method === 'POST') {
     $parentExpiry = $salon['subscription_expires_at'];
 
     // Create branch with same plan and expiry as parent
+    $bi = splitBilingual($name);
     $insertStmt = $pdo->prepare("
         INSERT INTO salons (
-            name, slug, owner_name, owner_phone, status,
+            name_ar, name_en, slug, owner_name, owner_phone, status,
             subscription_plan_id, subscription_starts_at, subscription_expires_at,
             owner_user_id, parent_salon_id
-        ) VALUES (?, ?, ?, ?, 'active', ?, CURDATE(), ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, 'active', ?, CURDATE(), ?, ?, ?)
     ");
     $insertStmt->execute([
-        $name,
+        $bi['ar'], $bi['en'],
         $slug,
         $salon['owner_name'] ?? '', // Inherit owner name from parent
         $phone ?: ($salon['owner_phone'] ?? ''),

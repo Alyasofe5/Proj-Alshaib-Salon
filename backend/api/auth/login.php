@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Login API Endpoint (SaaS Multi-Tenant)
  * POST /api/auth/login
@@ -30,9 +30,9 @@ $hasPlanType = $hasPlanTable && dbHasColumn('subscription_plans', 'plan_type');
 $hasFeaturesConfig = $hasPlanTable && dbHasColumn('subscription_plans', 'features_config');
 
 $query = "
-    SELECT u.*, e.name AS emp_name,
+    SELECT u.*, e.name_ar AS emp_name, e.name_en AS emp_name_en,
            s.id AS s_id,
-           s.name AS s_name,
+           s.name_ar AS s_name, s.name_en AS s_name_en,
            s.slug AS s_slug,
            s.logo_path AS s_logo,
            " . ($hasSalonStatus ? "s.status" : "'active'") . " AS s_status,

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Employee Report API (SaaS Multi-Tenant)
  * GET /api/reports/employee.php?period=daily|monthly|yearly
@@ -50,7 +50,7 @@ if ($period === 'daily') {
     $stats = $stmt->fetch();
 
     $stmt = $pdo->prepare("
-        SELECT t.*, GROUP_CONCAT(s.name SEPARATOR ', ') as services
+        SELECT t.*, GROUP_CONCAT(s.name_ar SEPARATOR ', ') as services, GROUP_CONCAT(COALESCE(s.name_en, s.name_ar) SEPARATOR ', ') as services_en
         FROM transactions t
         LEFT JOIN transaction_details td ON t.id = td.transaction_id
         LEFT JOIN services s ON td.service_id = s.id
@@ -93,7 +93,7 @@ if ($period === 'monthly') {
 
     // عمليات الشهر
     $stmt = $pdo->prepare("
-        SELECT t.*, GROUP_CONCAT(s.name SEPARATOR ', ') as services
+        SELECT t.*, GROUP_CONCAT(s.name_ar SEPARATOR ', ') as services, GROUP_CONCAT(COALESCE(s.name_en, s.name_ar) SEPARATOR ', ') as services_en
         FROM transactions t
         LEFT JOIN transaction_details td ON t.id = td.transaction_id
         LEFT JOIN services s ON td.service_id = s.id

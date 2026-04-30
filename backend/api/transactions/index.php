@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Transactions API (SaaS Multi-Tenant)
  * GET  /api/transactions        → العمليات (مع فلترة + scoped by salon_id)
@@ -46,7 +46,7 @@ if ($method === 'GET') {
     $whereClause = 'WHERE ' . implode(' AND ', $where);
 
     $stmt = $pdo->prepare("
-        SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
+        SELECT t.*, COALESCE(e.name_ar, 'محذوف') as emp_name, e.name_en as emp_name_en
         FROM transactions t
         LEFT JOIN employees e ON t.employee_id = e.id
         $whereClause

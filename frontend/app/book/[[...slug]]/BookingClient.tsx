@@ -22,6 +22,89 @@ const spring = { type: "spring" as const, stiffness: 100, damping: 20 };
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
+/* GalleryVideo — paused by default. Shows first frame (via #t=0.1 fragment) so user
+   sees a static preview, not a black box. Tap to play. Pauses when scrolled out of view. */
+function GalleryVideo({ src, className }: { src: string; className?: string }) {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [shouldLoad, setShouldLoad] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    // Append timestamp fragment — browsers show frame at 0.1s as the paused preview
+    const previewSrc = src.includes("#") ? src : `${src}#t=0.1`;
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const el = ref.current;
+        if (!el) return;
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) {
+                        setShouldLoad(true);
+                    } else if (!el.paused) {
+                        el.pause();
+                    }
+                });
+            },
+            { rootMargin: "300px", threshold: 0 }
+        );
+        io.observe(el);
+
+        // Far-out observer: unload src to free memory when video is well off-screen
+        const farIo = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (!e.isIntersecting) setShouldLoad(false);
+                });
+            },
+            { rootMargin: "1500px", threshold: 0 }
+        );
+        farIo.observe(el);
+
+        return () => { io.disconnect(); farIo.disconnect(); };
+    }, []);
+
+    // iOS Safari sometimes won't render the first frame until we explicitly load + seek
+    const handleLoadedMeta = useCallback(() => {
+        const v = ref.current;
+        if (!v) return;
+        try { v.currentTime = 0.1; } catch {}
+    }, []);
+
+    const handleTap = useCallback(() => {
+        const v = ref.current;
+        if (!v) return;
+        setShouldLoad(true);
+        if (v.paused) v.play().catch(() => {});
+        else v.pause();
+    }, []);
+
+    return (
+        <div className="absolute inset-0 cursor-pointer" onClick={handleTap}>
+            <video
+                ref={ref}
+                src={shouldLoad ? previewSrc : undefined}
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                disablePictureInPicture
+                onLoadedMetadata={handleLoadedMeta}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                className={className}
+            />
+            {!isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/55 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-xl transition-transform group-hover:scale-110">
+                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent translate-x-0.5" />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 /* Counter Component */
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
     const ref = useRef<HTMLSpanElement>(null);
@@ -510,22 +593,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
             key={key}
             className={`shrink-0 ${widthClass} overflow-hidden group rounded-[1.5rem] sm:rounded-[2.2rem] bg-white/5 border border-white/[0.04] relative`}
             style={{ aspectRatio, transform: "translateZ(0)", backfaceVisibility: "hidden", contain: "layout paint", contentVisibility: "auto" }}
-            onMouseEnter={item.type === "video" ? (e) => {
-                const v = e.currentTarget.querySelector("video");
-                v?.play();
-            } : undefined}
-            onMouseLeave={item.type === "video" ? (e) => {
-                const v = e.currentTarget.querySelector("video");
-                if (v) { v.pause(); v.currentTime = 0; }
-            } : undefined}
         >
             {item.type === "video" ? (
-                <video
+                <GalleryVideo
                     src={item.url}
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
                     className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105"
                 />
             ) : (
@@ -538,11 +609,6 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 />
             )}
             <div className="absolute inset-0 bg-black/25 group-hover:bg-black/0 transition-colors duration-700 pointer-events-none" />
-            {item.type === "video" && (
-                <div className="absolute top-6 right-6 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center border border-white/10 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
-                    <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[6px] border-l-white border-b-[4px] border-b-transparent translate-x-0.5" />
-                </div>
-            )}
         </div>
     );
     const rawReviews = (salon && (salon as any).reviews) ? (salon as any).reviews : [];
@@ -619,7 +685,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     )}
                                 </div>
                             </div>
-                            <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
+                            <span className="whitespace-nowrap" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
                                 {tData(salon.name, lang)}
                             </span>
                         </a>
@@ -901,16 +967,16 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.8, delay: 0.2 }}
-                                        className="text-white font-bold tracking-[-0.02em] leading-[1.1] mb-8 text-start pr-4"
-                                        style={{ 
+                                        className="text-white font-bold tracking-[-0.02em] leading-[1.1] mb-8 text-start"
+                                        style={{
                                             fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
-                                            fontSize: "clamp(2.75rem, 9vw, 6.5rem)"
+                                            fontSize: "clamp(2rem, 6vw, 4.75rem)"
                                         }}
                                     >
-                                        <span className="block">{lang === 'ar' ? "استعد لإطلالتك" : "Prepare for your"}</span>
-                                        <span 
-                                            className="block italic" 
-                                            style={{ 
+                                        <span className="block">{lang === 'ar' ? "استعد" : "Prepare for your"}</span>
+                                        <span
+                                            className="block italic whitespace-nowrap"
+                                            style={{
                                                 background: "linear-gradient(135deg, rgb(195, 216, 9) 0%, rgb(228, 246, 90) 50%, rgb(195, 216, 9) 100%)",
                                                 WebkitBackgroundClip: "text",
                                                 WebkitTextFillColor: "transparent",
@@ -918,7 +984,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                 paddingRight: lang === 'ar' ? "0.1em" : "0"
                                             }}
                                         >
-                                            {lang === 'ar' ? "القادمة" : "NEXT LOOK"}
+                                            {lang === 'ar' ? "لإطلالتك القادمة" : "NEXT LOOK"}
                                         </span>
                                     </motion.h1>
                                 );
@@ -1026,7 +1092,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                             <div className="w-full max-w-xl h-[1px] bg-white/5 my-10" />
 
-                            <div className="grid grid-cols-3 gap-4 sm:gap-10 pt-4">
+                            <div className="gap-2 sm:gap-10 pt-4 w-full" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
                                 {(lang === 'ar' ? [
                                     { n: salon?.stats_years || "7", label: "سنوات خبرة" },
                                     { n: salon?.stats_clients || "250", label: "عميل سعيد" },
@@ -1039,7 +1105,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     const numPart = parseInt(stat.n.toString()) || 0;
                                     const suffixPart = stat.n.toString().replace(/[0-9]/g, "");
                                     return (
-                                        <div key={i} className="space-y-2.5 flex flex-col items-center text-center">
+                                        <div key={i} className="space-y-2.5 flex flex-col items-center text-center min-w-0">
                                             <h4 className="font-black text-[clamp(1.75rem,7vw,2.75rem)] tracking-tighter text-[#C3D809] leading-none relative"
                                                 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", textShadow: "0 0 24px rgba(195,216,9,0.25)" }}>
                                                 <span className="inline-block relative">
@@ -1049,9 +1115,9 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                     <span className="absolute inset-0 blur-xl bg-[#C3D809] rounded-full z-0 opacity-15 scale-125" aria-hidden="true"></span>
                                                 </span>
                                             </h4>
-                                            <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]"
+                                            <p className="text-white/30 text-[clamp(7px,2vw,10px)] font-black uppercase tracking-[0.05em] leading-[1.3] whitespace-nowrap"
                                                 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
-                                                {stat.label.split(' ').map((word, wIdx) => <span key={wIdx} className="block">{word}</span>)}
+                                                {stat.label}
                                             </p>
                                         </div>
                                     );
@@ -1147,6 +1213,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                         <img
                                                             src={s.img || s.fallbackImg}
                                                             alt=""
+                                                            loading="lazy"
+                                                            onError={(e) => {
+                                                                const t = e.currentTarget;
+                                                                if (s.fallbackImg && t.src !== s.fallbackImg) t.src = s.fallbackImg;
+                                                                else t.style.display = "none";
+                                                            }}
                                                             className="absolute inset-0 h-full w-full object-cover"
                                                         />
                                                     )}
@@ -1166,9 +1238,6 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             ].join(" ")}>
                                                                 {String(i + 1).padStart(2, "0")}
                                                             </div>
-                                                            {isActive && (
-                                                                <motion.div layoutId="idx-glow" className="absolute -inset-2 blur-lg bg-[#C3D809]/20 rounded-full z-0" />
-                                                            )}
                                                         </div>
                                                     </div>
 
@@ -1197,8 +1266,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                     aria-label={lang === 'ar' ? `احجز خدمة ${tData(s.name, lang)}` : `Book ${tData(s.name, lang)}`}
                                                     className="flex items-center justify-center shrink-0 outline-none"
                                                 >
-                                                    <div className={`p-3 rounded-full border transition-all duration-500 ${isActive ? "border-[#C3D809] bg-[#C3D809]/5" : "border-white/5 bg-white/[0.02]"}`}>
-                                                        <ArrowRight size={20} strokeWidth={isActive ? 3 : 2} className={[
+                                                    <div className={`p-2 sm:p-3 rounded-full border transition-all duration-500 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-5 sm:[&>svg]:h-5 ${isActive ? "border-[#C3D809] bg-[#C3D809]/5" : "border-white/5 bg-white/[0.02]"}`}>
+                                                        <ArrowRight strokeWidth={isActive ? 3 : 2} className={[
                                                             lang === 'en' ? "transition-all duration-500" : "-rotate-180 transition-all duration-500",
                                                             isActive
                                                                 ? "text-[#C3D809]"
@@ -1242,8 +1311,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     <motion.div
                                         key={emp.id}
                                         initial={{ opacity: 0, y: 40 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
+                                        animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.1, duration: 0.8 }}
                                         className="group relative flex-shrink-0 snap-start basis-[70%] sm:basis-[45%] lg:basis-auto lg:flex-shrink"
                                     >
@@ -1265,7 +1333,16 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 )}
 
                 {/* --- GALLERY (Atmospheric Minimalist) --- */}
-                <section className="py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#070707]">
+                <section ref={(el) => {
+                    if (!el || (el as any).__galleryObserved) return;
+                    (el as any).__galleryObserved = true;
+                    el.setAttribute("data-visible", "false");
+                    const io = new IntersectionObserver(
+                        (entries) => entries.forEach((e) => el.setAttribute("data-visible", e.isIntersecting ? "true" : "false")),
+                        { rootMargin: "200px", threshold: 0 }
+                    );
+                    io.observe(el);
+                }} className="gallery-section py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#070707]">
                     <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-20 sm:mb-32">
                         <div className="flex flex-col items-start text-start">
                             <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
@@ -1286,6 +1363,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         }
                         .gallery-strip-left  { animation: galleryScrollLeft  50s linear infinite; }
                         .gallery-strip-right { animation: galleryScrollRight 60s linear infinite; }
+                        .gallery-section[data-visible="false"] .gallery-strip-left,
+                        .gallery-section[data-visible="false"] .gallery-strip-right { animation-play-state: paused; }
                         @media (prefers-reduced-motion: reduce) {
                             .gallery-strip-left, .gallery-strip-right { animation: none; }
                         }
@@ -1629,10 +1708,10 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     >
                                         <button
                                             onClick={() => setOpenFaq(isOpen ? null : faq.id)}
-                                            className="w-full py-6 sm:py-9 flex items-center justify-between gap-4 group outline-none"
+                                            className="w-full py-6 sm:py-9 flex items-start justify-between gap-3 sm:gap-4 group outline-none text-start"
                                         >
                                             <span
-                                                className={`transition-all duration-500 font-bold text-[clamp(0.95rem,3.5vw,1.25rem)] tracking-tight ${isOpen ? "text-[#C3D809]" : "text-white/80 group-hover:text-white"}`}
+                                                className={`flex-1 min-w-0 transition-all duration-500 font-bold text-[clamp(0.9rem,3.2vw,1.25rem)] tracking-tight leading-snug text-start ${isOpen ? "text-[#C3D809]" : "text-white/80 group-hover:text-white"}`}
                                                 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                             >
                                                 {tData(faq.question, lang)}

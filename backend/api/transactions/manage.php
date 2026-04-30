@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Single Transaction API (SaaS Multi-Tenant)
  * GET    /api/transactions/manage.php?id=1  → تفاصيل عملية
@@ -20,7 +20,7 @@ if (!$id) sendError('معرف العملية مطلوب');
 // ===== GET: تفاصيل عملية =====
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
-        SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
+        SELECT t.*, COALESCE(e.name_ar, 'محذوف') as emp_name, e.name_en as emp_name_en
         FROM transactions t
         LEFT JOIN employees e ON t.employee_id = e.id
         WHERE t.id = ? AND t.salon_id = ?
@@ -31,7 +31,7 @@ if ($method === 'GET') {
     if (!$transaction) sendError('العملية غير موجودة', 404);
 
     $stmt = $pdo->prepare("
-        SELECT td.*, COALESCE(s.name, 'محذوفة') as service_name
+        SELECT td.*, COALESCE(s.name_ar, 'محذوفة') as service_name, s.name_en as service_name_en
         FROM transaction_details td
         LEFT JOIN services s ON td.service_id = s.id
         WHERE td.transaction_id = ?

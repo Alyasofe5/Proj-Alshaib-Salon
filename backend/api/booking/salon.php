@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Public Salon Info API
  * GET /api/booking/salon.php?slug=alshaib
@@ -14,7 +14,7 @@ $slug = trim($_GET['slug'] ?? '');
 if ($slug === '') sendError('رابط الصالون مطلوب');
 
 $stmt = $pdo->prepare("
-    SELECT s.id, s.name, s.slug, s.logo_path, s.status, s.owner_phone, s.settings,
+    SELECT s.id, s.name_ar as name, s.name_en, s.slug, s.logo_path, s.status, s.owner_phone, s.settings,
            sp.plan_type, sp.features_config
     FROM salons s
     LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
@@ -38,7 +38,7 @@ $settingsData = !empty($salon['settings']) ? (json_decode($salon['settings'], tr
 
 try {
     $servicesStmt = $pdo->prepare("
-        SELECT id, name, price, image_path, video_path, duration_minutes
+        SELECT id, name_ar as name, name_en, price, image_path, video_path, duration_minutes
         FROM services
         WHERE salon_id = ? AND is_active = 1
         ORDER BY created_at DESC, id DESC
@@ -46,7 +46,7 @@ try {
 } catch (Exception $e) {
     // Fallback if schema doesn't have media columns yet
     $servicesStmt = $pdo->prepare("
-        SELECT id, name, price
+        SELECT id, name_ar as name, name_en, price
         FROM services
         WHERE salon_id = ? AND is_active = 1
         ORDER BY created_at DESC, id DESC
@@ -69,7 +69,7 @@ try { $pdo->query("SELECT specialty FROM employees LIMIT 1"); }
 catch (Exception $e) { $pdo->exec("ALTER TABLE employees ADD COLUMN specialty VARCHAR(200) DEFAULT NULL"); }
 
 $empStmt = $pdo->prepare("
-    SELECT id, name, photo_path, specialty
+    SELECT id, name_ar as name, name_en, photo_path, specialty
     FROM employees
     WHERE salon_id = ? AND is_active = 1
     ORDER BY created_at DESC, id DESC

@@ -158,11 +158,12 @@ if ($method === 'POST') {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
 
     // إنشاء الحجز
+    $bi = splitBilingual($customerName);
     $stmt = $pdo->prepare("
-        INSERT INTO bookings (salon_id, service_id, employee_id, customer_name, customer_phone, booking_date, booking_time, notes) 
-        VALUES (?,?,?,?,?,?,?,?)
+        INSERT INTO bookings (salon_id, service_id, employee_id, customer_name_ar, customer_name_en, customer_phone, booking_date, booking_time, notes)
+        VALUES (?,?,?,?,?,?,?,?,?)
     ");
-    $stmt->execute([$salonId, $primaryServiceId, $employeeId, $customerName, $customerPhone, $bookingDate, $bookingTime, $notes]);
+    $stmt->execute([$salonId, $primaryServiceId, $employeeId, $bi['ar'], $bi['en'], $customerPhone, $bookingDate, $bookingTime, $notes]);
     $bookingId = (int) $pdo->lastInsertId();
 
     // إدراج جميع الخدمات المختارة

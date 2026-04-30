@@ -126,8 +126,9 @@ if (getMethod() === 'PUT') {
             sendError('خطأ في ترميز البيانات: ' . json_last_error_msg(), 500);
         }
 
-        $stmt = $pdo->prepare("UPDATE salons SET name = ?, owner_phone = ?, owner_email = ?, settings = ? WHERE id = ?");
-        $stmt->execute([$name, $ownerPhone, $ownerEmail, $settingsJson, $salonId]);
+        $bi = splitBilingual($name);
+        $stmt = $pdo->prepare("UPDATE salons SET name_ar = ?, name_en = ?, owner_phone = ?, owner_email = ?, settings = ? WHERE id = ?");
+        $stmt->execute([$bi['ar'], $bi['en'], $ownerPhone, $ownerEmail, $settingsJson, $salonId]);
 
         sendSuccess([
             'message' => 'تم تحديث إعدادات الصالون بنجاح',

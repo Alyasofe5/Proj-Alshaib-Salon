@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Employee Leaves API
  * GET    /api/employees/leaves.php         → List leaves
@@ -27,7 +27,7 @@ if ($method === 'GET') {
     $date = $_GET['date'] ?? null;
     $month = $_GET['month'] ?? null;
 
-    $sql = "SELECT l.*, e.name as employee_name 
+    $sql = "SELECT l.*, e.name_ar as employee_name, e.name_en as employee_name_en
             FROM employee_leaves l 
             JOIN employees e ON l.employee_id = e.id 
             WHERE l.salon_id = ?";

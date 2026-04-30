@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Dashboard Stats API (SaaS Multi-Tenant)
  * GET /api/dashboard/stats
@@ -44,7 +44,7 @@ $netProfit = (float) ($monthStats['total'] ?? 0) - $monthExpenses;
 
 // ===== أفضل موظف اليوم =====
 $stmt = $pdo->prepare("
-    SELECT COALESCE(e.name, 'محذوف') as name, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
+    SELECT COALESCE(e.name_ar, 'محذوف') as name, e.name_en, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
     FROM transactions t
     LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ? AND DATE(t.created_at) = CURDATE()
@@ -56,7 +56,7 @@ $bestEmployee = $stmt->fetch() ?: null;
 
 // ===== دخل كل موظف اليوم =====
 $stmt = $pdo->prepare("
-    SELECT e.name, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total,
+    SELECT e.name_ar as name, e.name_en, COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total,
            e.commission_rate, e.salary_type
     FROM employees e
     LEFT JOIN transactions t ON e.id = t.employee_id AND DATE(t.created_at) = CURDATE()
@@ -80,7 +80,7 @@ for ($i = 6; $i >= 0; $i--) {
 
 // ===== آخر 5 عمليات =====
 $stmt = $pdo->prepare("
-    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
+    SELECT t.*, COALESCE(e.name_ar, 'محذوف') as emp_name, e.name_en as emp_name_en
     FROM transactions t
     LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ?
@@ -108,7 +108,8 @@ sendSuccess([
     ],
     'last_transactions' => $lastTransactions,
     'salon' => [
-        'name' => $salon['name'],
+        'name' => $salon['name_ar'] ?? '',
+        'name_en' => $salon['name_en'] ?? null,
         'days_left' => getSubscriptionDaysLeft($salon),
     ],
 ]);

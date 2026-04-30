@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Admin Bookings API
  * GET    /api/bookings/index.php          → قائمة الحجوزات
@@ -27,11 +27,15 @@ if (getMethod() === 'GET' && isset($_GET['view']) && $_GET['view'] === 'calendar
     $startDate = $month . '-01';
     $endDate = date('Y-m-t', strtotime($startDate));
 
-    $sql = "SELECT b.id, b.customer_name, b.customer_phone, b.booking_date, b.booking_time, 
+    $sql = "SELECT b.id,
+                   b.customer_name_ar as customer_name,
+                   b.customer_name_en, b.customer_phone, b.booking_date, b.booking_time,
                    b.status, b.notes, b.employee_id,
-                   GROUP_CONCAT(COALESCE(s.name, 'غير معروف') SEPARATOR ' + ') as service_names,
+                   GROUP_CONCAT(COALESCE(s.name_ar, 'غير معروف') SEPARATOR ' + ') as service_names,
+                   GROUP_CONCAT(COALESCE(s.name_en, s.name_ar, 'Unknown') SEPARATOR ' + ') as service_names_en,
                    SUM(COALESCE(s.price, 0)) as total_price,
-                   e.name as employee_name
+                   e.name_ar as employee_name,
+                   e.name_en as employee_name_en
             FROM bookings b
             LEFT JOIN booking_services bs ON b.id = bs.booking_id
             LEFT JOIN services s ON bs.service_id = s.id
@@ -89,9 +93,13 @@ if ($method === 'GET') {
 
     if ($id) {
         $sql = "SELECT b.*, 
-                       GROUP_CONCAT(COALESCE(s.name, 'غير معروف') SEPARATOR ' + ') as service_names,
+                       GROUP_CONCAT(COALESCE(s.name_ar, 'غير معروف') SEPARATOR ' + ') as service_names,
+                       GROUP_CONCAT(COALESCE(s.name_en, s.name_ar, 'Unknown') SEPARATOR ' + ') as service_names_en,
                        SUM(COALESCE(s.price, 0)) as total_price,
-                       e.name as employee_name, sa.name as salon_name
+                       e.name_ar as employee_name,
+                   e.name_en as employee_name_en,
+                   sa.name_ar as salon_name,
+                   sa.name_en as salon_name_en
                 FROM bookings b 
                 LEFT JOIN booking_services bs ON b.id = bs.booking_id
                 LEFT JOIN services s ON bs.service_id = s.id
@@ -115,9 +123,13 @@ if ($method === 'GET') {
     $period = $_GET['period'] ?? 'today'; // today, week, month, all
 
     $sql = "SELECT b.*, 
-                   GROUP_CONCAT(COALESCE(s.name, 'غير معروف') SEPARATOR ' + ') as service_names,
+                   GROUP_CONCAT(COALESCE(s.name_ar, 'غير معروف') SEPARATOR ' + ') as service_names,
+                   GROUP_CONCAT(COALESCE(s.name_en, s.name_ar, 'Unknown') SEPARATOR ' + ') as service_names_en,
                    SUM(COALESCE(s.price, 0)) as total_price,
-                   e.name as employee_name, sa.name as salon_name
+                   e.name_ar as employee_name,
+                   e.name_en as employee_name_en,
+                   sa.name_ar as salon_name,
+                   sa.name_en as salon_name_en
             FROM bookings b
             LEFT JOIN booking_services bs ON b.id = bs.booking_id
             LEFT JOIN services s ON bs.service_id = s.id
@@ -200,7 +212,7 @@ if ($method === 'PATCH') {
             sendError('يجب اختيار حلاق لتأكيد هذا الحجز');
         }
         // تحقق من أن الموظف ينتمي لنفس الصالون وهو نشط
-        $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+        $empCheck = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en) as name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
         $empCheck->execute([$assignedEmployeeId, $currentBooking['salon_id']]);
         $emp = $empCheck->fetch();
         if (!$emp) sendError('الموظف المختار غير موجود أو غير نشط');
@@ -277,7 +289,7 @@ if ($method === 'PUT') {
 
     // Validate employee if changed
     if ($employeeId != $current['employee_id']) {
-        $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+        $empCheck = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en) as name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
         $empCheck->execute([$employeeId, $current['salon_id']]);
         if (!$empCheck->fetch()) sendError('الموظف المختار غير موجود أو غير نشط');
     }
@@ -295,8 +307,9 @@ if ($method === 'PUT') {
         }
     }
 
-    $sql = "UPDATE bookings SET customer_name = ?, customer_phone = ?, booking_date = ?, booking_time = ?, employee_id = ?, notes = ? WHERE id = ?";
-    $params = [$customerName, $customerPhone, $bookingDate, $bookingTime, $employeeId, $notes, (int)$id];
+    $bi = splitBilingual($customerName);
+    $sql = "UPDATE bookings SET customer_name_ar = ?, customer_name_en = ?, customer_phone = ?, booking_date = ?, booking_time = ?, employee_id = ?, notes = ? WHERE id = ?";
+    $params = [$bi['ar'], $bi['en'], $customerPhone, $bookingDate, $bookingTime, $employeeId, $notes, (int)$id];
     if ($filterSalon) { $sql .= " AND salon_id = ?"; $params[] = $filterSalon; }
     
     $stmt = $pdo->prepare($sql);
@@ -337,7 +350,7 @@ if ($method === 'POST') {
     if (empty($serviceIds)) sendError('يجب اختيار خدمة واحدة على الأقل');
 
     // Validate employee belongs to this salon and is active
-    $empCheck = $pdo->prepare("SELECT id, name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
+    $empCheck = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en) as name FROM employees WHERE id = ? AND salon_id = ? AND is_active = 1");
     $empCheck->execute([$employeeId, $salonId]);
     $emp = $empCheck->fetch();
     if (!$emp) sendError('الموظف المختار غير موجود أو غير نشط');
@@ -362,11 +375,12 @@ if ($method === 'POST') {
     }
 
     // Create booking with 'confirmed' status (admin-created = auto-confirmed)
+    $bi = splitBilingual($customerName);
     $stmt = $pdo->prepare("
-        INSERT INTO bookings (salon_id, service_id, employee_id, customer_name, customer_phone, booking_date, booking_time, notes, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')
+        INSERT INTO bookings (salon_id, service_id, employee_id, customer_name_ar, customer_name_en, customer_phone, booking_date, booking_time, notes, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')
     ");
-    $stmt->execute([$salonId, $primaryServiceId, $employeeId, $customerName, $customerPhone, $bookingDate, $bookingTime, $notes]);
+    $stmt->execute([$salonId, $primaryServiceId, $employeeId, $bi['ar'], $bi['en'], $customerPhone, $bookingDate, $bookingTime, $notes]);
     $bookingId = (int)$pdo->lastInsertId();
 
     // Insert all booking services

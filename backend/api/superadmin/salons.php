@@ -117,11 +117,12 @@ if ($method === 'POST') {
         $pdo->beginTransaction();
 
         // إنشاء الصالون
+        $bi = splitBilingual($name);
         $stmt = $pdo->prepare("
-            INSERT INTO salons (name, slug, owner_name, owner_email, owner_phone, status, subscription_plan_id, subscription_starts_at, subscription_expires_at)
-            VALUES (?, ?, ?, ?, ?, 'active', ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY))
+            INSERT INTO salons (name_ar, name_en, slug, owner_name, owner_email, owner_phone, status, subscription_plan_id, subscription_starts_at, subscription_expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'active', ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY))
         ");
-        $stmt->execute([$name, $slug, $ownerName, $ownerEmail, $ownerPhone, $planId, $durationDays]);
+        $stmt->execute([$bi['ar'], $bi['en'], $slug, $ownerName, $ownerEmail, $ownerPhone, $planId, $durationDays]);
         $salonId = (int) $pdo->lastInsertId();
         if ($salonId <= 0) throw new Exception('تعذّر إنشاء الصالون');
 
@@ -154,12 +155,13 @@ if ($method === 'PUT' && $id) {
     $name = trim($data['name'] ?? '');
     if (empty($name)) sendError('اسم الصالون مطلوب');
 
+    $bi = splitBilingual($name);
     $stmt = $pdo->prepare("
-        UPDATE salons SET name=?, owner_name=?, owner_email=?, owner_phone=?, subscription_plan_id=?, settings=?
+        UPDATE salons SET name_ar=?, name_en=?, owner_name=?, owner_email=?, owner_phone=?, subscription_plan_id=?, settings=?
         WHERE id=?
     ");
     $stmt->execute([
-        $name,
+        $bi['ar'], $bi['en'],
         trim($data['owner_name'] ?? ''),
         trim($data['owner_email'] ?? ''),
         trim($data['owner_phone'] ?? ''),
@@ -230,7 +232,7 @@ if ($method === 'DELETE' && $id) {
     if ($id == 1) sendError('لا يمكن حذف الصالون الرئيسي', 403);
 
     // تحقق من وجود الصالون
-    $stmt = $pdo->prepare("SELECT id, name FROM salons WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name) as name FROM salons WHERE id = ?");
     $stmt->execute([$id]);
     $salon = $stmt->fetch();
     if (!$salon) sendError('الصالون غير موجود', 404);

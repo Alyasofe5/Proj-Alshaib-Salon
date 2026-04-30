@@ -38,7 +38,7 @@ if ($method === 'GET') {
 
     $activeOnly = $_GET['active_only'] ?? '0';
     if ($activeOnly === '1') {
-        $stmt = $pdo->prepare("SELECT * FROM services WHERE salon_id = ? AND is_active = 1 ORDER BY name");
+        $stmt = $pdo->prepare("SELECT * FROM services WHERE salon_id = ? AND is_active = 1 ORDER BY name_ar");
     } else {
         $stmt = $pdo->prepare("SELECT * FROM services WHERE salon_id = ? ORDER BY is_active DESC, created_at DESC");
     }
@@ -67,11 +67,12 @@ if ($method === 'POST') {
     if ($price <= 0) sendError('السعر يجب أن يكون أكبر من صفر');
     if ($duration !== null && $duration <= 0) sendError('مدة الخدمة يجب أن تكون أكبر من صفر');
 
+    $bi = splitBilingual($name);
     $stmt = $pdo->prepare("
-        INSERT INTO services (salon_id, name, price, duration_minutes)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO services (salon_id, name_ar, name_en, price, duration_minutes)
+        VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->execute([$salonId, $name, $price, $duration]);
+    $stmt->execute([$salonId, $bi['ar'], $bi['en'], $price, $duration]);
 
     sendSuccess(['id' => (int)$pdo->lastInsertId()], 201, 'تم إضافة الخدمة بنجاح');
 }

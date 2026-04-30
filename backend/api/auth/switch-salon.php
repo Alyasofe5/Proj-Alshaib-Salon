@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Switch Salon (Branch) API
  * POST /api/auth/switch-salon.php
@@ -58,7 +58,7 @@ if ($salon['status'] !== 'active') {
 // First check if user has a direct account
 $stmt = $pdo->prepare("
     SELECT u.id, u.name, u.username, u.role, u.employee_id, u.salon_id,
-           e.name as emp_name
+           e.name_ar as emp_name, e.name_en as emp_name_en
     FROM users u
     LEFT JOIN employees e ON u.employee_id = e.id
     WHERE u.id = ?

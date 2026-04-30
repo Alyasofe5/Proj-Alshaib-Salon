@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Users API (SaaS Multi-Tenant)
  * GET  /api/users        → كل المستخدمين (scoped by salon_id)
@@ -22,7 +22,7 @@ $method = getMethod();
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
         SELECT u.id, u.name, u.username, u.role, u.employee_id, u.is_active, u.created_at,
-               e.name as emp_name
+               e.name_ar as emp_name, e.name_en as emp_name_en
         FROM users u
         LEFT JOIN employees e ON u.employee_id = e.id
         WHERE u.salon_id = ?
@@ -31,7 +31,7 @@ if ($method === 'GET') {
     $stmt->execute([$salonId]);
     $users = $stmt->fetchAll();
 
-    $stmt = $pdo->prepare("SELECT id, name FROM employees WHERE salon_id = ? AND is_active=1 ORDER BY name");
+    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name) as name, name_en FROM employees WHERE salon_id = ? AND is_active=1 ORDER BY name_ar");
     $stmt->execute([$salonId]);
     $employees = $stmt->fetchAll();
 

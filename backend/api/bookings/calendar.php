@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Bookings Calendar API
  * GET /api/bookings/calendar.php?month=2026-03
@@ -31,11 +31,15 @@ if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
 $startDate = $month . '-01';
 $endDate = date('Y-m-t', strtotime($startDate)); // last day of month
 
-$sql = "SELECT b.id, b.customer_name, b.customer_phone, b.booking_date, b.booking_time, 
+$sql = "SELECT b.id,
+               b.customer_name_ar as customer_name,
+               b.customer_name_en, b.customer_phone, b.booking_date, b.booking_time,
                b.status, b.notes, b.employee_id,
-               GROUP_CONCAT(COALESCE(s.name, 'غير معروف') SEPARATOR ' + ') as service_names,
+               GROUP_CONCAT(COALESCE(s.name_ar, 'غير معروف') SEPARATOR ' + ') as service_names,
+               GROUP_CONCAT(COALESCE(s.name_en, s.name_ar, 'Unknown') SEPARATOR ' + ') as service_names_en,
                SUM(COALESCE(s.price, 0)) as total_price,
-               e.name as employee_name
+               e.name_ar as employee_name,
+               e.name_en as employee_name_en
         FROM bookings b
         LEFT JOIN booking_services bs ON b.id = bs.booking_id
         LEFT JOIN services s ON bs.service_id = s.id

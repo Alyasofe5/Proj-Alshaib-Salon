@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { dashboardAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import { t } from "@/lib/i18n";
 import BranchManager from "@/components/BranchManager";
 import UpgradeCard from "@/components/UpgradeCard";
 
@@ -161,7 +162,7 @@ export default function DashboardPage() {
 
             <div className="content-area">
                 {/* ===== Stat Cards ===== */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                     <StatCard
                         icon={<Users size={18} />}
                         value={data.today.customers}
@@ -197,7 +198,7 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="chart-card mb-6 cursor-pointer hover:border-[#D4EC0A] transition-all"
+                    className="chart-card mb-4 cursor-pointer hover:border-[#D4EC0A] transition-all"
                     onClick={() => window.location.href = "/admin/booking-settings"}
                 >
                     <div className="flex items-center justify-between">
@@ -219,7 +220,7 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.28 }}
-                    className="chart-card mb-6 border-red-500/10 hover:border-red-500/40 transition-all cursor-pointer group"
+                    className="chart-card mb-8 border-red-500/10 hover:border-red-500/40 transition-all cursor-pointer group"
                     onClick={() => window.location.href = "/admin/employees"}
                 >
                     <div className="flex items-center justify-between">
@@ -237,7 +238,7 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* ===== Chart + Best Employee ===== */}
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-8">
                     {/* Chart */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -296,7 +297,7 @@ export default function DashboardPage() {
                                     <Trophy size={28} color="#000" />
                                 </div>
                                 <div className="text-lg font-bold" style={{ color: "var(--text-main)" }}>
-                                    {data.best_employee.name}
+                                    {t(data.best_employee.name)}
                                 </div>
                                 <div className="text-accent-lime font-bold text-xl mt-1">
                                     {Number(data.best_employee.total).toFixed(3)} د.أ
@@ -336,7 +337,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ===== Tables ===== */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
                     {/* Employees Today */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -360,7 +361,7 @@ export default function DashboardPage() {
                             <tbody>
                                 {data.employees_today.map((emp, i) => (
                                     <tr key={i}>
-                                        <td data-label="الموظف" className="text-white font-semibold">{emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name}</td>
+                                        <td data-label="الموظف" className="text-white font-semibold">{t(emp.name)}</td>
                                         <td data-label="الزبائن">
                                             <span className="badge badge-blue">{emp.cnt}</span>
                                         </td>
@@ -410,7 +411,7 @@ export default function DashboardPage() {
                                 {data.last_transactions.map((tx, i) => (
                                     <tr key={tx.id}>
                                         <td data-label="#" className="text-gray-600">#{i + 1}</td>
-                                        <td data-label="الموظف">{tx.emp_name?.includes("||") ? tx.emp_name.split("||")[0].trim() : tx.emp_name}</td>
+                                        <td data-label="الموظف">{t(tx.emp_name)}</td>
                                         <td data-label="المبلغ" className="text-accent-lime font-bold">
                                             {Number(tx.total_amount).toFixed(3)} د.أ
                                         </td>

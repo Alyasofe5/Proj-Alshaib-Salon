@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Employees API (SaaS Multi-Tenant)
  * GET  /api/employees         → كل الموظفين (scoped by salon_id)
@@ -29,7 +29,7 @@ try {
 // ===== GET: قائمة الموظفين =====
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
-        SELECT e.id, e.name, e.phone, e.salary_type, e.commission_rate, e.base_salary,
+        SELECT e.id, e.name_ar as name, e.name_en, e.phone, e.salary_type, e.commission_rate, e.base_salary,
                e.is_active, e.photo_path, e.created_at,
                u.username,
                (SELECT COUNT(*) FROM transactions t WHERE t.employee_id = e.id AND t.salon_id = ?) as tx_count,
@@ -63,8 +63,9 @@ if ($method === 'POST') {
         sendError('اسم الموظف مطلوب');
     }
 
-    $stmt = $pdo->prepare("INSERT INTO employees (salon_id, name, phone, salary_type, commission_rate, base_salary) VALUES (?,?,?,?,?,?)");
-    $stmt->execute([$salonId, $name, $phone, $salaryType, $commissionRate, $baseSalary]);
+    $bi = splitBilingual($name);
+    $stmt = $pdo->prepare("INSERT INTO employees (salon_id, name_ar, name_en, phone, salary_type, commission_rate, base_salary) VALUES (?,?,?,?,?,?,?)");
+    $stmt->execute([$salonId, $bi['ar'], $bi['en'], $phone, $salaryType, $commissionRate, $baseSalary]);
 
     sendSuccess(['id' => (int) $pdo->lastInsertId()], 201, 'تم إضافة الموظف بنجاح');
 }

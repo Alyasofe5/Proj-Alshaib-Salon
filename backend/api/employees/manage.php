@@ -61,9 +61,10 @@ if ($method === 'PUT') {
         sendError('اسم الموظف مطلوب');
     }
 
-    $stmt = $pdo->prepare("UPDATE employees SET name=?, phone=?, salary_type=?, commission_rate=?, base_salary=?, specialty=? WHERE id=? AND salon_id=?");
+    $bi = splitBilingual($name);
+    $stmt = $pdo->prepare("UPDATE employees SET name_ar=?, name_en=?, phone=?, salary_type=?, commission_rate=?, base_salary=?, specialty=? WHERE id=? AND salon_id=?");
     $stmt->execute([
-        $name,
+        $bi['ar'], $bi['en'],
         trim($data['phone'] ?? ''),
         $data['salary_type'] ?? 'commission',
         (float) ($data['commission_rate'] ?? 0),

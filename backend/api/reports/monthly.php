@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Monthly Report API (SaaS Multi-Tenant)
  * GET /api/reports/monthly.php?month=2026-03
@@ -20,7 +20,7 @@ if (getMethod() !== 'GET') sendError('Method not allowed', 405);
 $month = $_GET['month'] ?? date('Y-m');
 
 $stmt = $pdo->prepare("
-    SELECT e.id, e.name, e.commission_rate, e.salary_type,
+    SELECT e.id, e.name_ar as name, e.name_en, e.commission_rate, e.salary_type,
            COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
     FROM employees e
     LEFT JOIN transactions t ON e.id = t.employee_id AND DATE_FORMAT(t.created_at,'%Y-%m') = ?
@@ -53,7 +53,7 @@ for ($d = 1; $d <= $daysInMonth; $d++) {
 
 // ===== عمليات الشهر =====
 $stmt = $pdo->prepare("
-    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name
+    SELECT t.*, COALESCE(e.name_ar, 'محذوف') as emp_name, e.name_en as emp_name_en
     FROM transactions t
     LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ? AND DATE_FORMAT(t.created_at,'%Y-%m') = ?

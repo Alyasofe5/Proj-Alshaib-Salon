@@ -8,7 +8,7 @@ import {
     CheckCheck, Filter, ClipboardList, MessageCircle, Trash2, FileText, UserCheck
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { tData } from "@/lib/i18n";
+import { tData, t, tList } from "@/lib/i18n";
 import CustomSelect from "@/components/CustomSelect";
 
 interface Booking {
@@ -310,7 +310,7 @@ export default function AdminBookings() {
                                                 {b.customer_name.charAt(0)}
                                             </div>
                                             <div>
-                                                <h3 className="text-white font-bold text-base">{b.customer_name}</h3>
+                                                <h3 className="text-white font-bold text-base">{t(b.customer_name)}</h3>
                                                 <a href={`tel:${b.customer_phone}`} className="text-gray-400 text-sm flex items-center gap-1.5 hover:text-[#C3D809] transition-colors" dir="ltr">
                                                     <Phone size={14} />
                                                     {b.customer_phone}
@@ -336,11 +336,11 @@ export default function AdminBookings() {
                                         <div className="flex flex-wrap items-center gap-3">
                                             <div className="flex items-center gap-2 text-[#C3D809] bg-[#C3D809]/10 px-3 py-1.5 rounded-lg text-sm font-medium">
                                                 <ClipboardList size={16} />
-                                                {b.service_names || b.service_name}
+                                                {tList(b.service_names || b.service_name)}
                                             </div>
                                             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${b.employee_name ? 'bg-white/5 text-gray-300' : 'bg-[#C3D809]/10 text-[#C3D809]'}`}>
                                                 <User size={16} className={b.employee_name ? 'text-gray-400' : 'text-[#C3D809]'} />
-                                                {b.employee_name || "أي حلاق متاح"}
+                                                {t(b.employee_name) || "أي حلاق متاح"}
                                             </div>
                                         </div>
                                         

@@ -150,3 +150,60 @@ export const tData = (text: string | null | undefined, lang: 'ar' | 'en'): strin
 
     return translated;
 };
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PROFESSIONAL BILINGUAL HANDLER
+   Single source of truth for displaying any DB value across the entire app.
+   Handles:
+     - Plain strings:                "قص شعر"
+     - Legacy bilingual strings:     "قص شعر||Haircut"
+     - Future structured objects:    { ar: "قص شعر", en: "Haircut" }
+     - Multi-item joins:             "قص شعر||Haircut + ذقن||Beard"
+     - null / undefined / non-strings — never throws.
+
+   USAGE:
+     import { t, tList } from '@/lib/i18n';
+     {t(b.service_name)}              // → Arabic by default
+     {t(b.service_name, 'en')}        // → English
+     {tList(b.service_names)}         // → "قص شعر + ذقن"
+
+   This is the ONLY function admin/dashboard pages should use to render
+   user-facing fields stored in the database. Do NOT print raw DB strings.
+   ────────────────────────────────────────────────────────────────────────── */
+
+type BiValue = string | number | { ar?: string | null; en?: string | null } | null | undefined;
+
+const stripOneSegment = (raw: string, lang: 'ar' | 'en'): string => {
+    if (!raw.includes("||")) return raw.trim();
+    const [ar = "", en = ""] = raw.split("||").map(s => s.trim());
+    if (lang === 'ar') return ar || en;
+    return en || ar;
+};
+
+export const t = (value: BiValue, lang: 'ar' | 'en' = 'ar'): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number") return String(value);
+    if (typeof value === "object") {
+        return (lang === 'ar' ? (value.ar || value.en) : (value.en || value.ar)) || "";
+    }
+    if (typeof value !== "string") return "";
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    return stripOneSegment(trimmed, lang);
+};
+
+/** For comma/plus-separated lists like "A||A_en + B||B_en" → "A + B" */
+export const tList = (
+    value: BiValue,
+    lang: 'ar' | 'en' = 'ar',
+    separator: string = " + "
+): string => {
+    const raw = t(value, lang);
+    if (!raw) return "";
+    // Split by the most common joiners while preserving the user-facing separator
+    return raw
+        .split(/\s*[+,،]\s*/)
+        .map(part => stripOneSegment(part, lang))
+        .filter(Boolean)
+        .join(separator);
+};

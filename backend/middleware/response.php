@@ -117,3 +117,23 @@ function salaryTypeLabel($type): string
 {
     return ($type ?? '') === 'fixed' ? 'راتب ثابت' : 'عمولة %';
 }
+
+/**
+ * Split a bilingual "Arabic||English" string into separate ar/en fields.
+ * Returns ['ar' => string, 'en' => ?string]. Use across all INSERT/UPDATE
+ * statements writing to *_ar / *_en columns.
+ *
+ * Usage:
+ *   ['ar' => $nameAr, 'en' => $nameEn] = splitBilingual($data['name'] ?? '');
+ *   // Or: $parts = splitBilingual($input);  $parts['ar'], $parts['en']
+ */
+function splitBilingual($value): array
+{
+    $value = trim((string) ($value ?? ''));
+    if ($value === '') return ['ar' => '', 'en' => null];
+    if (strpos($value, '||') === false) return ['ar' => $value, 'en' => null];
+    $parts = array_map('trim', explode('||', $value, 2));
+    $ar = $parts[0] ?? '';
+    $en = $parts[1] ?? '';
+    return ['ar' => $ar !== '' ? $ar : $value, 'en' => $en !== '' ? $en : null];
+}

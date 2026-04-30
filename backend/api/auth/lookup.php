@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Salon Lookup API (Public - No Auth Required)
  * GET /api/auth/lookup.php?username=waseem
@@ -21,7 +21,7 @@ if (empty($username)) {
 
 // البحث عن المستخدم والصالون المرتبط
 $stmt = $pdo->prepare("
-    SELECT s.name as salon_name, s.slug as salon_slug, s.logo_path as salon_logo,
+    SELECT s.name_ar as salon_name, s.name_en as salon_name_en, s.slug as salon_slug, s.logo_path as salon_logo,
            s.status as salon_status
     FROM users u
     JOIN salons s ON u.salon_id = s.id

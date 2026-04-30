@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Daily Reports API (SaaS Multi-Tenant)
  * GET /api/reports/daily.php?date=2026-03-07
@@ -20,7 +20,7 @@ if (getMethod() !== 'GET') sendError('Method not allowed', 405);
 $date = $_GET['date'] ?? date('Y-m-d');
 
 $stmt = $pdo->prepare("
-    SELECT t.*, COALESCE(e.name, 'محذوف') as emp_name, COALESCE(e.commission_rate, 0) as commission_rate, COALESCE(e.salary_type, 'fixed') as salary_type
+    SELECT t.*, COALESCE(e.name_ar, 'محذوف') as emp_name, e.name_en as emp_name_en, COALESCE(e.commission_rate, 0) as commission_rate, COALESCE(e.salary_type, 'fixed') as salary_type
     FROM transactions t LEFT JOIN employees e ON t.employee_id = e.id
     WHERE t.salon_id = ? AND DATE(t.created_at) = ? ORDER BY t.created_at ASC
 ");
@@ -28,7 +28,7 @@ $stmt->execute([$salonId, $date]);
 $transactions = $stmt->fetchAll();
 
 $stmt = $pdo->prepare("
-    SELECT e.id, e.name, e.commission_rate, e.salary_type,
+    SELECT e.id, e.name_ar as name, e.name_en, e.commission_rate, e.salary_type,
            COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
     FROM employees e
     LEFT JOIN transactions t ON e.id = t.employee_id AND DATE(t.created_at) = ?

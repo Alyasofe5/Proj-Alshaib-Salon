@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Yearly Report API (SaaS Multi-Tenant)
  * GET /api/reports/yearly.php?year=2026
@@ -38,7 +38,7 @@ $totalExpenses = (float) ($stmt->fetchColumn() ?: 0);
 
 // ===== أداء الموظفين للسنة =====
 $stmt = $pdo->prepare("
-    SELECT e.id, e.name, e.commission_rate, e.salary_type,
+    SELECT e.id, e.name_ar as name, e.name_en, e.commission_rate, e.salary_type,
            COUNT(t.id) as cnt, COALESCE(SUM(t.total_amount),0) as total
     FROM employees e
     LEFT JOIN transactions t ON e.id = t.employee_id AND YEAR(t.created_at) = ?

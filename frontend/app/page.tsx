@@ -257,7 +257,13 @@ export default function LandingPage() {
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden absolute top-full inset-x-0 py-4 px-4 shadow-lg" dir="rtl"
+          <>
+            <div
+              className="md:hidden absolute top-full inset-x-0 z-40"
+              onClick={() => setMenuOpen(false)}
+              style={{ height: "100vh", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+            />
+          <div className="md:hidden absolute top-full inset-x-0 py-4 px-4 shadow-lg z-50" dir="rtl"
             style={{ background: "var(--off-white)", borderBottom: "1px solid var(--border)" }}>
             <div className="flex flex-col gap-1">
               {[["المميزات", "features"], ["كيف يعمل", "how"], ["الباقات", "pricing"], ["تواصل", "contact"]].map(([l, id]) => (
@@ -270,13 +276,10 @@ export default function LandingPage() {
                 <Link href="/login" onClick={() => setMenuOpen(false)}
                   className="px-4 py-3 rounded-xl text-sm font-semibold"
                   style={{ color: "var(--text-mid)" }}>تسجيل الدخول</Link>
-                <Link href="/contact?from=free" onClick={() => setMenuOpen(false)}
-                  className="px-4 py-3 rounded-xl text-sm font-bold text-center"
-                  style={{ background: "linear-gradient(135deg, var(--color-accent), var(--color-accent-hover))", color: "var(--color-cta-text)" }}
-                >ابدأ مجاناً ←</Link>
               </div>
             </div>
           </div>
+          </>
         )}
       </nav>
 
@@ -318,24 +321,29 @@ export default function LandingPage() {
           <div className="w-full" style={{ perspective: "1200px" }}>
 
             {/* ── Main Hero Grid: Text + Floating Cards ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center w-full px-4 md:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full px-4 md:px-8">
 
               {/* ── Left Column: Text Content ── */}
-              <div className="text-right order-2 lg:order-1">
+              <div className="text-right order-2 lg:order-1 relative">
+                {/* Dark overlay backdrop for text readability */}
+                <div className="absolute inset-0 -m-6 sm:-m-8 lg:-m-12 rounded-3xl -z-10" style={{ background: "radial-gradient(ellipse at center, rgba(16,17,21,.85) 0%, rgba(16,17,21,.4) 60%, transparent 100%)", filter: "blur(40px)" }} />
 
-                {/* Gold accent line */}
+                {/* Value Proposition Tag */}
                 <motion.div
-                  initial={{ width: 0 }} animate={{ width: 80 }} transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-[3px] rounded-full mb-10 ml-auto"
-                  style={{ background: "linear-gradient(to left, var(--color-accent), transparent)" }}
-                />
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-8 sm:mb-10"
+                  style={{ background: "rgba(195,216,9,.08)", border: "1px solid rgba(195,216,9,.15)" }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-accent)" }} />
+                  <span className="text-[11px] sm:text-xs font-medium" style={{ color: "var(--color-accent)" }}>نظام متكامل لإدارة الصالونات</span>
+                </motion.div>
 
                 {/* Main Heading */}
                 <motion.h1
                   initial={{ opacity: 1, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  className="hero-h1 text-[42px] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.2] mb-6 sm:mb-8"
+                  className="hero-h1 text-[42px] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.2] mb-8 sm:mb-10 lg:mb-12"
                   style={{ color: "var(--color-text-primary)", letterSpacing: "-0.04em" }}>
-                  أدِر صالونك <br />
+                  نظّم حجوزاتك<br />
                   <span className="relative inline-block mt-1">
                     <span style={{
                       background: "linear-gradient(90deg, var(--color-accent), var(--color-accent-hover), var(--color-accent))",
@@ -343,7 +351,7 @@ export default function LandingPage() {
                       WebkitTextFillColor: "transparent",
                       backgroundClip: "text",
                     }}>
-                      كالمحترفين.
+                      وكبّر عملك.
                     </span>
                   </span>
                 </motion.h1>
@@ -351,42 +359,48 @@ export default function LandingPage() {
                 {/* Subheading */}
                 <motion.p
                   initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35 }}
-                  className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed mb-6 sm:mb-8 max-w-xl"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
+                  className="text-sm sm:text-base md:text-lg leading-relaxed mb-14 sm:mb-16 max-w-[480px]"
+                  style={{ color: "rgba(255,255,255,0.85)" }}
                 >
-                  حجوزات ذكية، إدارة موظفين، تقارير مالية فورية — كل ما تحتاجه في منصة واحدة مصممة للصالونات الطموحة.
+                  وفر وقتك ونظّم مواعيدك بسهولة.<br />
+                  <span className="block mt-2">راقب أرباحك وادِر صالونك باحتراف من مكان واحد.</span>
                 </motion.p>
 
                 {/* CTA Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45 }}
-                  className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-8 w-full"
+                  className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-10 w-full"
                 >
                   <Link href="/contact?from=free"
-                    className="group relative inline-flex justify-center items-center gap-1.5 sm:gap-2.5 px-5 py-2.5 sm:px-8 sm:py-4 rounded-xl text-xs sm:text-sm font-black overflow-hidden transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap"
-                    style={{ background: "var(--color-accent)", color: "var(--color-background)", boxShadow: "0 0 0 1px rgba(195,216,9,.3), 0 12px 40px -8px rgba(195,216,9,.5)" }}
+                    className="group relative inline-flex justify-center items-center gap-1.5 sm:gap-2.5 px-7 py-4 sm:px-10 sm:py-5 rounded-xl text-sm sm:text-base font-black overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] whitespace-nowrap touch-manipulation"
+                    style={{ background: "var(--color-accent)", color: "var(--color-background)", boxShadow: "0 0 0 1px rgba(195,216,9,.4), 0 8px 32px -6px rgba(195,216,9,.5), 0 0 60px -12px rgba(195,216,9,.3)" }}
                   >
                     <span className="relative z-10">ابدأ مجاناً</span>
                     <ArrowLeft size={15} className="relative z-10 transition-transform group-hover:-translate-x-1" />
                     <div className="absolute inset-0 bg-[#C3D809]/15 -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12" />
                   </Link>
                   <a href="#features"
-                    className="inline-flex justify-center items-center gap-1.5 sm:gap-2.5 px-5 py-2.5 sm:px-8 sm:py-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 hover:bg-[#C3D809]/[0.08] whitespace-nowrap"
-                    style={{ background: "rgba(195,216,9,.06)", border: "1px solid rgba(195,216,9,.09)", color: "rgba(255,255,255,.8)", backdropFilter: "blur(10px)" }}
+                    className="px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:bg-white/5 whitespace-nowrap touch-manipulation"
+                    style={{ color: "rgba(255,255,255,.55)", border: "1px solid rgba(255,255,255,.15)" }}
                   >
-                    <span>شاهد كيف يعمل</span>
+                    تعرّف على المميزات
                   </a>
                 </motion.div>
 
                 {/* Trust row */}
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.6 }}
-                  className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px]"
-                  style={{ color: "rgba(255,255,255,.4)" }}
+                  className="flex flex-nowrap items-center justify-center lg:justify-start gap-x-1.5 sm:gap-x-6 gap-y-3 text-[clamp(9px,2.6vw,13px)] pt-4"
+                  style={{ color: "rgba(255,255,255,.55)" }}
                 >
-                  {["بدون بطاقة ائتمان", "إعداد في 5 دقائق", "دعم فوري"].map((t, i) => (
-                    <span key={i} className="flex items-center gap-1.5">
-                      <Check size={12} style={{ color: "var(--color-accent)" }} />{t}
+                  {[
+                    { text: "تجربة مجانية", icon: <Check size={13} strokeWidth={2.5} /> },
+                    { text: "إعداد في 5 دقائق", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg> },
+                    { text: "دعم فوري", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> }
+                  ].map((t, i) => (
+                    <span key={i} className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md whitespace-nowrap shrink-0" style={{ background: "rgba(255,255,255,.05)" }}>
+                      <span style={{ color: "var(--color-accent)" }}>{t.icon}</span>
+                      <span className="font-medium">{t.text}</span>
                     </span>
                   ))}
                 </motion.div>
@@ -412,7 +426,7 @@ export default function LandingPage() {
                     <Store size={16} style={{ color: "var(--color-accent)" }} />
                   </div>
                   <div>
-                    <div className="text-sm font-black" style={{ color: "var(--color-accent)" }}>200+</div>
+                    <div className="text-sm font-black" style={{ color: "var(--color-accent)" }}>100+</div>
                     <div className="text-[9px] font-semibold" style={{ color: "rgba(255,255,255,.4)" }}>صالون يثق بنا</div>
                   </div>
                 </motion.div>
@@ -426,7 +440,7 @@ export default function LandingPage() {
                     <CalendarCheck size={16} style={{ color: "var(--color-accent)" }} />
                   </div>
                   <div>
-                    <div className="text-sm font-black" style={{ color: "var(--color-accent)" }}>50K+</div>
+                    <div className="text-sm font-black" style={{ color: "var(--color-accent)" }}>10K+</div>
                     <div className="text-[9px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>حجز تم إنجازه</div>
                   </div>
                 </motion.div>
@@ -544,7 +558,7 @@ export default function LandingPage() {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
             {[
               { num: "01", icon: <PenLine size={24} style={{ color: "var(--color-accent)" }} />, title: "سجّل صالونك", desc: "أنشئ حسابك في أقل من 5 دقائق. بدون بطاقة ائتمان." },
               { num: "02", icon: <Settings size={24} style={{ color: "var(--color-accent)" }} />, title: "خصّص إعداداتك", desc: "أضف خدماتك وأسعارك وفريق عملك بسهولة." },

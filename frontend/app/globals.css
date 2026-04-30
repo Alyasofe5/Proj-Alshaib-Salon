@@ -1319,11 +1319,11 @@ textarea.input {
   }
 
   .content-area {
-    padding: 12px 16px;
+    padding: 16px 16px 24px;
   }
 
   .stat-card {
-    padding: 16px;
+    padding: 18px 16px;
   }
 
   .stat-value {
@@ -1350,7 +1350,7 @@ textarea.input {
 
   .chart-card,
   .card {
-    padding: 16px;
+    padding: 18px 16px;
   }
 
   .form-input,

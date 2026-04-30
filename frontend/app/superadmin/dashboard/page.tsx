@@ -8,7 +8,7 @@ import {
     FaSignOutAlt, FaPause, FaCheck, FaBan, FaPlus, FaCrown,
     FaEnvelope, FaPhone, FaMapMarkerAlt, FaUsers, FaTimes,
     FaMoneyBillWave, FaTrash, FaInfoCircle, FaChevronDown,
-    FaInstagram, FaFacebook, FaTiktok,
+    FaInstagram, FaFacebook, FaTiktok, FaWhatsapp, FaEye, FaEyeSlash
 } from "react-icons/fa";
 import api from "@/lib/api";
 import { useBrandUI } from "@/components/ui/BrandUI";
@@ -335,7 +335,9 @@ export default function SuperAdminDashboard() {
     const [activeTab, setActiveTab] = useState<"dashboard" | "salons" | "contacts" | "revenues" | "plans" | "settings">("dashboard");
     const [platformSettings, setPlatformSettings] = useState({
         email: "", phone: "", whatsapp: "", address: "",
-        instagram: "", facebook: "", tiktok: ""
+        instagram: "", facebook: "", tiktok: "",
+        show_email: true, show_phone: true, show_whatsapp: true, show_address: true,
+        show_instagram: true, show_facebook: true, show_tiktok: true,
     });
     const [settingsSaving, setSettingsSaving] = useState(false);
     const [tabDropdownOpen, setTabDropdownOpen] = useState(false);
@@ -1301,8 +1303,8 @@ export default function SuperAdminDashboard() {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold">إعدادات المنصة (مقص)</h2>
-                            <button 
-                                onClick={handleSaveSettings} 
+                            <button
+                                onClick={handleSaveSettings}
                                 disabled={settingsSaving}
                                 className="flex items-center gap-2 bg-accent-lime text-black px-6 py-2 rounded-xl font-bold hover:bg-[#C3D809] transition-all disabled:opacity-50"
                             >
@@ -1310,123 +1312,191 @@ export default function SuperAdminDashboard() {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Contact Info */}
-                            <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-accent-lime flex items-center gap-2 mb-2">
-                                    <FaEnvelope /> معلومات التواصل
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">البريد الإلكتروني</label>
-                                        <input 
-                                            value={platformSettings.email} 
-                                            onChange={e => setPlatformSettings({...platformSettings, email: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="info@maqas.site"
-                                        />
+                        {/* Helper component for a premium toggle */}
+                        {(() => {
+                            const ToggleBtn = ({ field }: { field: keyof typeof platformSettings }) => {
+                                const showKey = `show_${String(field)}` as keyof typeof platformSettings;
+                                const isVisible = platformSettings[showKey] !== false;
+                                return (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPlatformSettings({ ...platformSettings, [showKey]: !isVisible })}
+                                        className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 border ${
+                                            isVisible
+                                                ? 'bg-accent-lime/10 border-accent-lime/40 text-accent-lime shadow-[0_0_10px_rgba(195,216,9,0.1)]'
+                                                : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'
+                                        }`}
+                                    >
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            {isVisible ? 'مرئي' : 'مخفي'}
+                                        </span>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${isVisible ? 'bg-accent-lime text-black scale-110 shadow-[0_0_15px_rgba(195,216,9,0.4)]' : 'bg-white/10 text-white'}`}>
+                                            {isVisible ? <FaEye size={12} /> : <FaEyeSlash size={12} />}
+                                        </div>
+                                    </button>
+                                );
+                            };
+
+                            return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Contact Info Card */}
+                                    <div className="bg-card-dark border border-[var(--border-subtle)] rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-lime/5 blur-[80px] rounded-full -mr-16 -mt-16 group-hover:bg-accent-lime/10 transition-all"></div>
+                                        
+                                        <h3 className="text-xl font-black text-white flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-accent-lime/10 flex items-center justify-center text-accent-lime">
+                                                <FaEnvelope size={18} />
+                                            </div>
+                                            معلومات التواصل
+                                        </h3>
+
+                                        <div className="space-y-6">
+                                            {[
+                                                { id: 'email', label: 'البريد الإلكتروني', placeholder: 'info@maqas.site', type: 'text' },
+                                                { id: 'phone', label: 'رقم الهاتف (للعرض)', placeholder: '+962 78 171 7990', type: 'text', dir: 'ltr' },
+                                                { id: 'whatsapp', label: 'رقم الواتساب (للرابط)', placeholder: '962781717990', type: 'text', dir: 'ltr' },
+                                                { id: 'address', label: 'العنوان', placeholder: 'عمان، الأردن', type: 'textarea' },
+                                            ].map((field) => (
+                                                <div key={field.id} className="relative">
+                                                    <div className="flex items-center justify-between mb-2 px-1">
+                                                        <label className="text-xs font-bold text-[var(--color-text-secondary)]">{field.label}</label>
+                                                        <ToggleBtn field={field.id as any} />
+                                                    </div>
+                                                    {field.type === 'textarea' ? (
+                                                        <textarea
+                                                            value={(platformSettings as any)[field.id]}
+                                                            onChange={e => setPlatformSettings({ ...platformSettings, [field.id]: e.target.value })}
+                                                            className={`w-full bg-[var(--color-surface)] border rounded-2xl px-5 py-4 text-sm focus:border-accent-lime outline-none transition-all h-24 resize-none ${
+                                                                (platformSettings as any)[`show_${field.id}`] !== false 
+                                                                    ? 'border-[var(--border-subtle)] text-white' 
+                                                                    : 'border-white/5 text-white/20'
+                                                            }`}
+                                                            placeholder={field.placeholder}
+                                                        />
+                                                    ) : (
+                                                        <input
+                                                            value={(platformSettings as any)[field.id]}
+                                                            onChange={e => setPlatformSettings({ ...platformSettings, [field.id]: e.target.value })}
+                                                            className={`w-full bg-[var(--color-surface)] border rounded-2xl px-5 py-4 text-sm focus:border-accent-lime outline-none transition-all ${
+                                                                (platformSettings as any)[`show_${field.id}`] !== false 
+                                                                    ? 'border-[var(--border-subtle)] text-white' 
+                                                                    : 'border-white/5 text-white/20'
+                                                            }`}
+                                                            placeholder={field.placeholder} dir={field.dir}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">رقم الهاتف (للعرض)</label>
-                                        <input 
-                                            value={platformSettings.phone} 
-                                            onChange={e => setPlatformSettings({...platformSettings, phone: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="+962 78 171 7990"
-                                            dir="ltr"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">رقم الواتساب (للرابط - أرقام فقط بدون +)</label>
-                                        <input 
-                                            value={platformSettings.whatsapp} 
-                                            onChange={e => setPlatformSettings({...platformSettings, whatsapp: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="962781717990"
-                                            dir="ltr"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">العنوان</label>
-                                        <textarea 
-                                            value={platformSettings.address} 
-                                            onChange={e => setPlatformSettings({...platformSettings, address: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none h-20 resize-none" 
-                                            placeholder="عمان، الأردن"
-                                        />
+
+                                    {/* Social Media Card */}
+                                    <div className="bg-card-dark border border-[var(--border-subtle)] rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-lime/5 blur-[80px] rounded-full -mr-16 -mt-16 group-hover:bg-accent-lime/10 transition-all"></div>
+
+                                        <h3 className="text-xl font-black text-white flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-accent-lime/10 flex items-center justify-center text-accent-lime">
+                                                <FaInstagram size={18} />
+                                            </div>
+                                            الروابط الاجتماعية
+                                        </h3>
+
+                                        <div className="space-y-6">
+                                            {[
+                                                { id: 'instagram', label: 'إنستجرام', icon: <FaInstagram />, color: 'text-pink-500' },
+                                                { id: 'facebook', label: 'فيسبوك', icon: <FaFacebook />, color: 'text-blue-500' },
+                                                { id: 'tiktok', label: 'تيك توك', icon: <FaTiktok />, color: 'text-white' },
+                                            ].map((social) => (
+                                                <div key={social.id} className="relative">
+                                                    <div className="flex items-center justify-between mb-2 px-1">
+                                                        <label className="text-xs font-bold text-[var(--color-text-secondary)] flex items-center gap-2">
+                                                            <span className={social.color}>{social.icon}</span> {social.label}
+                                                        </label>
+                                                        <ToggleBtn field={social.id as any} />
+                                                    </div>
+                                                    <input
+                                                        value={(platformSettings as any)[social.id]}
+                                                        onChange={e => setPlatformSettings({ ...platformSettings, [social.id]: e.target.value })}
+                                                        className={`w-full bg-[var(--color-surface)] border rounded-2xl px-5 py-4 text-sm focus:border-accent-lime outline-none transition-all ${
+                                                            (platformSettings as any)[`show_${social.id}`] !== false 
+                                                                ? 'border-[var(--border-subtle)] text-white' 
+                                                                : 'border-white/5 text-white/20'
+                                                        }`}
+                                                        placeholder={`https://${social.id}.com/maqas`} dir="ltr"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            );
+                        })()}
 
-                            {/* Social Media */}
-                            <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-accent-lime flex items-center gap-2 mb-2">
-                                    <FaInstagram /> روابط التواصل الاجتماعي
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
-                                            <FaInstagram className="text-pink-500" /> إنستجرام
-                                        </label>
-                                        <input 
-                                            value={platformSettings.instagram} 
-                                            onChange={e => setPlatformSettings({...platformSettings, instagram: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="https://instagram.com/maqas"
-                                            dir="ltr"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
-                                            <FaFacebook className="text-blue-500" /> فيسبوك
-                                        </label>
-                                        <input 
-                                            value={platformSettings.facebook} 
-                                            onChange={e => setPlatformSettings({...platformSettings, facebook: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="https://facebook.com/maqas"
-                                            dir="ltr"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
-                                            <FaTiktok className="text-white" /> تيك توك
-                                        </label>
-                                        <input 
-                                            value={platformSettings.tiktok} 
-                                            onChange={e => setPlatformSettings({...platformSettings, tiktok: e.target.value})}
-                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
-                                            placeholder="https://tiktok.com/@maqas"
-                                            dir="ltr"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Preview Section */}
-                        <div className="bg-emerald-500/[.05] border border-emerald-500/20 rounded-2xl p-6">
-                            <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
-                                <FaInfoCircle /> معاينة ظهور البيانات في التذييل (Footer)
+                        {/* Visual Preview - Re-styled to match site footer exactly */}
+                        <div className="bg-black border border-accent-lime/20 rounded-[2.5rem] p-10 mt-10 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-lime/20 to-transparent"></div>
+                            
+                            <h3 className="text-sm font-black text-accent-lime uppercase tracking-[0.2em] mb-10 flex items-center gap-3">
+                                <span className="w-8 h-[1px] bg-accent-lime/30"></span>
+                                معاينة الظهور في الموقع
+                                <span className="w-8 h-[1px] bg-accent-lime/30"></span>
                             </h3>
-                            <div className="flex flex-wrap gap-8 text-xs text-[var(--color-text-muted)] opacity-70">
-                                <div className="space-y-2">
-                                    <p className="font-bold text-[var(--color-text-primary)]">اتصل بنا</p>
-                                    <p>{platformSettings.email || 'info@maqas.site'}</p>
-                                    <p>{platformSettings.phone || '+962 78 171 7990'}</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                {/* Brand Column */}
+                                <div className="space-y-4">
+                                    <div className="w-12 h-12 rounded-full border-2 border-accent-lime flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full bg-accent-lime"></div>
+                                    </div>
+                                    <p className="text-xs text-white/40 leading-relaxed max-w-[200px]">
+                                        نقدم لك تجربة حلاقة استثنائية تجمع بين الفن والدقة في قلب عمان.
+                                    </p>
                                 </div>
-                                <div className="space-y-2">
-                                    <p className="font-bold text-[var(--color-text-primary)]">تابعنا</p>
+
+                                {/* Contact Column */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-widest">تواصل معنا</h4>
+                                    <div className="space-y-3">
+                                        {platformSettings.show_email !== false && (
+                                            <p className="text-sm text-white/70 hover:text-accent-lime transition-colors cursor-default">{platformSettings.email || 'info@maqas.site'}</p>
+                                        )}
+                                        {platformSettings.show_phone !== false && (
+                                            <p className="text-sm text-white/70 hover:text-accent-lime transition-colors cursor-default" dir="ltr">{platformSettings.phone || '+962 78 171 7990'}</p>
+                                        )}
+                                        {platformSettings.show_address !== false && (
+                                            <div className="flex items-start gap-2 pt-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-accent-lime mt-1.5 shrink-0"></div>
+                                                <p className="text-[11px] text-white/40 italic">{platformSettings.address || 'عمان، الأردن'}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Social Column */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-widest">تابعنا</h4>
                                     <div className="flex gap-4">
-                                        <span className={platformSettings.instagram ? 'text-accent-lime' : ''}>Instagram</span>
-                                        <span className={platformSettings.facebook ? 'text-accent-lime' : ''}>Facebook</span>
-                                        <span className={platformSettings.tiktok ? 'text-accent-lime' : ''}>TikTok</span>
+                                        {[
+                                            { id: 'instagram', icon: <FaInstagram size={20} /> },
+                                            { id: 'facebook', icon: <FaFacebook size={20} /> },
+                                            { id: 'tiktok', icon: <FaTiktok size={20} /> },
+                                            { id: 'whatsapp', icon: <FaWhatsapp size={20} /> },
+                                        ].map((social) => {
+                                            const isVisible = (platformSettings as any)[`show_${social.id}`] !== false;
+                                            if (!isVisible) return null;
+                                            return (
+                                                <div key={social.id} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-accent-lime hover:border-accent-lime/50 transition-all cursor-default">
+                                                    {social.icon}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
+
             </div>
 
             {/* ── Salon Details Popup ── */}

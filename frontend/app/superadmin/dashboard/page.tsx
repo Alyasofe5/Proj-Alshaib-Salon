@@ -116,10 +116,10 @@ function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan
                 <div className="p-5 border-b border-[var(--border-subtle)] flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-xl">
-                            {salon.name.charAt(0)}
+                            {salon.name?.charAt(0) || '?'}
                         </div>
                         <div>
-                            <h3 className="font-bold text-[var(--color-text-primary)] text-lg">{salon.name}</h3>
+                            <h3 className="font-bold text-[var(--color-text-primary)] text-lg">{salon.name || 'بدون اسم'}</h3>
                             <div className="flex items-center gap-2">
                                 <p className="text-xs text-[var(--color-text-muted)] dir-ltr">/{salon.slug}</p>
                                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${pt.color}`}>{pt.label}</span>
@@ -833,7 +833,7 @@ export default function SuperAdminDashboard() {
                                                     style={{ borderColor: isUrgent ? "rgba(231,76,60,.25)" : "rgba(195,216,9,.15)" }}>
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-accent-lime font-bold text-sm"
-                                                            style={{ background: "rgba(195,216,9,.1)", border: "1px solid rgba(195,216,9,.2)" }}>{s.name.charAt(0)}</div>
+                                                            style={{ background: "rgba(195,216,9,.1)", border: "1px solid rgba(195,216,9,.2)" }}>{s.name?.charAt(0) || '?'}</div>
                                                         <div>
                                                             <p className="font-medium text-sm">{s.name}</p>
                                                             <p className="text-xs text-[var(--color-text-muted)]">{s.plan_name || 'بدون باقة'} • {s.owner_phone || '—'}</p>
@@ -876,7 +876,7 @@ export default function SuperAdminDashboard() {
                                             {/* Row 1: Salon identity + status + action */}
                                             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-surface)]/60">
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-sm flex-shrink-0">{s.name.charAt(0)}</div>
+                                                    <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-sm flex-shrink-0">{s.name?.charAt(0) || '?'}</div>
                                                     <div className="min-w-0">
                                                         <p className="font-semibold text-sm truncate">{s.name}</p>
                                                         <p className="text-[11px] text-[#666] truncate">/{s.slug} • {s.owner_name || '—'}</p>
@@ -1210,8 +1210,8 @@ export default function SuperAdminDashboard() {
                                             <tr key={salon.id} className="border-b border-[var(--color-surface)] hover:bg-card-dark transition-colors">
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-lg">{salon.name.charAt(0)}</div>
-                                                        <div><p className="font-medium">{salon.name}</p><p className="text-xs text-[var(--color-text-muted)]">{salon.owner_name || salon.slug}</p></div>
+                                                        <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-lg">{salon.name?.charAt(0) || '?'}</div>
+                                                        <div><p className="font-medium">{salon.name || 'بدون اسم'}</p><p className="text-xs text-[var(--color-text-muted)]">{salon.owner_name || salon.slug}</p></div>
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-center text-sm text-[var(--color-text-secondary)]">{salon.plan_name || '-'}</td>
@@ -1253,9 +1253,9 @@ export default function SuperAdminDashboard() {
                                 <div key={salon.id} className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-lg">{salon.name.charAt(0)}</div>
+                                            <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-lg">{salon.name?.charAt(0) || '?'}</div>
                                             <div>
-                                                <p className="font-medium">{salon.name}</p>
+                                                <p className="font-medium">{salon.name || 'بدون اسم'}</p>
                                                 <p className="text-xs text-[var(--color-text-muted)]">{salon.owner_name || salon.slug}</p>
                                             </div>
                                         </div>

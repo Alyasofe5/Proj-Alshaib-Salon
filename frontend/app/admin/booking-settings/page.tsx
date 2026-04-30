@@ -6,7 +6,7 @@ import { servicesAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp, FaEye, FaEyeSlash, FaCog } from "react-icons/fa";
-import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Settings, Palette, Scissors, Users, Calendar, HelpCircle, Link2, Sparkles, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
@@ -47,6 +47,7 @@ interface SalonSettings {
     facebook: string;
     owner_phone: string;
     booking_message: string;
+    whatsapp_message?: string;
     hero_image: string | null;
     hero_video: string | null;
     hero_type: 'image' | 'video' | '';
@@ -73,7 +74,7 @@ interface SalonSettings {
     gallery_subtitle: string;
     reviews_title?: string;
     reviews_subtitle?: string;
-    reviews?: { customer_name: string; comment: string; rating: number; role?: string; photo?: string }[];
+    reviews?: { customer_name: string; comment: string; rating: number; role?: string; photo?: string; is_shown?: boolean }[];
     // Stats fields
     stats_years: string;
     stats_clients: string;
@@ -84,6 +85,7 @@ interface SalonSettings {
     // Discount fields
     discount_active: number;
     discount_percentage: string;
+    discount_days: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
 }
 
 interface FaqItem { id: string; question: string; answer: string; order: number; }
@@ -121,6 +123,7 @@ export default function BookingSettingsPage() {
     const [aboutImg2Uploading, setAboutImg2Uploading] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('general');
+    const [tabDropdownOpen, setTabDropdownOpen] = useState(false);
 
     // ── FAQ state ──
     const [faqs, setFaqs] = useState<FaqItem[]>([]);
@@ -486,6 +489,7 @@ export default function BookingSettingsPage() {
                 const savedData = res.data.data?.saved_data || {};
                 const finalDiscountActive = settings.discount_active;
                 const finalDiscountPercentage = settings.discount_percentage;
+                const finalDiscountDays = settings.discount_days;
                 
                 setSettings(prev => prev ? {
                     ...prev,
@@ -493,6 +497,7 @@ export default function BookingSettingsPage() {
                     // Always keep what user had set in UI for these fields
                     discount_active: finalDiscountActive,
                     discount_percentage: finalDiscountPercentage,
+                    discount_days: finalDiscountDays,
                 } : prev);
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2500);
@@ -619,14 +624,65 @@ export default function BookingSettingsPage() {
                 </div>
             </div>
 
-            <div className="px-4 md:px-8 mt-4 sticky top-[72px] z-20 bg-card-dark/80 backdrop-blur-md">
-                <div className="flex items-center gap-1 overflow-x-auto hide-scroll py-2">
+            <div className="px-4 md:px-8 mt-4 sticky top-[72px] z-20 bg-card-dark/80 backdrop-blur-md py-3">
+                {/* Mobile Tab Selector (Custom Dropdown) */}
+                <div className="block md:hidden relative">
+                    <button 
+                        onClick={() => setTabDropdownOpen(!tabDropdownOpen)}
+                        className="w-full flex items-center justify-between bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 outline-none font-bold text-sm shadow-sm transition-all focus:border-[var(--color-accent)]"
+                    >
+                        <div className="flex items-center gap-2.5">
+                            {(() => {
+                                const activeTabData = TABS.find(t => t.id === activeTab) || TABS[0];
+                                const ActiveIcon = activeTabData.icon;
+                                return (
+                                    <>
+                                        <ActiveIcon size={16} className="text-[var(--color-accent)]" />
+                                        <span>{activeTabData.label}</span>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                        <ChevronDown size={16} className={`transition-transform duration-300 ${tabDropdownOpen ? 'rotate-180 text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {tabDropdownOpen && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-full left-0 right-0 mt-2 bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col"
+                            >
+                                {TABS.map(tab => {
+                                    const Icon = tab.icon;
+                                    const isActive = activeTab === tab.id;
+                                    return (
+                                        <button 
+                                            key={tab.id} 
+                                            onClick={() => { setActiveTab(tab.id); setTabDropdownOpen(false); }}
+                                            className={`flex items-center gap-3 px-4 py-3.5 text-sm font-bold transition-all text-right border-b border-white/5 last:border-none ${isActive ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" : "text-[var(--color-text-primary)] hover:bg-white/5"}`}
+                                        >
+                                            <Icon size={16} className={isActive ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"} />
+                                            <span>{tab.label}</span>
+                                            {isActive && <FaCheck size={12} className="mr-auto text-[var(--color-accent)]" />}
+                                        </button>
+                                    );
+                                })}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Desktop Tabs */}
+                <div className="hidden md:flex items-center gap-1 overflow-x-auto hide-scroll py-1">
                     {TABS.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
                         return (
                             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${isActive ? "bg-[var(--color-accent)] text-black border-[var(--color-accent)] shadow-[0_4px_12px_rgba(195,216,9,0.2)]" : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--border-subtle)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"}`}>
+                                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${isActive ? "bg-[var(--color-accent)] text-black border-[var(--color-accent)] shadow-[0_4px_12px_rgba(195,216,9,0.2)]" : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--border-subtle)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"}`}>
                                 <Icon size={14} />
                                 <span>{tab.label}</span>
                             </button>
@@ -887,8 +943,56 @@ export default function BookingSettingsPage() {
                                 <InputField label="نسبة الخصم (%)" type="number" value={settings.discount_percentage ?? "30"} onChange={v => setSettings({ ...settings, discount_percentage: v })} gold={gold} placeholder="مثال: 30" />
 
                             </div>
+
+                            {/* Days of week picker */}
+                            {Number(settings.discount_active) === 1 && (
+                                <div className="mt-6">
+                                    <label className="text-xs font-bold text-[var(--color-text-muted)] block uppercase tracking-wider mb-3">
+                                        أيام تطبيق الخصم على الزبائن
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { day: 0, ar: 'الأحد' },
+                                            { day: 1, ar: 'الإثنين' },
+                                            { day: 2, ar: 'الثلاثاء' },
+                                            { day: 3, ar: 'الأربعاء' },
+                                            { day: 4, ar: 'الخميس' },
+                                            { day: 5, ar: 'الجمعة' },
+                                            { day: 6, ar: 'السبت' },
+                                        ].map(({ day, ar }) => {
+                                            const activeDays = settings.discount_days ?? [];
+                                            const isActive = activeDays.includes(day);
+                                            return (
+                                                <button
+                                                    key={day}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const cur = settings.discount_days ?? [];
+                                                        const next = isActive ? cur.filter(d => d !== day) : [...cur, day];
+                                                        setSettings({ ...settings, discount_days: next });
+                                                    }}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                                                        isActive
+                                                            ? 'bg-[var(--color-accent)] text-black border-[var(--color-accent)] shadow-[0_0_12px_rgba(195,216,9,0.3)]'
+                                                            : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--border-subtle)] hover:border-[var(--color-accent)]/50'
+                                                    }`}
+                                                >
+                                                    {ar}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="mt-3 text-[10px] text-[var(--color-text-muted)] italic">
+                                        {(settings.discount_days ?? []).length === 0
+                                            ? '⚠️ لم تحدد أي أيام — الخصم لن يُطبق حتى تختار يوماً واحداً على الأقل'
+                                            : `✅ الخصم مفعّل في ${(settings.discount_days ?? []).length} يوم من الأسبوع`
+                                        }
+                                    </p>
+                                </div>
+                            )}
+
                             <p className="mt-4 text-[10px] text-[var(--color-text-muted)] italic leading-relaxed">
-                                نسبة الخصم للزوار الجدد (يظهر في أسفل الصفحة الرئيسية). اختر "غير مفعل" لإخفائه تماماً.
+                                الخصم يُطبق تلقائياً على حساب الزبون عند اختياره يوماً من الأيام المحددة.
                             </p>
                         </div>
 
@@ -917,7 +1021,21 @@ export default function BookingSettingsPage() {
                         </div>
 
                         <div className="mt-6">
-                            <BilingualInput label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholderAr="مثال: شكراً لحجزك! سننتظرك في الموعد." placeholderEn="e.g. Thanks for booking! See you soon." />
+                            <BilingualInput label="رسالة بعد الحجز (تظهر للزبون بعد نجاح الحجز على الموقع)" value={settings.booking_message} onChange={v => setSettings({ ...settings, booking_message: v })} gold={gold} placeholderAr="مثال: شكراً لحجزك! سننتظرك في الموعد." placeholderEn="e.g. Thanks for booking! See you soon." />
+                        </div>
+                        <div className="mt-6">
+                            <BilingualTextArea 
+                                label="رسالة الواتساب (القالب الافتراضي عند تأكيد الحجز)" 
+                                value={settings.whatsapp_message || ''} 
+                                onChange={v => setSettings({ ...settings, whatsapp_message: v })} 
+                                gold={gold} 
+                                placeholderAr="مثال: يسعدنا تأكيد حجزك في صالوننا، نراك قريباً!" 
+                                placeholderEn="e.g. We are happy to confirm your booking, see you soon!" 
+                                rows={3} 
+                            />
+                            <p className="text-[10px] text-[var(--color-text-muted)] mt-2">
+                                * يمكنك ترك هذا الحقل فارغاً لاستخدام الرسالة الفخمة الافتراضية. إذا قمت بكتابة نص هنا، سيتم إرساله للزبون عبر الواتساب بدلاً من الرسالة الافتراضية.
+                            </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t border-white/5">
                             <div className="space-y-4">
@@ -1218,12 +1336,21 @@ export default function BookingSettingsPage() {
                                         <BilingualInput label={`اسم العميل ${index + 1}`} value={review.customer_name} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, customer_name: v } : item) })} gold={gold} placeholderAr="اسم العميل" placeholderEn="Client Name" />
                                         <BilingualInput label="الصفة" value={review.role ?? ""} onChange={v => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, role: v } : item) })} gold={gold} placeholderAr="مثال: عميل موثق" placeholderEn="e.g. Verified Client" />
                                         <div>
-                                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">التقييم</label>
-                                            <select value={review.rating ?? 5} onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, rating: Number(e.target.value) } : item) })}
-                                                className="w-full py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all cursor-pointer appearance-none"
-                                                style={{ border: "1.5px solid var(--border-subtle)" }}>
-                                                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} نجوم</option>)}
-                                            </select>
+                                            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-2 block uppercase tracking-wider">التقييم و الظهور</label>
+                                            <div className="flex gap-2">
+                                                <select value={review.rating ?? 5} onChange={e => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, rating: Number(e.target.value) } : item) })}
+                                                    className="flex-1 py-3.5 px-4 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] outline-none text-sm transition-all cursor-pointer appearance-none"
+                                                    style={{ border: "1.5px solid var(--border-subtle)" }}>
+                                                    {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} نجوم</option>)}
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings({ ...settings, reviews: (settings.reviews ?? []).map((item, i) => i === index ? { ...item, is_shown: !item.is_shown } : item) })}
+                                                    className={`px-4 py-3.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap flex items-center justify-center gap-2 ${review.is_shown ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-white/5 text-gray-400 border-gray-600'}`}
+                                                >
+                                                    {review.is_shown ? <><FaCheckCircle size={12} /> معروض للزبائن</> : 'مخفي'}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
@@ -1855,19 +1982,18 @@ function BilingualListEditor({ label, value, onChange, gold, placeholderAr, plac
     helperText?: string;
 }) {
     const lines = (value || "").split(/\r?\n/);
-    const arVal = lines.map((line) => line.includes("||") ? line.split("||")[0].trim() : line.trim()).join("\n");
-    const enVal = lines.map((line) => line.includes("||") ? line.split("||")[1]?.trim() ?? "" : "").join("\n");
+    const arVal = lines.map((line) => line.includes("||") ? line.split("||")[0] : line).join("\n");
+    const enVal = lines.map((line) => line.includes("||") ? line.split("||")[1] ?? "" : "").join("\n");
 
     const mergeValues = (nextAr: string, nextEn: string) => {
         const arLines = nextAr.split(/\r?\n/);
         const enLines = nextEn.split(/\r?\n/);
         const maxLines = Math.max(arLines.length, enLines.length);
         const merged = Array.from({ length: maxLines }, (_, index) => {
-            const arLine = arLines[index]?.trim() ?? "";
-            const enLine = enLines[index]?.trim() ?? "";
-            if (!arLine && !enLine) return "";
+            const arLine = arLines[index] ?? "";
+            const enLine = enLines[index] ?? "";
             return enLine ? `${arLine}||${enLine}` : arLine;
-        }).filter(Boolean);
+        });
         onChange(merged.join("\n"));
     };
 

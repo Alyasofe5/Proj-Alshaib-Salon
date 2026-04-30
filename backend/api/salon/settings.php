@@ -86,6 +86,7 @@ if (getMethod() === 'GET') {
         'stats_experts'   => $settings['stats_experts']   ?? '6',
         'discount_active'     => $settings['discount_active']     ?? 0,
         'discount_percentage' => $settings['discount_percentage'] ?? '30',
+        'discount_days'       => $settings['discount_days']       ?? [],
     ]);
 }
 

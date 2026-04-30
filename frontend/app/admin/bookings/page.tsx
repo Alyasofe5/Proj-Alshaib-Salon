@@ -54,8 +54,21 @@ export default function AdminBookings() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [selectedEmpId, setSelectedEmpId] = useState<number | null>(null);
     const [empLoading, setEmpLoading] = useState(false);
+    const [whatsappMessageTemplate, setWhatsappMessageTemplate] = useState<string>("");
 
     useEffect(() => { loadBookings(); }, [period, statusFilter]);
+    
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await api.get("/salon/settings.php");
+                if (res.data?.data?.whatsapp_message) {
+                    setWhatsappMessageTemplate(res.data.data.whatsapp_message);
+                }
+            } catch (err) { console.error("Error loading settings for whatsapp", err); }
+        };
+        fetchSettings();
+    }, []);
 
     const loadBookings = async () => {
         try {
@@ -86,12 +99,19 @@ export default function AdminBookings() {
     const sendWhatsApp = (b: Booking, type: "confirmed" | "cancelled", empName?: string) => {
         const phone = b.customer_phone.replace(/^0/, "962");
         const time12 = formatTime(b.booking_time);
-        const barberName = empName || b.employee_name;
+        
+        // استخراج النص العربي لتجنب ظهور علامات || اللغوية
+        const salonNameAr = tData(b.salon_name, 'ar');
+        const servicesAr = tData(b.service_names || b.service_name, 'ar');
+        const rawBarber = empName || b.employee_name;
+        const barberAr = rawBarber ? tData(rawBarber, 'ar') : "";
+        
         let msg = "";
         if (type === "confirmed") {
-            msg = `مرحباً ${b.customer_name} 👋\n\n✅ تم *تأكيد* حجزك في *${b.salon_name}*\n\n📅 ${dayName(b.booking_date)} ${b.booking_date}\n⏰ ${time12}\n✂️ ${b.service_names || b.service_name}${barberName ? `\n💇 الحلاق: ${barberName}` : ""}\n\nنراك قريباً! 🙏`;
+            const customFooter = whatsappMessageTemplate ? whatsappMessageTemplate : `🔸 يرجى الحضور قبل الموعد بـ 10 دقائق.\nنتطلع لرؤيتك قريباً! 🖤`;
+            msg = `✨ أهلاً بك ${b.customer_name} ✨\n\nيسعدنا تأكيد حجزك في ⚜️ *${salonNameAr}* ⚜️\n\n📅 الموعد: ${dayName(b.booking_date)} ${b.booking_date}\n⏰ الوقت: ${time12}\n✂️ الخدمة: ${servicesAr}${barberAr ? `\n💈 الحلاق: ${barberAr}` : ""}\n\n${customFooter}`;
         } else {
-            msg = `مرحباً ${b.customer_name} 👋\n\nنعتذر منك، تم *إلغاء* حجزك في *${b.salon_name}* ليوم ${b.booking_date} الساعة ${time12}.\n\nيمكنك الحجز مرة أخرى في وقت آخر. شكراً لتفهمك 🙏`;
+            msg = `✨ أهلاً بك ${b.customer_name} ✨\n\nنعتذر منك، تم *إلغاء* حجزك في ⚜️ *${salonNameAr}* ⚜️\nالمقرر في ${dayName(b.booking_date)} ${b.booking_date} الساعة ${time12}.\n\nنتمنى أن نتشرف بزيارتك في وقت آخر قريب،\nيمكنك حجز موعد جديد في أي وقت! 🖤`;
         }
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
     };

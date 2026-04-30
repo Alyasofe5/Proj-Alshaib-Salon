@@ -8,7 +8,7 @@ export interface SalonInfo {
     hero_video?: string | null;
     hero_type?: string;
     gallery?: string[];
-    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; photo?: string; }[];
+    reviews?: { id: number; customer_name: string; rating: number; comment: string; role?: string; photo?: string; is_shown?: boolean; }[];
     faqs?: { id: number; question: string; answer: string; }[];
     // New Content Fields
     hero_title?: string;
@@ -35,6 +35,7 @@ export interface SalonInfo {
         faq_subtitle?: string;
         discount_active?: number;
         discount_percentage?: string;
+        discount_days?: number[];
     }
 
 export interface BookingSel {

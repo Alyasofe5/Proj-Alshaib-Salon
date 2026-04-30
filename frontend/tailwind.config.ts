@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       colors: {
         // Core Brand Palette — Charcoal Black + Electric Lime
-        "bg-dark": "#222022",   // Main background — charcoal black
-        "card-dark": "#2A282A",   // Cards / elevated surfaces
-        "surface-hover": "#302E30",   // Hover / tertiary surface
+        "bg-dark": "var(--color-background)",   // Main background — charcoal black
+        "card-dark": "var(--color-cards)",   // Cards / elevated surfaces
+        "surface-hover": "var(--color-surface)",   // Hover / tertiary surface
         "accent-lime": "#C3D809",   // Primary accent — electric lime
         "accent-hover": "#D4EC0A",   // Lime hover (lighter)
         "accent-active": "#A8BB06",   // Lime active / pressed (darker)

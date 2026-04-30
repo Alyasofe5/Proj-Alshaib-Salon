@@ -184,7 +184,7 @@ export default function LandingPage() {
 
               <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                 style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
-                <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
+                <div className="w-full h-full rounded-full flex items-center justify-center p-0 shadow-inner overflow-hidden" style={{ background: "black" }}>
                   <Image
                     src="/images/logo_black_bg_hd.png"
                     alt="Maqass Logo"
@@ -193,7 +193,7 @@ export default function LandingPage() {
                     priority
                     quality={100}
                     sizes="(max-width: 768px) 96px, 112px"
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-cover rounded-full scale-[1.15] relative right-[3px]"
                   />
                 </div>
               </div>
@@ -355,22 +355,21 @@ export default function LandingPage() {
                 {/* CTA Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45 }}
-                  className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8"
+                  className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-8 w-full"
                 >
                   <Link href="/contact?from=free"
-                    className="group relative inline-flex items-center gap-2 sm:gap-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl text-sm font-black overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+                    className="group relative inline-flex justify-center items-center gap-1.5 sm:gap-2.5 px-5 py-2.5 sm:px-8 sm:py-4 rounded-xl text-xs sm:text-sm font-black overflow-hidden transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap"
                     style={{ background: "var(--color-accent)", color: "var(--color-background)", boxShadow: "0 0 0 1px rgba(195,216,9,.3), 0 12px 40px -8px rgba(195,216,9,.5)" }}
                   >
                     <span className="relative z-10">ابدأ مجاناً</span>
-                    <ArrowLeft size={16} className="relative z-10 transition-transform group-hover:-translate-x-1" />
+                    <ArrowLeft size={15} className="relative z-10 transition-transform group-hover:-translate-x-1" />
                     <div className="absolute inset-0 bg-[#C3D809]/15 -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12" />
                   </Link>
                   <a href="#features"
-                    className="inline-flex items-center gap-2 sm:gap-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-[#C3D809]/[0.08]"
+                    className="inline-flex justify-center items-center gap-1.5 sm:gap-2.5 px-5 py-2.5 sm:px-8 sm:py-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 hover:bg-[#C3D809]/[0.08] whitespace-nowrap"
                     style={{ background: "rgba(195,216,9,.06)", border: "1px solid rgba(195,216,9,.09)", color: "rgba(255,255,255,.8)", backdropFilter: "blur(10px)" }}
                   >
                     <span>شاهد كيف يعمل</span>
-                    <Play size={14} className="text-accent-lime" />
                   </a>
                 </motion.div>
 
@@ -500,7 +499,7 @@ export default function LandingPage() {
             {FEATURES.map((f, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }} viewport={{ once: true }}
-                className="group relative rounded-2xl md:rounded-3xl p-5 md:p-7 transition-all duration-500 cursor-default hover:shadow-lg"
+                className="group relative rounded-2xl md:rounded-3xl p-5 md:p-7 transition-shadow duration-500 cursor-default hover:shadow-lg"
                 style={{ background: "var(--bg-dark)", border: "1px solid var(--border)", boxShadow: "0 4px 24px var(--shadow)" }}>
                 <div className="absolute inset-0 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ background: "linear-gradient(135deg, var(--border-subtle), rgba(195,216,9,.06))", border: "1px solid rgba(195,216,9,.16)" }} />
@@ -587,7 +586,7 @@ export default function LandingPage() {
               return (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.15 }} viewport={{ once: true }}
-                  className="flex flex-col relative rounded-[20px] p-6 sm:p-8 transition-all duration-500 overflow-hidden"
+                  className="flex flex-col relative rounded-[20px] p-6 sm:p-8 overflow-hidden"
                   style={{
                     background: isPro ? "rgba(195,216,9,0.03)" : "rgba(255,255,255,0.02)",
                     border: isPro ? "1px solid rgba(195,216,9,0.3)" : "1px solid rgba(255,255,255,0.08)",
@@ -661,7 +660,7 @@ export default function LandingPage() {
 
           {/* Enterprise horizontal box (matching Framer's bottom tier) */}
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="relative mt-8 rounded-[16px] p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between transition-all duration-500"
+            className="relative mt-8 rounded-[16px] p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4 md:mb-0 text-center md:text-right">
               <h3 className="text-base font-bold" style={{ color: "#FFFFFF" }}>متطلبات خاصة؟</h3>
@@ -714,7 +713,7 @@ export default function LandingPage() {
                   <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
                   <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-[2px] overflow-hidden"
                     style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
-                    <div className="w-full h-full rounded-full flex items-center justify-center p-0.5 shadow-inner overflow-hidden" style={{ background: "black" }}>
+                    <div className="w-full h-full rounded-full flex items-center justify-center p-0 shadow-inner overflow-hidden" style={{ background: "black" }}>
                       <Image
                         src="/images/logo_black_bg_hd.png"
                         alt="Maqass Logo"
@@ -723,7 +722,7 @@ export default function LandingPage() {
                         loading="lazy"
                         quality={100}
                         sizes="(max-width: 768px) 96px, 112px"
-                        className="w-full h-full object-cover rounded-full"
+                        className="w-full h-full object-cover rounded-full scale-[1.15] relative right-[3px]"
                       />
                     </div>
                   </div>

@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Phone, Building2, User, MapPin, Users, MessageSquare, ArrowLeft, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
@@ -115,8 +116,16 @@ function ContactPageInner() {
                             <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
                             <div className="relative w-11 h-11 rounded-full flex items-center justify-center p-[2px] overflow-hidden" 
                                  style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
-                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0.5 shadow-inner overflow-hidden">
-                                    <MaqassLogoIcon size={32} />
+                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0 shadow-inner overflow-hidden">
+                                    <Image
+                                        src="/images/logo_black_bg_hd.png"
+                                        alt="Maqass Logo"
+                                        width={128}
+                                        height={128}
+                                        quality={100}
+                                        priority
+                                        className="w-full h-full object-cover rounded-full scale-[1.15] relative right-[3px]"
+                                    />
                                 </div>
                             </div>
                         </div>

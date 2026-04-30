@@ -89,10 +89,10 @@ export default function PrintReportPage() {
 
                     {period === "daily" ? (
                         <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-                            style={{ background: "var(--dark4)", border: "1px solid #C3D809", color: "#fff", padding: "7px 12px", borderRadius: "8px", fontFamily: "Tajawal", fontSize: "13px" }} />
+                            style={{ background: "var(--dark4)", border: "1px solid #C3D809", color: "#fff", padding: "7px 12px", borderRadius: "8px", fontFamily: "Noto Sans Arabic", fontSize: "13px" }} />
                     ) : (
                         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-                            style={{ background: "var(--dark4)", border: "1px solid #C3D809", color: "#fff", padding: "7px 12px", borderRadius: "8px", fontFamily: "Tajawal", fontSize: "13px" }} />
+                            style={{ background: "var(--dark4)", border: "1px solid #C3D809", color: "#fff", padding: "7px 12px", borderRadius: "8px", fontFamily: "Noto Sans Arabic", fontSize: "13px" }} />
                     )}
 
                     <button
@@ -102,7 +102,7 @@ export default function PrintReportPage() {
                             background: "linear-gradient(135deg, #C3D809, #e6c65a)",
                             color: "var(--color-cards)", border: "none", padding: "8px 20px",
                             borderRadius: "8px", fontWeight: 700, cursor: "pointer",
-                            fontFamily: "Tajawal", fontSize: "13px",
+                            fontFamily: "Noto Sans Arabic", fontSize: "13px",
                             boxShadow: "0 4px 15px rgba(195,216,9,.3)",
                         }}>
                         <Printer size={14} /> طباعة
@@ -111,7 +111,7 @@ export default function PrintReportPage() {
             </div>
 
             {/* ===== Printable Report ===== */}
-            <div style={{ maxWidth: "800px", margin: "24px auto", background: "#fff", borderRadius: "12px", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.15)", fontFamily: "Tajawal, sans-serif" }}>
+            <div style={{ maxWidth: "800px", margin: "24px auto", background: "#fff", borderRadius: "12px", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.15)", fontFamily: "Noto Sans Arabic, sans-serif" }}>
 
                 {/* Report Header */}
                 <div style={{ background: "linear-gradient(135deg, var(--color-cards) 0%, #1e1e1e 100%)", color: "#fff", padding: "32px", textAlign: "center", borderBottom: "3px solid #C3D809" }}>

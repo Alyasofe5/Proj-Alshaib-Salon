@@ -24,6 +24,7 @@ interface BookingModalProps {
   subtotal: number;
   hasDiscount: boolean;
   discountPercent: number;
+  discountDays: number[];
   totalDur: number;
   selSrvs: Service[];
   submitting: boolean;
@@ -37,7 +38,7 @@ interface BookingModalProps {
 export default function BookingModal({
   isOpen, onClose, salon, services, employees, step, setStep, sel, setSel,
   dates, bookedSlots, offEmployeesIds, fetchBooked, genTimes, totalPrice, totalDur, selSrvs,
-  submitting, error, submitBooking, toggleSrv, lang, tData, subtotal, hasDiscount, discountPercent
+  submitting, error, submitBooking, toggleSrv, lang, tData, subtotal, hasDiscount, discountPercent, discountDays
 }: BookingModalProps) {
 
   const isRTL = lang === 'ar';
@@ -170,7 +171,7 @@ export default function BookingModal({
           disabled={!canProceed || submitting}
           className={`mt-8 w-full py-5 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all ${
             canProceed && !submitting
-              ? "bg-white text-black hover:bg-[#C3D809] active:scale-[0.98]"
+              ? "bg-[#C3D809] text-black hover:bg-[#aabf05] hover:shadow-[0_0_20px_rgba(195,216,9,0.4)] active:scale-[0.98]"
               : "bg-white/5 text-white/15 cursor-not-allowed"
           }`}
         >
@@ -196,7 +197,7 @@ export default function BookingModal({
           className="fixed inset-0 z-[200] bg-[#0A0A0A] flex flex-col overflow-hidden"
           style={{ 
             direction: isRTL ? 'rtl' : 'ltr',
-            fontFamily: isRTL ? "var(--font-tajawal)" : "'Montserrat', sans-serif"
+            fontFamily: isRTL ? "'Noto Sans Arabic', sans-serif" : "'Cormorant Garamond', serif"
           }}
         >
           {/* ═══ TOP BAR ═══ */}
@@ -333,13 +334,20 @@ export default function BookingModal({
                   <motion.div key="s3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-10">
                     <div className="flex gap-3 overflow-x-auto pb-4 hide-scroll snap-x">
                       {dates.map((d, i) => {
-                        const dt = new Date(d);
+                        const dt = new Date(d + "T00:00:00");
                         const isSel = sel.booking_date === d;
+                        const isDiscDay = discountDays.includes(dt.getDay());
                         return (
                           <button key={d} onClick={() => setSel(p => ({ ...p, booking_date: d, booking_time: "" }))}
-                            className={`shrink-0 flex flex-col items-center gap-1 py-6 px-5 rounded-2xl snap-center min-w-[85px] border transition-all ${
+                            className={`relative shrink-0 flex flex-col items-center gap-1 py-6 px-5 rounded-2xl snap-center min-w-[85px] border transition-all ${
                               isSel ? "bg-[#C3D809] border-[#C3D809] text-black" : "bg-white/[0.02] border-white/5 text-white hover:border-white/20"
                             }`}>
+                            {/* Discount badge */}
+                            {isDiscDay && !isSel && (
+                              <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[8px] font-black bg-[#C3D809] text-black px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                {isRTL ? 'خصم' : 'SALE'}
+                              </span>
+                            )}
                             <span className={`text-[10px] font-bold uppercase tracking-wider ${isSel ? "text-black/50" : "text-white/25"}`}>
                               {i === 0 ? (isRTL ? "اليوم" : "Today") : (lang === 'en' ? dayNamesEn[dt.getDay()].slice(0, 3) : dayNames[dt.getDay()])}
                             </span>
@@ -406,7 +414,7 @@ export default function BookingModal({
                           }}
                           placeholder={f.pl}
                           maxLength={f.maxLength}
-                          className="w-full bg-white/[0.03] border border-white/8 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809]/40 focus:outline-none transition-all font-bold placeholder:text-white/10"
+                          className="w-full bg-white/[0.03] border border-[#C3D809]/30 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809] focus:ring-1 focus:ring-[#C3D809] focus:ring-offset-0 focus:shadow-[0_0_15px_rgba(195,216,9,0.2)] !outline-none transition-all duration-300 font-bold placeholder:text-white/20"
                           style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                         />
                       </div>
@@ -415,7 +423,7 @@ export default function BookingModal({
                       <label className="text-[11px] font-bold text-white/25 uppercase tracking-widest mb-3 block">{isRTL ? "ملاحظات" : "Notes"}</label>
                       <textarea value={sel.notes} onChange={e => setSel(p => ({ ...p, notes: e.target.value }))} rows={3}
                         placeholder={isRTL ? "ملاحظات إضافية..." : "Special requests..."}
-                        className="w-full bg-white/[0.03] border border-white/8 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809]/40 focus:outline-none transition-all font-bold resize-none placeholder:text-white/10"
+                        className="w-full bg-white/[0.03] border border-[#C3D809]/30 rounded-2xl px-6 py-5 text-white focus:border-[#C3D809] focus:ring-1 focus:ring-[#C3D809] focus:ring-offset-0 focus:shadow-[0_0_15px_rgba(195,216,9,0.2)] !outline-none transition-all duration-300 font-bold resize-none placeholder:text-white/20"
                       />
                     </div>
                   </motion.div>
@@ -462,7 +470,7 @@ export default function BookingModal({
                 onClick={handleNext}
                 disabled={!canProceed || submitting}
                 className={`flex-1 py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all ${
-                  canProceed && !submitting ? "bg-white text-black active:scale-[0.97]" : "bg-white/5 text-white/15 cursor-not-allowed"
+                  canProceed && !submitting ? "bg-[#C3D809] text-black hover:bg-[#aabf05] hover:shadow-[0_0_20px_rgba(195,216,9,0.4)] active:scale-[0.97]" : "bg-white/5 text-white/15 cursor-not-allowed"
                 }`}
               >
                 {submitting ? (isRTL ? "جاري..." : "...") : step === 4 ? (isRTL ? "تأكيد" : "Confirm") : (isRTL ? "متابعة" : "Continue")}

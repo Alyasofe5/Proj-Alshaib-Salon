@@ -128,7 +128,8 @@ export default function Sidebar({ role }: SidebarProps) {
         router.push("/login");
     };
 
-    const displayName = user?.employee_name || user?.name || user?.username || "مستخدم";
+    const rawName = user?.employee_name || user?.name || user?.username || "مستخدم";
+    const displayName = rawName.includes("||") ? rawName.split("||")[0].trim() : rawName;
     const initials = displayName.charAt(0).toUpperCase();
     const isEmployee = role === "employee" || user?.role === "employee";
     const navSections = isEmployee ? employeeNavSections : adminNavSections;
@@ -285,14 +286,15 @@ export default function Sidebar({ role }: SidebarProps) {
                                     <><Crown size={11} className="text-[#C3D809]" /> مدير النظام</>
                                 )}
                             </p>
-                            <span className={`self-start inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${badge.colorClass} mt-0.5`}>
-                                <span className={`w-1 h-1 rounded-full ${badge.dotClass}`} />
-                                {badge.label}
-                            </span>
+                            {!isEmployee && (
+                                <span className={`self-start inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${badge.colorClass} mt-0.5`}>
+                                    <span className={`w-1 h-1 rounded-full ${badge.dotClass}`} />
+                                    {badge.label}
+                                </span>
+                            )}
                         </div>
                         
-                        {/* Chevron */}
-                        <ChevronLeft size={18} className="text-white/25 group-hover:text-[#C3D809] transition-colors flex-shrink-0" />
+
                     </div>
                     
                     {/* Logout Button */}

@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { AlertTriangle, Clock, Phone, RefreshCw, ShieldAlert, LogIn, User, Lock, Eye, EyeOff, MessageSquare } from "lucide-react";
 import MaqassLogoIcon from "@/components/ui/MaqassLogoIcon";
@@ -156,22 +157,28 @@ export default function LoginPage() {
             >
                 {/* Logo Area */}
                 <div className="text-center mb-10 group">
-                    <div className="flex justify-center mb-8 relative">
-                        {/* Minimal Luxury Depth */}
-                        <div className="absolute inset-0 rounded-full blur-[60px] opacity-10 bg-[var(--color-accent)] pointer-events-none" />
-
-                        <div className="relative w-24 h-24 rounded-full flex items-center justify-center p-[1px] transition-all duration-1000 group-hover:scale-105 bg-white/10">
-                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-1.5 border border-white/5 overflow-hidden">
-                                <img src="/images/logo_black_bg_hd.png" alt="Maqass Logo"
-                                    width="256"
-                                    height="256"
-                                    className="w-full h-full object-cover rounded-full" />
+                    <div className="flex justify-center mb-4 relative">
+                        <div className="relative flex-shrink-0 transition-all duration-700 group-hover:scale-110 group-hover:rotate-[5deg]">
+                            <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-[var(--color-accent)] animate-pulse" />
+                            <div className="relative w-24 h-24 rounded-full flex items-center justify-center p-[2px] overflow-hidden" 
+                                 style={{ background: "linear-gradient(135deg, #C3D809 0%, rgba(195,216,9,0.1) 100%)" }}>
+                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center p-0 shadow-inner overflow-hidden">
+                                    <Image
+                                        src="/images/logo_black_bg_hd.png"
+                                        alt="Maqass Logo"
+                                        width={256}
+                                        height={256}
+                                        quality={100}
+                                        priority
+                                        className="w-full h-full object-cover rounded-full scale-[1.15] relative right-[3px]"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                        <span className="text-4xl font-light tracking-tight maqass-brand text-white italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>MAQASS</span>
-                        <span className="text-[9px] font-medium tracking-[0.4em] uppercase text-white/30 mt-3" style={{ fontFamily: "var(--font-space-mono)" }}>Salon Management</span>
+                    <div className="flex flex-col items-center mt-1">
+                        <span className="text-3xl font-black tracking-tight leading-none maqass-brand drop-shadow-[0_0_10px_rgba(195,216,9,0.2)] text-white">MAQASS</span>
+                        <span className="text-[10px] font-bold tracking-[.3em] mt-1.5 uppercase opacity-60" style={{ color: "var(--color-accent)" }}>Salon Platform</span>
                     </div>
                 </div>
 
@@ -275,8 +282,8 @@ export default function LoginPage() {
                             type="submit"
                             disabled={loading}
                             className="w-full h-14 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all relative overflow-hidden group/btn disabled:opacity-50 flex items-center justify-center gap-3"
-                            style={{ 
-                                background: "#C3D809", 
+                            style={{
+                                background: "#C3D809",
                                 color: "#000",
                                 fontFamily: "'Noto Sans Arabic', sans-serif"
                             }}
@@ -286,7 +293,7 @@ export default function LoginPage() {
                             ) : (
                                 <>
                                     <span>دخول</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover/btn:-translate-x-1"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover/btn:-translate-x-1"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" /></svg>
                                 </>
                             )}
                         </button>

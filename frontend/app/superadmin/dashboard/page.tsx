@@ -7,7 +7,7 @@ import {
     FaBuilding, FaChartLine, FaExclamationTriangle, FaCogs,
     FaSignOutAlt, FaPause, FaCheck, FaBan, FaPlus, FaCrown,
     FaEnvelope, FaPhone, FaMapMarkerAlt, FaUsers, FaTimes,
-    FaMoneyBillWave, FaTrash, FaInfoCircle,
+    FaMoneyBillWave, FaTrash, FaInfoCircle, FaChevronDown,
 } from "react-icons/fa";
 import api from "@/lib/api";
 import { useBrandUI } from "@/components/ui/BrandUI";
@@ -103,11 +103,11 @@ function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan
                     {/* Status */}
                     <div className="flex items-center gap-3 p-3 bg-card-dark rounded-xl border border-[var(--color-surface)]">
                         <span className="text-xs text-[var(--color-text-muted)]">الحالة:</span>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${salon.status === "active" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : salon.status === "suspended" ? "bg-accent-lime/20 text-accent-lime border border-accent-lime/30" : "bg-red-500/20 text-red-400 border border-red-500/30"}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${salon.status === "active" ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/20" : salon.status === "suspended" ? "bg-white/5 text-gray-400 border border-white/10" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
                             {salon.status === "active" ? <><FaCheck size={9} /> نشط</> : salon.status === "suspended" ? <><FaPause size={9} /> موقف</> : <><FaBan size={9} /> منتهي</>}
                         </span>
                         {dLeft !== null && salon.status === "active" && (
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${dLeft <= 7 ? "bg-accent-lime/15 text-accent-lime" : "bg-emerald-500/15 text-emerald-400"}`}>
+                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${dLeft <= 7 ? "bg-red-500/15 text-red-400 border border-red-500/20" : "bg-white/5 text-gray-400 border border-white/10"}`}>
                                 {dLeft === 0 ? "ينتهي اليوم!" : `${dLeft} يوم متبقي`}
                             </span>
                         )}
@@ -201,17 +201,17 @@ function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan
                         <p className="text-xs text-[var(--color-text-muted)] font-bold">إجراءات سريعة</p>
                         <div className="flex flex-wrap gap-2">
                             <button onClick={() => onStatusChange(salon.id, "active", 1)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ يوم</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ يوم</button>
                             <button onClick={() => onStatusChange(salon.id, "active", 3)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ 3 أيام</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ 3 أيام</button>
                             <button onClick={() => onStatusChange(salon.id, "active", 7)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+ أسبوع</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ أسبوع</button>
                             <button onClick={() => onStatusChange(salon.id, "active", 30)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-accent-lime/10 text-accent-lime hover:bg-accent-lime/20 transition-all">+ شهر</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ شهر</button>
                             <button onClick={() => onStatusChange(salon.id, "active", 180)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all">+ 6 أشهر</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ 6 أشهر</button>
                             <button onClick={() => onStatusChange(salon.id, "active", 365)}
-                                className="px-3 py-2 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all">+ سنة</button>
+                                className="px-3 py-2 rounded-lg text-xs font-bold bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all border border-white/5">+ سنة</button>
                         </div>
                     </div>
 
@@ -219,18 +219,18 @@ function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan
                     <div className="flex gap-2 pt-1">
                         {salon.status === "active" ? (
                             <button onClick={() => onStatusChange(salon.id, "suspended")}
-                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-accent-lime/15 text-accent-lime hover:bg-accent-lime/25 transition-all">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10">
                                 إيقاف الصالون
                             </button>
                         ) : (
                             <button onClick={() => onStatusChange(salon.id, "active", 30)}
-                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[var(--color-accent)]/15 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/25 transition-all border border-[var(--color-accent)]/20">
                                 تفعيل (شهر)
                             </button>
                         )}
                         {salon.owner_phone && (
                             <a href={`https://wa.me/${salon.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all text-center">
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all text-center border border-green-500/20">
                                 واتساب
                             </a>
                         )}
@@ -255,6 +255,7 @@ export default function SuperAdminDashboard() {
     const [revenueMonthTotal, setRevenueMonthTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<"dashboard" | "salons" | "contacts" | "revenues" | "plans">("dashboard");
+    const [tabDropdownOpen, setTabDropdownOpen] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
     const [deleteModal, setDeleteModal] = useState<{ salon: Salon } | null>(null);
@@ -519,18 +520,18 @@ export default function SuperAdminDashboard() {
 
     const statusBadge = (status: string) => {
         const map: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-            active: { label: "نشط", color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30", icon: <FaCheck size={10} /> },
-            suspended: { label: "موقف", color: "bg-accent-lime/20 text-accent-lime border border-accent-lime/30", icon: <FaPause size={10} /> },
-            expired: { label: "منتهي", color: "bg-red-500/20 text-red-400 border border-red-500/30", icon: <FaBan size={10} /> },
+            active: { label: "نشط", color: "bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/20", icon: <FaCheck size={10} /> },
+            suspended: { label: "موقف", color: "bg-white/5 text-gray-400 border border-white/10", icon: <FaPause size={10} /> },
+            expired: { label: "منتهي", color: "bg-red-500/10 text-red-400 border border-red-500/20", icon: <FaBan size={10} /> },
         };
         const s = map[status] || map.expired;
         return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.color}`}>{s.icon} {s.label}</span>;
     };
 
-    if (!_hydrated || loading) return <div className="min-h-screen bg-card-dark flex items-center justify-center"><div className="spinner" /></div>;
+    if (!_hydrated || loading) return <div className="min-h-screen bg-bg-dark flex items-center justify-center"><div className="spinner" /></div>;
 
     return (
-        <div className="min-h-screen bg-card-dark text-[var(--color-text-primary)]" dir="rtl">
+        <div className="min-h-screen bg-bg-dark text-[var(--color-text-primary)]" dir="rtl">
 
             {/* ── Header ── */}
             <header className="bg-card-dark border-b border-[var(--border-subtle)] sticky top-0 z-40">
@@ -553,7 +554,61 @@ export default function SuperAdminDashboard() {
 
             {/* ── Tabs ── */}
             <div className="max-w-7xl mx-auto px-4 mt-4">
-                <div className="flex gap-2 bg-card-dark rounded-xl p-1 overflow-x-auto hide-scrollbars w-full md:w-fit">
+                {/* Mobile Tab Dropdown */}
+                <div className="block md:hidden relative">
+                    <button
+                        onClick={() => setTabDropdownOpen(!tabDropdownOpen)}
+                        className="w-full flex items-center justify-between bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 outline-none font-bold text-sm shadow-sm transition-all focus:border-accent-lime"
+                    >
+                        <div className="flex items-center gap-2.5">
+                            {(() => {
+                                const currentTabObj = [
+                                    { key: "dashboard", label: "لوحة التحكم", icon: <FaChartLine /> },
+                                    { key: "salons", label: "إدارة الصالونات", icon: <FaBuilding /> },
+                                    { key: "revenues", label: "الإيرادات", icon: <FaMoneyBillWave /> },
+                                    { key: "plans", label: "إدارة الباقات", icon: <FaCogs /> },
+                                    { key: "contacts", label: "طلبات التسجيل", icon: <FaEnvelope /> },
+                                ].find(t => t.key === activeTab);
+                                return (
+                                    <>
+                                        <span className="text-accent-lime text-base">{currentTabObj?.icon}</span>
+                                        <span>{currentTabObj?.label}</span>
+                                        {activeTab === 'contacts' && contactsNewCount > 0 && (
+                                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black bg-red-500 text-[var(--color-text-primary)]">{contactsNewCount}</span>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
+                        <FaChevronDown size={14} className={`transition-transform duration-300 ${tabDropdownOpen ? 'rotate-180 text-accent-lime' : 'text-[var(--color-text-muted)]'}`} />
+                    </button>
+
+                    {tabDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl shadow-xl overflow-hidden z-50 flex flex-col">
+                            {[
+                                { key: "dashboard" as const, label: "لوحة التحكم", icon: <FaChartLine /> },
+                                { key: "salons" as const, label: "إدارة الصالونات", icon: <FaBuilding /> },
+                                { key: "revenues" as const, label: "الإيرادات", icon: <FaMoneyBillWave /> },
+                                { key: "plans" as const, label: "إدارة الباقات", icon: <FaCogs /> },
+                                { key: "contacts" as const, label: "طلبات التسجيل", icon: <FaEnvelope /> },
+                            ].map((tab) => (
+                                <button key={tab.key} onClick={() => { setActiveTab(tab.key); setTabDropdownOpen(false); }}
+                                    className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.key ? "bg-accent-lime/10 text-accent-lime border-r-2 border-accent-lime" : "text-[var(--color-text-secondary)] hover:bg-white/5"}`}>
+                                    <div className="flex items-center gap-2.5">
+                                        <span>{tab.icon}</span>
+                                        <span>{tab.label}</span>
+                                    </div>
+                                    {tab.key === 'contacts' && contactsNewCount > 0 && (
+                                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black bg-red-500 text-[var(--color-text-primary)]">{contactsNewCount}</span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop Tabs */}
+                <div className="hidden md:flex gap-2 bg-card-dark rounded-xl p-1 overflow-x-auto hide-scrollbars w-full md:w-fit">
                     {[
                         { key: "dashboard" as const, label: "لوحة التحكم", icon: <FaChartLine /> },
                         { key: "salons" as const, label: "إدارة الصالونات", icon: <FaBuilding /> },
@@ -581,16 +636,16 @@ export default function SuperAdminDashboard() {
                         {/* 3 Stat Cards (removed "إجمالي الموظفين") */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {[
-                                { label: "إجمالي الصالونات", value: stats.salons.total, icon: <FaBuilding />, color: "from-[#C3D809] to-[#B88A10]" },
-                                { label: "صالونات نشطة", value: stats.salons.active, icon: <FaCheck />, color: "from-emerald-500 to-emerald-700" },
-                                { label: "إيرادات الشهر", value: revenueMonthTotal.toFixed(3) + " د.أ", icon: <FaChartLine />, color: "from-purple-500 to-purple-700" },
+                                { label: "إجمالي الصالونات", value: stats.salons.total, icon: <FaBuilding /> },
+                                { label: "صالونات نشطة", value: stats.salons.active, icon: <FaCheck /> },
+                                { label: "إيرادات الشهر", value: revenueMonthTotal.toFixed(3) + " د.أ", icon: <FaChartLine /> },
                             ].map((card, i) => (
-                                <div key={i} className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-4 hover:border-[var(--border-subtle)] transition-all">
-                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center mb-3`}>
-                                        <span className="text-[var(--color-text-primary)] text-sm">{card.icon}</span>
+                                <div key={i} className="bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--color-accent)]/30 hover:shadow-[0_4px_20px_rgba(195,216,9,0.05)] transition-all group">
+                                    <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center mb-4 group-hover:border-[var(--color-accent)]/30 group-hover:bg-[var(--color-accent)]/5 transition-all">
+                                        <span className="text-[var(--color-accent)] text-lg">{card.icon}</span>
                                     </div>
-                                    <p className="text-2xl font-bold">{card.value}</p>
-                                    <p className="text-xs text-[var(--color-text-muted)] mt-1">{card.label}</p>
+                                    <p className="text-3xl font-black text-white" style={{ fontVariantNumeric: 'tabular-nums' }}>{card.value}</p>
+                                    <p className="text-xs font-medium text-[var(--color-text-muted)] mt-1.5">{card.label}</p>
                                 </div>
                             ))}
                         </div>
@@ -618,6 +673,14 @@ export default function SuperAdminDashboard() {
                                         if (ex) ex.revenue += Number(r.amount); else acc.push({ month: label, revenue: Number(r.amount) });
                                         return acc;
                                     }, []).slice(-6);
+                                    if (chart.length === 0) {
+                                        return (
+                                            <div className="w-full text-center py-12 text-sm text-[var(--color-text-muted)] flex flex-col items-center justify-center gap-2">
+                                                <FaMoneyBillWave className="text-2xl text-gray-700 animate-pulse" />
+                                                <span>لا توجد بيانات إيرادات مسجلة حالياً للرسم البياني</span>
+                                            </div>
+                                        );
+                                    }
                                     const maxRev = Math.max(...chart.map(c => c.revenue), 1);
                                     return chart.map((item, i) => (
                                         <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -659,10 +722,10 @@ export default function SuperAdminDashboard() {
                                                             style={{ background: isUrgent ? "rgba(231,76,60,.15)" : "var(--border-subtle)", color: isUrgent ? "#e74c3c" : "#C3D809" }}>
                                                             {d === 0 ? "ينتهي اليوم!" : `${d} ${d === 1 ? "يوم" : "أيام"}`}
                                                         </span>
-                                                        <button onClick={() => handleStatusChange(s.id, "active", 30)} className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-all font-bold whitespace-nowrap">+ شهر</button>
-                                                        <button onClick={() => handleStatusChange(s.id, "active", 180)} className="text-xs px-2.5 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-all font-bold whitespace-nowrap">+ 6 أشهر</button>
-                                                        <button onClick={() => handleStatusChange(s.id, "active", 365)} className="text-xs px-2.5 py-1.5 rounded-lg bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-all font-bold whitespace-nowrap">+ سنة</button>
-                                                        {s.owner_phone && <a href={`https://wa.me/${s.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs px-2.5 py-1.5 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all font-bold whitespace-nowrap">واتساب</a>}
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 30)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all font-bold whitespace-nowrap border border-white/5">+ شهر</button>
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 180)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all font-bold whitespace-nowrap border border-white/5">+ 6 أشهر</button>
+                                                        <button onClick={() => handleStatusChange(s.id, "active", 365)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all font-bold whitespace-nowrap border border-white/5">+ سنة</button>
+                                                        {s.owner_phone && <a href={`https://wa.me/${s.owner_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-all font-bold whitespace-nowrap border border-green-500/20">واتساب</a>}
                                                     </div>
                                                 </div>
                                             );
@@ -680,10 +743,10 @@ export default function SuperAdminDashboard() {
                                     const dLeft = getDaysLeft(s.subscription_expires_at);
                                     const isExpiring = dLeft !== null && dLeft <= 7 && s.status === 'active';
                                     const planColors: Record<string, string> = {
-                                        free: "bg-gray-500/15 text-gray-400 border-gray-500/20",
-                                        basic: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-                                        professional: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-                                        enterprise: "bg-accent-lime/15 text-accent-lime border-accent-lime/20",
+                                        free: "bg-white/5 text-gray-400 border-white/10",
+                                        basic: "bg-white/10 text-gray-300 border-white/20",
+                                        professional: "bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/20",
+                                        enterprise: "bg-[var(--color-accent)] text-black border-[var(--color-accent)]",
                                     };
                                     const planColor = planColors[s.plan_type || "basic"] || planColors.basic;
                                     return (
@@ -705,12 +768,12 @@ export default function SuperAdminDashboard() {
                                                     </button>
                                                 </div>
                                             </div>
-                                            {/* Row 2: Plan / Dates / Days — horizontal scrollable strip */}
-                                            <div className="flex items-center gap-4 px-4 py-2.5 overflow-x-auto">
+                                            {/* Row 2: Plan / Dates / Days — wrapped on mobile */}
+                                            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 px-4 py-2.5">
                                                 {s.plan_name && (
                                                     <span className={`text-[11px] px-2.5 py-0.5 rounded-full border whitespace-nowrap flex-shrink-0 font-medium ${planColor}`}>{s.plan_name}</span>
                                                 )}
-                                                <span className="w-px h-3 bg-[#4A4A4A] flex-shrink-0" />
+                                                <span className="hidden md:block w-px h-3 bg-[#4A4A4A] flex-shrink-0" />
                                                 {s.subscription_starts_at && (
                                                     <span className="text-[11px] whitespace-nowrap flex-shrink-0">
                                                         <span className="text-[#555]">بدأ </span>
@@ -724,7 +787,7 @@ export default function SuperAdminDashboard() {
                                                     </span>
                                                 )}
                                                 {dLeft !== null && s.status === 'active' && (
-                                                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${isExpiring ? "bg-accent-lime/15 text-accent-lime" : "bg-emerald-500/15 text-emerald-400"}`}>
+                                                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${isExpiring ? "bg-red-500/15 text-red-400 border border-red-500/20" : "bg-white/5 text-gray-400 border border-white/10"}`}>
                                                         {dLeft === 0 ? "⚠ ينتهي اليوم" : `${dLeft} يوم متبقي`}
                                                     </span>
                                                 )}
@@ -1007,7 +1070,8 @@ export default function SuperAdminDashboard() {
                                 <FaPlus /> إضافة صالون
                             </button>
                         </div>
-                        <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
+                        {/* Desktop View */}
+                        <div className="hidden md:block bg-card-dark border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead><tr className="border-b border-[var(--border-subtle)] text-[var(--color-text-muted)] text-sm">
@@ -1059,6 +1123,68 @@ export default function SuperAdminDashboard() {
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        {/* Mobile View */}
+                        <div className="block md:hidden space-y-3">
+                            {salons.map((salon) => (
+                                <div key={salon.id} className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-[var(--color-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-accent-lime font-bold text-lg">{salon.name.charAt(0)}</div>
+                                            <div>
+                                                <p className="font-medium">{salon.name}</p>
+                                                <p className="text-xs text-[var(--color-text-muted)]">{salon.owner_name || salon.slug}</p>
+                                            </div>
+                                        </div>
+                                        {statusBadge(salon.status)}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-surface)]/40 text-xs text-[var(--color-text-secondary)]">
+                                        <div>
+                                            <span className="text-[var(--color-text-muted)] block">الباقة:</span>
+                                            <span className="font-semibold">{salon.plan_name || '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[var(--color-text-muted)] block">الموظفين:</span>
+                                            <span className="font-semibold">{salon.emp_count}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[var(--color-text-muted)] block">عمليات الشهر:</span>
+                                            <span className="font-semibold">{salon.month_tx}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[var(--color-text-muted)] block">إيرادات الشهر:</span>
+                                            <span className="font-semibold text-accent-lime">{Number(salon.month_revenue).toFixed(3)} د.أ</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 pt-2 border-t border-[var(--color-surface)]/40">
+                                        <button onClick={() => setSelectedSalon(salon)}
+                                            className="flex-1 py-2 rounded-xl text-xs font-bold bg-accent-lime/10 text-accent-lime border border-accent-lime/20 hover:bg-accent-lime/20 transition-all">
+                                            تفاصيل
+                                        </button>
+                                        {salon.status === "active" ? (
+                                            <button onClick={() => handleStatusChange(salon.id, "suspended")} className="flex-1 py-2 rounded-xl text-xs font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                                إيقاف
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => handleStatusChange(salon.id, "active")} className="flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                تفعيل
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => { setDeleteModal({ salon }); setDeleteConfirmText(""); }}
+                                            className="py-2 px-3 rounded-xl text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/20"
+                                        >
+                                            <FaTrash size={10} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {salons.length === 0 && (
+                                <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-8 text-center text-[var(--color-text-muted)]">
+                                    لا يوجد صالونات
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

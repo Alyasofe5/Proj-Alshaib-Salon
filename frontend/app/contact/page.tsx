@@ -132,7 +132,7 @@ function ContactPageInner() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[16px] font-black tracking-wider leading-none maqass-brand">MAQASS</span>
-                            <span className="text-[7px] font-semibold tracking-[.2em] mt-0.5 uppercase" style={{ color: "rgba(195,216,9,0.6)" }}>Salon Platform</span>
+                            <span className="text-[7px] font-semibold tracking-[.2em] mt-0.5 uppercase whitespace-nowrap" style={{ color: "rgba(195,216,9,0.6)" }}>Salon Platform</span>
                         </div>
                     </Link>
                     <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-70"

@@ -111,10 +111,10 @@ function StatCard({ children, className = "", cardClass = "" }: { children: Reac
 }
 
 const FEATURES = [
-  { icon: <CalendarCheck size={24} style={{ color: "var(--color-accent)" }} />, title: "حجوزات ذكية", desc: "رابط فريد لكل صالون. زبائنك يحجزون بدون اتصال 24/7", stat: "+280%", statLabel: "حجوزات أكثر" },
-  { icon: <BarChart3 size={24} style={{ color: "var(--color-accent)" }} />, title: "تحليلات متقدمة", desc: "تقارير يومية وشهرية. اعرف أداء كل موظف بلمحة", stat: "-45%", statLabel: "وقت إداري" },
-  { icon: <Users size={24} style={{ color: "var(--color-accent)" }} />, title: "إدارة الفريق", desc: "عمولات ورواتب تلقائية. سجل لكل موظف", stat: "+3.2h", statLabel: "وقت موفّر يومياً" },
-  { icon: <Wallet size={24} style={{ color: "var(--color-accent)" }} />, title: "مصاريف وأرباح", desc: "سجّل مصاريفك وراقب أرباحك بدقة", stat: "99.9%", statLabel: "دقة التقارير" },
+  { icon: <CalendarCheck size={24} style={{ color: "var(--color-accent)" }} />, title: "حجوزات ذكية", desc: "رابط فريد لكل صالون. زبائنك يحجزون بدون اتصال 24/7", stat: "40%", statLabel: "زيادة حجوزات" },
+  { icon: <BarChart3 size={24} style={{ color: "var(--color-accent)" }} />, title: "تحليلات متقدمة", desc: "تقارير يومية وشهرية. اعرف أداء كل موظف بلمحة", stat: "50%", statLabel: "توفير وقت" },
+  { icon: <Users size={24} style={{ color: "var(--color-accent)" }} />, title: "إدارة الفريق", desc: "عمولات ورواتب تلقائية. سجل لكل موظف", stat: "2.5h", statLabel: "وقت يومي" },
+  { icon: <Wallet size={24} style={{ color: "var(--color-accent)" }} />, title: "مصاريف وأرباح", desc: "سجّل مصاريفك وراقب أرباحك بدقة", stat: "99%", statLabel: "دقة التقارير" },
 ];
 
 interface ApiPlan {
@@ -215,7 +215,7 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-[20px] md:text-[22px] font-black tracking-tight leading-none maqass-brand drop-shadow-[0_0_10px_rgba(195,216,9,0.2)]">MAQASS</span>
-              <span className="text-[9px] font-bold tracking-[.3em] mt-1 uppercase opacity-60" style={{ color: gold }}>Salon Platform</span>
+              <span className="text-[9px] font-bold tracking-[.3em] mt-1 uppercase opacity-60 whitespace-nowrap" style={{ color: gold }}>Salon Platform</span>
             </div>
           </Link>
 

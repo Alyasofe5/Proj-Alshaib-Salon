@@ -178,7 +178,7 @@ export default function LoginPage() {
                     </div>
                     <div className="flex flex-col items-center mt-1">
                         <span className="text-3xl font-black tracking-tight leading-none maqass-brand drop-shadow-[0_0_10px_rgba(195,216,9,0.2)] text-white">MAQASS</span>
-                        <span className="text-[10px] font-bold tracking-[.3em] mt-1.5 uppercase opacity-60" style={{ color: "var(--color-accent)" }}>Salon Platform</span>
+                        <span className="text-[10px] font-bold tracking-[.3em] mt-1.5 uppercase opacity-60 whitespace-nowrap" style={{ color: "var(--color-accent)" }}>Salon Platform</span>
                     </div>
                 </div>
 

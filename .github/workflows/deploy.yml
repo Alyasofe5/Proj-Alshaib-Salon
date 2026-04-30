@@ -112,13 +112,11 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           local-dir: ./deploy_combined/
-          protocol: ftps
+          protocol: ftp
+          port: 21
           dangerous-clean-slate: false
-          # Prevent control-socket timeout on slow hosts (default 30s is too low for 30MB+ packages).
-          timeout: 300000
-          # Standard log keeps the CI log readable while still surfacing file-level progress.
+          timeout: 600000
           log-level: standard
-          # Incremental sync: skips unchanged files on subsequent deploys (huge speedup, avoids timeouts).
           state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*

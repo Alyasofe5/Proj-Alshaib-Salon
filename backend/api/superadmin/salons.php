@@ -18,6 +18,14 @@ $user = requireSuperAdmin();
 $method = getMethod();
 $id = getResourceId();
 
+// ── Ensure settings column exists in salons table ──
+try {
+    $col = $pdo->query("SHOW COLUMNS FROM salons LIKE 'settings'")->fetch();
+    if (!$col) {
+        $pdo->exec("ALTER TABLE salons ADD COLUMN settings JSON DEFAULT NULL");
+    }
+} catch (Exception $e) { /* ignore */ }
+
 // ===== GET: قائمة الصالونات =====
 if ($method === 'GET') {
     if ($id) {
@@ -116,7 +124,7 @@ if ($method === 'PUT' && $id) {
     if (empty($name)) sendError('اسم الصالون مطلوب');
 
     $stmt = $pdo->prepare("
-        UPDATE salons SET name=?, owner_name=?, owner_email=?, owner_phone=?, subscription_plan_id=?
+        UPDATE salons SET name=?, owner_name=?, owner_email=?, owner_phone=?, subscription_plan_id=?, settings=?
         WHERE id=?
     ");
     $stmt->execute([
@@ -125,6 +133,7 @@ if ($method === 'PUT' && $id) {
         trim($data['owner_email'] ?? ''),
         trim($data['owner_phone'] ?? ''),
         (int) ($data['subscription_plan_id'] ?? 1),
+        isset($data['settings']) ? (is_array($data['settings']) ? json_encode($data['settings']) : $data['settings']) : null,
         $id
     ]);
 

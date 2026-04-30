@@ -197,7 +197,7 @@ export default function BookingModal({
           className="fixed inset-0 z-[200] bg-[#0A0A0A] flex flex-col overflow-hidden"
           style={{ 
             direction: isRTL ? 'rtl' : 'ltr',
-            fontFamily: isRTL ? "'Noto Sans Arabic', sans-serif" : "'Cormorant Garamond', serif"
+            fontFamily: isRTL ? "var(--font-el-messiri), sans-serif" : "'Cormorant Garamond', serif"
           }}
         >
           {/* ═══ TOP BAR ═══ */}

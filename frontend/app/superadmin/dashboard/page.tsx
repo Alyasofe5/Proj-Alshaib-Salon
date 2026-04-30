@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import {
@@ -8,6 +8,7 @@ import {
     FaSignOutAlt, FaPause, FaCheck, FaBan, FaPlus, FaCrown,
     FaEnvelope, FaPhone, FaMapMarkerAlt, FaUsers, FaTimes,
     FaMoneyBillWave, FaTrash, FaInfoCircle, FaChevronDown,
+    FaInstagram, FaFacebook, FaTiktok,
 } from "react-icons/fa";
 import api from "@/lib/api";
 import { useBrandUI } from "@/components/ui/BrandUI";
@@ -20,6 +21,8 @@ interface Salon {
     plan_name: string; plan_type?: string; emp_count: number; month_tx: number;
     month_revenue: number; subscription_expires_at: string;
     subscription_starts_at: string; created_at: string;
+    settings?: string | Record<string, string>;
+    subscription_plan_id?: number;
 }
 interface FeaturesConfig {
     has_booking_page?: boolean;
@@ -61,13 +64,41 @@ function getDaysLeft(expiresAt: string): number | null {
 }
 
 // ─── Salon Details Popup ──────────────────────────────────────────────────────
-function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan }: {
+function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan, onSaveSalonInfo }: {
     salon: Salon; plans: Plan[]; onClose: () => void;
     onStatusChange: (id: number, status: string, days?: number) => void;
     onUpdatePlan: (salonId: number, planId: number, days: number) => void;
+    onSaveSalonInfo: (id: number, data: any) => Promise<void>;
 }) {
     const dLeft = getDaysLeft(salon.subscription_expires_at);
     const [customDays, setCustomDays] = useState("");
+    const [savingInfo, setSavingInfo] = useState(false);
+    const [salonSettings, setSalonSettings] = useState(() => {
+        try {
+            const s = typeof salon.settings === 'string' ? JSON.parse(salon.settings) : (salon.settings || {});
+            return {
+                email: s.email || "",
+                phone: s.phone || "",
+                whatsapp: s.whatsapp || "",
+                instagram: s.instagram || "",
+                facebook: s.facebook || "",
+                tiktok: s.tiktok || ""
+            };
+        } catch { return { email: "", phone: "", whatsapp: "", instagram: "", facebook: "", tiktok: "" }; }
+    });
+
+    const handleSave = async () => {
+        setSavingInfo(true);
+        await onSaveSalonInfo(salon.id, {
+            name: salon.name,
+            owner_name: salon.owner_name || '',
+            owner_email: salon.owner_email || '',
+            owner_phone: salon.owner_phone || '',
+            subscription_plan_id: salon.subscription_plan_id ?? 1,
+            settings: JSON.stringify(salonSettings),
+        });
+        setSavingInfo(false);
+    };
     const [selectedPlanId, setSelectedPlanId] = useState(0);
     const planTypeLabels: Record<string, { label: string; color: string }> = {
         free: { label: "مجاني", color: "bg-gray-500/15 text-gray-400 border-gray-500/30" },
@@ -130,6 +161,53 @@ function SalonDetailsPopup({ salon, plans, onClose, onStatusChange, onUpdatePlan
                                 <p className={`text-sm font-medium ${item.gold ? "text-accent-lime" : "text-[var(--color-text-primary)]"} ${item.ltr ? "dir-ltr text-left" : ""}`}>{item.value}</p>
                             </div>
                         ))}
+                    </div>
+
+                    {/* Contact & Social Links */}
+                    <div className="space-y-4 pt-4 border-t border-[var(--border-subtle)]">
+                        <p className="text-sm font-bold text-accent-lime flex items-center gap-2">
+                            <FaEnvelope /> معلومات التواصل والروابط
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">البريد الإلكتروني</label>
+                                    <input value={salonSettings.email} onChange={e => setSalonSettings({...salonSettings, email: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="salon@email.com" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">رقم الهاتف</label>
+                                    <input value={salonSettings.phone} onChange={e => setSalonSettings({...salonSettings, phone: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="+962..." dir="ltr" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">واتساب (أرقام فقط)</label>
+                                    <input value={salonSettings.whatsapp} onChange={e => setSalonSettings({...salonSettings, whatsapp: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="962..." dir="ltr" />
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">إنستجرام (رابط كامل)</label>
+                                    <input value={salonSettings.instagram} onChange={e => setSalonSettings({...salonSettings, instagram: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="https://..." dir="ltr" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">فيسبوك (رابط كامل)</label>
+                                    <input value={salonSettings.facebook} onChange={e => setSalonSettings({...salonSettings, facebook: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="https://..." dir="ltr" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-[var(--color-text-muted)] block mb-1">تيك توك (رابط كامل)</label>
+                                    <input value={salonSettings.tiktok} onChange={e => setSalonSettings({...salonSettings, tiktok: e.target.value})} 
+                                        className="w-full bg-card-dark border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs focus:border-accent-lime outline-none" placeholder="https://..." dir="ltr" />
+                                </div>
+                            </div>
+                        </div>
+                        <button onClick={handleSave} disabled={savingInfo}
+                            className="w-full py-2 rounded-xl text-xs font-bold bg-white/5 text-accent-lime border border-accent-lime/20 hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                            {savingInfo ? "جاري الحفظ..." : <><FaCheck size={10} /> حفظ معلومات التواصل</>}
+                        </button>
                     </div>
 
                     {/* Subscription Dates */}
@@ -254,7 +332,12 @@ export default function SuperAdminDashboard() {
     const [revenues, setRevenues] = useState<Revenue[]>([]);
     const [revenueMonthTotal, setRevenueMonthTotal] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<"dashboard" | "salons" | "contacts" | "revenues" | "plans">("dashboard");
+    const [activeTab, setActiveTab] = useState<"dashboard" | "salons" | "contacts" | "revenues" | "plans" | "settings">("dashboard");
+    const [platformSettings, setPlatformSettings] = useState({
+        email: "", phone: "", whatsapp: "", address: "",
+        instagram: "", facebook: "", tiktok: ""
+    });
+    const [settingsSaving, setSettingsSaving] = useState(false);
     const [tabDropdownOpen, setTabDropdownOpen] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
@@ -302,12 +385,13 @@ export default function SuperAdminDashboard() {
 
     const loadData = async () => {
         try {
-            const [statsRes, salonsRes, contactsRes, revenuesRes, plansRes] = await Promise.all([
+            const [statsRes, salonsRes, contactsRes, revenuesRes, plansRes, settingsRes] = await Promise.all([
                 api.get("/superadmin/stats.php"),
                 api.get("/superadmin/salons.php"),
                 api.get("/superadmin/contacts.php"),
                 api.get("/superadmin/revenues.php"),
                 api.get("/superadmin/plans.php"),
+                api.get("/superadmin/settings.php"),
             ]);
             setStats(statsRes.data.data);
             setSalons(salonsRes.data.data.salons || []);
@@ -317,8 +401,28 @@ export default function SuperAdminDashboard() {
             setRevenues(revenuesRes.data.data.revenues || []);
             setRevenueMonthTotal(revenuesRes.data.data.month_total || 0);
             setPlansData(plansRes.data.data || []);
+            if (settingsRes.data.success) {
+                setPlatformSettings(settingsRes.data.data || platformSettings);
+            }
         } catch { console.error("Failed to load data"); }
         finally { setLoading(false); }
+    };
+
+    const handleSaveSettings = async () => {
+        setSettingsSaving(true);
+        try {
+            await api.put("/superadmin/settings.php", platformSettings);
+            toast('تم حفظ إعدادات المنصة بنجاح', 'success');
+        } catch { toast('فشل حفظ الإعدادات', 'error'); }
+        finally { setSettingsSaving(false); }
+    };
+
+    const handleSaveSalonInfo = async (salonId: number, data: any) => {
+        try {
+            await api.put(`/superadmin/salons.php?id=${salonId}`, data);
+            toast('تم تحديث بيانات الصالون بنجاح', 'success');
+            loadData();
+        } catch { toast('فشل تحديث بيانات الصالون', 'error'); }
     };
 
     const handleContactStatus = useCallback(async (id: number, status: string, notes?: string) => {
@@ -567,6 +671,7 @@ export default function SuperAdminDashboard() {
                                     { key: "salons", label: "إدارة الصالونات", icon: <FaBuilding /> },
                                     { key: "revenues", label: "الإيرادات", icon: <FaMoneyBillWave /> },
                                     { key: "plans", label: "إدارة الباقات", icon: <FaCogs /> },
+                                    { key: "settings", label: "إعدادات المنصة", icon: <FaInfoCircle /> },
                                     { key: "contacts", label: "طلبات التسجيل", icon: <FaEnvelope /> },
                                 ].find(t => t.key === activeTab);
                                 return (
@@ -590,6 +695,7 @@ export default function SuperAdminDashboard() {
                                 { key: "salons" as const, label: "إدارة الصالونات", icon: <FaBuilding /> },
                                 { key: "revenues" as const, label: "الإيرادات", icon: <FaMoneyBillWave /> },
                                 { key: "plans" as const, label: "إدارة الباقات", icon: <FaCogs /> },
+                                { key: "settings" as const, label: "إعدادات المنصة", icon: <FaInfoCircle /> },
                                 { key: "contacts" as const, label: "طلبات التسجيل", icon: <FaEnvelope /> },
                             ].map((tab) => (
                                 <button key={tab.key} onClick={() => { setActiveTab(tab.key); setTabDropdownOpen(false); }}
@@ -614,6 +720,7 @@ export default function SuperAdminDashboard() {
                         { key: "salons" as const, label: "إدارة الصالونات", icon: <FaBuilding /> },
                         { key: "revenues" as const, label: "الإيرادات", icon: <FaMoneyBillWave /> },
                         { key: "plans" as const, label: "إدارة الباقات", icon: <FaCogs /> },
+                        { key: "settings" as const, label: "إعدادات المنصة", icon: <FaInfoCircle /> },
                         {
                             key: "contacts" as const,
                             label: <span className="flex items-center gap-1.5 whitespace-nowrap">طلبات التسجيل {contactsNewCount > 0 && <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black bg-red-500 text-[var(--color-text-primary)]">{contactsNewCount}</span>}</span>,
@@ -1188,11 +1295,150 @@ export default function SuperAdminDashboard() {
                         </div>
                     </div>
                 )}
+
+                {/* ════════ Platform Settings Tab ════════ */}
+                {activeTab === "settings" && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-bold">إعدادات المنصة (مقص)</h2>
+                            <button 
+                                onClick={handleSaveSettings} 
+                                disabled={settingsSaving}
+                                className="flex items-center gap-2 bg-accent-lime text-black px-6 py-2 rounded-xl font-bold hover:bg-[#C3D809] transition-all disabled:opacity-50"
+                            >
+                                {settingsSaving ? "جاري الحفظ..." : <><FaCheck size={14} /> حفظ التعديلات</>}
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Contact Info */}
+                            <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-accent-lime flex items-center gap-2 mb-2">
+                                    <FaEnvelope /> معلومات التواصل
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">البريد الإلكتروني</label>
+                                        <input 
+                                            value={platformSettings.email} 
+                                            onChange={e => setPlatformSettings({...platformSettings, email: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="info@maqas.site"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">رقم الهاتف (للعرض)</label>
+                                        <input 
+                                            value={platformSettings.phone} 
+                                            onChange={e => setPlatformSettings({...platformSettings, phone: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="+962 78 171 7990"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">رقم الواتساب (للرابط - أرقام فقط بدون +)</label>
+                                        <input 
+                                            value={platformSettings.whatsapp} 
+                                            onChange={e => setPlatformSettings({...platformSettings, whatsapp: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="962781717990"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">العنوان</label>
+                                        <textarea 
+                                            value={platformSettings.address} 
+                                            onChange={e => setPlatformSettings({...platformSettings, address: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none h-20 resize-none" 
+                                            placeholder="عمان، الأردن"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social Media */}
+                            <div className="bg-card-dark border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-accent-lime flex items-center gap-2 mb-2">
+                                    <FaInstagram /> روابط التواصل الاجتماعي
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
+                                            <FaInstagram className="text-pink-500" /> إنستجرام
+                                        </label>
+                                        <input 
+                                            value={platformSettings.instagram} 
+                                            onChange={e => setPlatformSettings({...platformSettings, instagram: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="https://instagram.com/maqas"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
+                                            <FaFacebook className="text-blue-500" /> فيسبوك
+                                        </label>
+                                        <input 
+                                            value={platformSettings.facebook} 
+                                            onChange={e => setPlatformSettings({...platformSettings, facebook: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="https://facebook.com/maqas"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-[var(--color-text-secondary)] mb-1 block flex items-center gap-2">
+                                            <FaTiktok className="text-white" /> تيك توك
+                                        </label>
+                                        <input 
+                                            value={platformSettings.tiktok} 
+                                            onChange={e => setPlatformSettings({...platformSettings, tiktok: e.target.value})}
+                                            className="w-full bg-[var(--color-surface)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-accent-lime outline-none" 
+                                            placeholder="https://tiktok.com/@maqas"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Preview Section */}
+                        <div className="bg-emerald-500/[.05] border border-emerald-500/20 rounded-2xl p-6">
+                            <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
+                                <FaInfoCircle /> معاينة ظهور البيانات في التذييل (Footer)
+                            </h3>
+                            <div className="flex flex-wrap gap-8 text-xs text-[var(--color-text-muted)] opacity-70">
+                                <div className="space-y-2">
+                                    <p className="font-bold text-[var(--color-text-primary)]">اتصل بنا</p>
+                                    <p>{platformSettings.email || 'info@maqas.site'}</p>
+                                    <p>{platformSettings.phone || '+962 78 171 7990'}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="font-bold text-[var(--color-text-primary)]">تابعنا</p>
+                                    <div className="flex gap-4">
+                                        <span className={platformSettings.instagram ? 'text-accent-lime' : ''}>Instagram</span>
+                                        <span className={platformSettings.facebook ? 'text-accent-lime' : ''}>Facebook</span>
+                                        <span className={platformSettings.tiktok ? 'text-accent-lime' : ''}>TikTok</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ── Salon Details Popup ── */}
             {selectedSalon && (
-                <SalonDetailsPopup salon={selectedSalon} plans={plans} onClose={() => setSelectedSalon(null)} onStatusChange={handleStatusChange} onUpdatePlan={handleUpdatePlan} />
+                <SalonDetailsPopup 
+                    salon={selectedSalon} 
+                    plans={plans} 
+                    onClose={() => setSelectedSalon(null)} 
+                    onStatusChange={handleStatusChange} 
+                    onUpdatePlan={handleUpdatePlan}
+                    onSaveSalonInfo={handleSaveSalonInfo}
+                />
             )}
 
             {/* ── Create Salon Modal ── */}

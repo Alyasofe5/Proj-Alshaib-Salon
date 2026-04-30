@@ -115,7 +115,7 @@ const ReviewModal = ({ isOpen, onClose, slug, lang, tData }: any) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif" }}>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
                 <button onClick={onClose} className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white hover:text-[#C3D809] hover:bg-white/10 transition-colors">
                     <X size={16} />
@@ -165,7 +165,12 @@ const ReviewModal = ({ isOpen, onClose, slug, lang, tData }: any) => {
 
 function BookingContent({ params }: { params: { slug: string } }) {
     const searchParams = useSearchParams();
-    const slugFromPath = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean).pop() : "";
+    const [slugFromPath, setSlugFromPath] = useState("");
+    useEffect(() => {
+        const path = window.location.pathname.split('/').filter(Boolean).pop() || "";
+        setSlugFromPath(path);
+    }, []);
+
     const rawSlug = params.slug || searchParams.get("s") || searchParams.get("salon") || slugFromPath || "";
     const slug = (Array.isArray(rawSlug) ? rawSlug[0] : rawSlug).toLowerCase();
 
@@ -422,8 +427,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
     if (notFound) return (
         <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A", color: "#F5F2EC", direction: "rtl" }}>
             <div className="text-center">
-                <p style={{ fontSize: "6rem", fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontWeight: 900, color: "#C3D809" }}>404</p>
-                <p style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "1.25rem" }}>الصالون غير موجود</p>
+                <p style={{ fontSize: "6rem", fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 900, color: "#C3D809" }}>404</p>
+                <p style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 800, fontSize: "1.25rem" }}>الصالون غير موجود</p>
             </div>
         </div>
     );
@@ -434,7 +439,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: "rgba(195,216,9,0.1)" }}>
                     <Calendar size={36} color="#C3D809" />
                 </div>
-                <h1 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontWeight: 900, fontSize: "1.75rem", marginBottom: 12 }}>الحجز غير متاح</h1>
+                <h1 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 900, fontSize: "1.75rem", marginBottom: 12 }}>الحجز غير متاح</h1>
                 <p style={{ color: "rgba(245,242,236,0.5)", lineHeight: 1.8 }}>تم تعطيل الحجز الإلكتروني لهذا الصالون حالياً.</p>
             </div>
         </div>
@@ -565,7 +570,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
             className="min-h-screen overflow-x-hidden transition-all duration-500 w-full max-w-[100vw]"
             data-lang={lang}
             style={{
-                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                 background: "#0A0A0A",
                 color: "#F5F2EC",
                 direction: lang === 'ar' ? 'rtl' : 'ltr',
@@ -584,7 +589,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     <nav className="hidden lg:flex items-center justify-start gap-10">
                         {(lang === 'ar' ? [{ name: "الخدمات", id: "services" }, { name: "قصتنا", id: "about" }, { name: "الفريق", id: "team" }] : [{ name: "Services", id: "services" }, { name: "Story", id: "about" }, { name: "Team", id: "team" }]).map(item => (
                             <a key={item.id} href={`#${item.id}`}
-                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", letterSpacing: lang === 'en' ? '0.12em' : undefined }}
+                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", letterSpacing: lang === 'en' ? '0.12em' : undefined }}
                                 className="text-[16px] font-black tracking-widest uppercase text-white/60 hover:text-[#C3D809] transition-colors duration-300 relative group py-2"
                             >
                                 {item.name}
@@ -614,7 +619,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     )}
                                 </div>
                             </div>
-                            <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
+                            <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
                                 {tData(salon.name, lang)}
                             </span>
                         </a>
@@ -630,7 +635,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             aria-label="Language switcher"
                             className="hidden sm:flex items-center relative p-[3px] rounded-2xl"
                             style={{
-                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                 background: 'rgba(255,255,255,0.04)',
                                 border: '1px solid rgba(255,255,255,0.06)',
                                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
@@ -671,7 +676,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             onClick={() => setIsBookingOpen(true)}
                             className="signature-btn group"
                             style={{
-                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                 transform: 'scale(0.85)'
                             }}
                         >
@@ -730,7 +735,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             style={{
                                 background: "#0A0A0A",
                                 borderColor: "rgba(255,255,255,0.06)",
-                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                 paddingTop: "env(safe-area-inset-top)",
                                 paddingBottom: "env(safe-area-inset-bottom)",
                             }}
@@ -738,7 +743,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-                                <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "1.1rem", fontWeight: 900, letterSpacing: "-0.03em" }} className="text-white truncate">
+                                <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "1.1rem", fontWeight: 900, letterSpacing: "-0.03em" }} className="text-white truncate">
                                     {tData(salon.name, lang)}
                                 </span>
                                 <button
@@ -771,7 +776,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                             {/* Language switcher */}
                             <div className="px-5 pt-4 pb-3 border-t border-white/5">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                     {lang === 'ar' ? "اللغة" : "Language"}
                                 </p>
                                 <div
@@ -780,7 +785,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     aria-label="Language switcher"
                                     className="flex items-center relative p-[3px] rounded-2xl"
                                     style={{
-                                        fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                        fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                         background: 'rgba(255,255,255,0.04)',
                                         border: '1px solid rgba(255,255,255,0.06)',
                                     }}
@@ -898,7 +903,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         transition={{ duration: 0.8, delay: 0.2 }}
                                         className="text-white font-bold tracking-[-0.02em] leading-[1.1] mb-8 text-start pr-4"
                                         style={{ 
-                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                             fontSize: "clamp(2.75rem, 9vw, 6.5rem)"
                                         }}
                                     >
@@ -925,7 +930,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
                                 className="text-white/60 text-[clamp(0.95rem,3vw,1.1rem)] sm:text-[clamp(13px,2.8vw,16px)] max-w-[320px] sm:max-w-md lg:max-w-xl whitespace-pre-line leading-[1.8] lg:leading-[1.8] mb-10 lg:mb-12 font-medium text-start"
-                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                             >
                                 {tData(salon.description || (lang === 'ar'
                                     ? "ادخل إلى عالم يروي فيه كل مظهر قصة. يجمع خبراؤنا بين التقنيات الأصيلة والفن الحديث لخلق إطلالتك الفريدة بأسلوب يعكس شخصيتك ويرتقي بتجربتك."
@@ -942,7 +947,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 <a 
                                     href="#services"
                                     className={`signature-btn group scale-[0.85] sm:scale-125 ${lang === 'en' ? 'origin-left' : 'origin-right'} lg:mx-0 inline-block`} 
-                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                 >
                                     <span className="btn-content">
                                         <span className="btn-label">{lang === 'ar' ? "استكشف الخدمات" : "Explore Services"}</span>
@@ -982,7 +987,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             >
                                 {serviceTickerItems.map((service, j) => (
                                     <div key={j} className="flex items-center gap-6 md:gap-10 lg:gap-16 px-4 md:px-6 lg:px-8 shrink-0">
-                                        <span className="text-white/60 text-[13px] md:text-[15px] font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                        <span className="text-white/60 text-[13px] md:text-[15px] font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                             {lang === 'en' ? service.en : service.ar}
                                         </span>
                                         <span className="text-[#C3D809]/60 text-[10px] md:text-xs">•</span>
@@ -1008,12 +1013,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             className={`w-full space-y-10 ${lang === 'ar' ? 'text-right' : 'text-left'}`}
                         >
                             <div className="space-y-6 lg:space-y-8">
-                                <h2 className="text-white font-black leading-[1.1] tracking-tight text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                <h2 className="text-white font-black leading-[1.1] tracking-tight text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                     {tData(salon.about_title || (lang === 'ar' ? "أكثر من مجرد صالون" : "More Than Just A Salon"), lang)}
                                 </h2>
                             </div>
 
-                            <div className={`space-y-6 text-white/50 text-[clamp(0.9rem,2.5vw,1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] max-w-xl font-medium text-start ${lang === 'ar' ? 'lg:ml-auto lg:mr-0' : 'lg:mr-auto lg:ml-0'}`} style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                            <div className={`space-y-6 text-white/50 text-[clamp(0.9rem,2.5vw,1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] max-w-xl font-medium text-start ${lang === 'ar' ? 'lg:ml-auto lg:mr-0' : 'lg:mr-auto lg:ml-0'}`} style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                 <p>
                                     {tData(salon.about_description || (lang === 'ar' ? "وُلد صالوننا من شغف حقيقي بالحلاقة الرجالية الراقية. نؤمن أن كل عميل يستحق عناية تتجاوز المألوف، وأن كل تفصيلة صغيرة تصنع فرقاً واضحاً في إطلالته النهائية." : "Founded in the heart of the city out of genuine passion for the craft. We believe every client deserves care beyond traditional standards. We are the place where tranquility reigns and every detail plays a role in elevating your appearance."), lang)}
                                 </p>
@@ -1036,7 +1041,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     return (
                                         <div key={i} className="space-y-2.5 flex flex-col items-center text-center">
                                             <h4 className="font-black text-[clamp(1.75rem,7vw,2.75rem)] tracking-tighter text-[#C3D809] leading-none relative"
-                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", textShadow: "0 0 24px rgba(195,216,9,0.25)" }}>
+                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", textShadow: "0 0 24px rgba(195,216,9,0.25)" }}>
                                                 <span className="inline-block relative">
                                                     <span className="relative z-10">
                                                         <AnimatedCounter target={numPart} suffix={suffixPart} />
@@ -1045,7 +1050,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                 </span>
                                             </h4>
                                             <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] leading-[1.3] min-h-[32px]"
-                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                                 {stat.label.split(' ').map((word, wIdx) => <span key={wIdx} className="block">{word}</span>)}
                                             </p>
                                         </div>
@@ -1089,12 +1094,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         {/* Improved Header - Stacked Vertically per user request */}
                         <div className="flex flex-col items-start gap-8 border-b border-white/[0.05] pb-12 mb-16 sm:mb-20 lg:mb-24">
                             <div className="space-y-4 lg:space-y-6">
-                                <motion.h2 initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-white font-black leading-[1.1] tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                <motion.h2 initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-white font-black leading-[1.1] tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                     {tData(salon.services_title || (lang === 'ar' ? "خدمات النخبة" : "Elite Services"), lang)}
                                 </motion.h2>
                             </div>
                             <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className={`${lang === 'ar' ? "text-right" : "text-left"} max-w-2xl text-start`}>
-                                <p className="text-white/50 text-[clamp(0.9rem,3vw,1.1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] font-medium" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                <p className="text-white/50 text-[clamp(0.9rem,3vw,1.1rem)] sm:text-[15px] leading-[1.8] lg:leading-[2.2] font-medium" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                     {tData(salon.services_description || (lang === 'ar' ? "اختر الخدمة، شاهد لمحة فورية، ثم احجز بضغطة واحدة. تصميم واضح لتجربة راقية وعناية دقيقة تليق بك." : "Choose your service, view an instant glimpse, and book with one click. Clear design for an elegant experience and precise care you deserve."), lang)}
                                 </p>
                             </motion.div>
@@ -1171,13 +1176,13 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             "text-[clamp(1.2rem,4vw,2.5rem)]",
                                                             isActive ? "text-white" : "text-white/70 group-hover:text-white",
                                                         ].join(" ")}
-                                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                                             <span className={isActive ? "text-[#C3D809] transition-colors duration-500" : ""}>{tData(s.name, lang)}</span>
                                                         </h3>
                                                         <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-20 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}>
                                                             <div className="flex items-center gap-3">
                                                                 <div className="h-[1px] w-6 bg-[#C3D809]" />
-                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                                                <span className="text-[0.65rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                                                     {lang === 'ar' ? "تجربة فاخرة وعناية متكاملة" : "Luxury experience & complete care"}
                                                                 </span>
                                                             </div>
@@ -1212,11 +1217,11 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         <div className="max-w-[1400px] mx-auto">
                             <div className="flex flex-col items-start text-start">
                                 <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-10 sm:mb-20">
-                                    <h2 className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                    <h2 className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,4.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                         {tData(salon.team_title || (lang === 'ar' ? "فريقنا الإبداعي" : "Our Creative Team"), lang)}
                                     </h2>
                                     {salon.team_description && (
-                                        <p className="mt-6 max-w-2xl text-white/45 text-[clamp(0.9rem,3vw,1rem)] sm:text-base leading-7 sm:leading-8" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                        <p className="mt-6 max-w-2xl text-white/45 text-[clamp(0.9rem,3vw,1rem)] sm:text-base leading-7 sm:leading-8" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                             {tData(salon.team_description, lang)}
                                         </p>
                                     )}
@@ -1244,8 +1249,8 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             <div className="absolute inset-0 border-[0.5px] border-white/0 group-hover:border-white/10 transition-all duration-700 m-3 sm:m-4 rounded-[1.25rem] sm:rounded-[1.5rem] pointer-events-none" />
                                         </div>
                                         <div className="mt-6 sm:mt-8 px-2 sm:px-4">
-                                            <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "0.7rem", fontWeight: 900, letterSpacing: "0.1em", color: "#C3D809", textTransform: "uppercase" }}>{tData(emp.specialty || (lang === 'ar' ? 'خبير نخبة' : 'Elite Expert'), lang)}</span>
-                                            <h3 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{tData(emp.name, lang)}</h3>
+                                            <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "0.7rem", fontWeight: 900, letterSpacing: "0.1em", color: "#C3D809", textTransform: "uppercase" }}>{tData(emp.specialty || (lang === 'ar' ? 'خبير نخبة' : 'Elite Expert'), lang)}</span>
+                                            <h3 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{tData(emp.name, lang)}</h3>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -1258,7 +1263,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 <section className="py-24 sm:py-32 lg:py-56 overflow-hidden bg-[#070707]">
                     <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-20 sm:mb-32">
                         <div className="flex flex-col items-start text-start">
-                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white font-black tracking-tighter text-[clamp(1.75rem,6vw,5.5rem)]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                 {tData(salon.gallery_title || (lang === 'ar' ? "فلسفة الأناقة" : "Style Philosophy"), lang)}
                             </motion.h2>
                         </div>
@@ -1330,7 +1335,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 />
                                 <h2
                                     className="text-white font-extrabold tracking-tight text-[clamp(1.3rem,5vw,2rem)] sm:text-3xl"
-                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                 >
                                     {tData(salon.reviews_title, lang) || (lang === 'ar' ? "آراء العملاء" : "Customer Reviews")}
                                 </h2>
@@ -1465,7 +1470,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                                 <h4
                                                                     className={`font-bold mb-0.5 ${isActive ? "text-white text-[15px] sm:text-base" : "text-white/70 text-[13px]"
                                                                         }`}
-                                                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                                                 >
                                                                     {customerName}
                                                                 </h4>
@@ -1521,7 +1526,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     >
                                         <h4
                                             className="text-white font-bold text-[15px] truncate"
-                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                         >
                                             {tData(currentReview?.customer_name, lang)}
                                         </h4>
@@ -1568,7 +1573,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         transition={{ duration: 0.35 }}
                                         className="relative text-white/90 inline-block max-w-full"
                                         style={{
-                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                            fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                             fontSize: "clamp(1.5rem, 3.5vw, 2.75rem)",
                                             lineHeight: "1.6",
                                             fontStyle: lang === 'en' ? 'italic' : 'normal',
@@ -1577,7 +1582,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         <span
                                             aria-hidden
                                             className={`absolute -top-10 ${lang === 'ar' ? '-right-4' : '-left-4'} text-7xl sm:text-8xl lg:text-9xl leading-none text-[#C3D809]/80 select-none`}
-                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontStyle: 'normal' }}
+                                            style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontStyle: 'normal' }}
                                         >
                                             &ldquo;
                                         </span>
@@ -1588,7 +1593,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             <>
                                                 <span
                                                     className="float-left text-6xl sm:text-7xl lg:text-8xl leading-none pr-3 pt-2 font-semibold text-white"
-                                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontStyle: 'italic' }}
+                                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontStyle: 'italic' }}
                                                 >
                                                     T
                                                 </span>
@@ -1607,7 +1612,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                 <section id="faq" className="py-[clamp(64px,12vw,160px)] px-[clamp(16px,5vw,64px)] bg-[#050505]" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
                     <div className="max-w-4xl mx-auto">
                         <div className="flex flex-col items-start text-start mb-16 sm:mb-24">
-                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-[clamp(1.75rem,6vw,4rem)] sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-white text-[clamp(1.75rem,6vw,4rem)] sm:text-5xl lg:text-7xl font-black tracking-tighter" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                 {tData(salon.faq_title || (lang === 'ar' ? "الأسئلة الشائعة" : "Common Questions"), lang)}
                             </motion.h2>
                         </div>
@@ -1631,7 +1636,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                         >
                                             <span
                                                 className={`transition-all duration-500 font-bold text-[clamp(0.95rem,3.5vw,1.25rem)] tracking-tight ${isOpen ? "text-[#C3D809]" : "text-white/80 group-hover:text-white"}`}
-                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                                style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                             >
                                                 {tData(faq.question, lang)}
                                             </span>
@@ -1652,7 +1657,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                 >
                                                     <p
                                                         className="pb-8 sm:pb-12 text-white/40 leading-[1.8] text-[clamp(0.85rem,3vw,1rem)] max-w-2xl"
-                                                        style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                                        style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                                     >
                                                         {tData(faq.answer, lang)}
                                                     </p>
@@ -1733,7 +1738,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                             className="text-white font-bold tracking-[-0.035em] leading-[0.95] mb-8"
                             style={{
-                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                 fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
                             }}
                         >
@@ -1777,7 +1782,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             transition={{ duration: 0.7, delay: 0.1 }}
                             className="text-white/60 max-w-xl mx-auto mb-12 leading-relaxed"
                             style={{
-                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                 fontSize: "clamp(0.95rem, 1.5vw, 1.125rem)",
                             }}
                         >
@@ -1798,7 +1803,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 onClick={() => setIsBookingOpen(true)}
                                 className="group relative inline-flex items-center gap-3 rounded-full px-8 py-4 font-semibold text-[15px] text-black bg-[#C3D809] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3D809] focus-visible:ring-offset-2 focus-visible:ring-offset-[#030303]"
                                 style={{
-                                    fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif",
+                                    fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif",
                                     boxShadow: "0 10px 40px -10px rgba(195,216,9,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                                 }}
                             >
@@ -1823,7 +1828,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="group inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors text-[14px] font-medium"
-                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}
+                                    style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}
                                 >
                                     <span className="border-b border-white/20 group-hover:border-white/80 transition-colors pb-0.5">
                                         {lang === 'ar' ? "أو تواصل عبر واتساب" : "Or chat on WhatsApp"}
@@ -1871,14 +1876,14 @@ function BookingContent({ params }: { params: { slug: string } }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-12" dir="ltr">
                         {/* Brand Info */}
                         <div className="space-y-10" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-                            <h3 className="text-white font-black tracking-tighter whitespace-nowrap" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "clamp(1.8rem, 5vw, 2.5rem)" }}>
+                            <h3 className="text-white font-black tracking-tighter whitespace-nowrap" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1.8rem, 5vw, 2.5rem)" }}>
                                 {tData(salon.name, lang)}<span className="text-[#C3D809]">.</span>
                             </h3>
-                            <p className="text-white/30 leading-relaxed text-[clamp(12px,2vw,14px)] max-w-[280px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                            <p className="text-white/30 leading-relaxed text-[clamp(12px,2vw,14px)] max-w-[280px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                 {tData(salon.secondary_description || salon.description || (lang === 'ar' ? "تجربة استثنائية تجمع بين الفن العريق والأسلوب المعاصر في قلب المدينة." : "An exceptional experience combining ancient art and contemporary style in the heart of the city."), lang)}
                             </p>
                             {hasDiscount && (
-                                <div className="inline-block p-5 rounded-3xl border border-white/5 bg-white/[0.01]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                <div className="inline-block p-5 rounded-3xl border border-white/5 bg-white/[0.01]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                     <p className="text-[#C3D809] font-black text-xl mb-1">{lang === 'ar' ? `احصل على ${salon.discount_percentage ?? '30'}% خصم` : `Get ${salon.discount_percentage ?? '30'}% OFF`}</p>
                                     <p className="text-white/10 text-[0.65rem] uppercase tracking-[0.25em] font-black">{lang === 'ar' ? "على زيارتك الأولى" : "ON YOUR FIRST VISIT"}</p>
                                 </div>
@@ -1887,11 +1892,11 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                         {/* Links */}
                         <div className={lang === 'ar' ? 'lg:pr-10' : 'lg:pl-10'} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{lang === 'ar' ? "روابط سريعة" : "Quick Links"}</span>
+                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{lang === 'ar' ? "روابط سريعة" : "Quick Links"}</span>
                             <ul className="space-y-5">
                                 {(lang === 'ar' ? [{ name: "قصتنا", id: "about" }, { name: "الخدمات", id: "services" }, { name: "الفريق", id: "team" }, { name: "الخصوصية", id: "privacy" }] : [{ name: "Story", id: "about" }, { name: "Services", id: "services" }, { name: "Team", id: "team" }, { name: "Privacy", id: "privacy" }]).map(link => (
                                     <li key={link.id}>
-                                        <a href={`#${link.id}`} className="text-white/50 hover:text-white transition-all duration-300 text-[0.95rem] font-medium" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                                        <a href={`#${link.id}`} className="text-white/50 hover:text-white transition-all duration-300 text-[0.95rem] font-medium" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                             {link.name}
                                         </a>
                                     </li>
@@ -1901,13 +1906,13 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                         {/* Work Hours */}
                         <div dir={lang === 'ar' ? 'rtl' : 'ltr'} className="min-w-0">
-                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{lang === 'ar' ? "ساعات العمل" : "Working Hours"}</span>
+                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{lang === 'ar' ? "ساعات العمل" : "Working Hours"}</span>
                             <div className="space-y-8">
                                 <div className="space-y-1">
-                                    <p className="text-white/80 font-black text-lg" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", textAlign: lang === 'en' ? 'left' : 'right' }} dir={lang === 'en' ? 'ltr' : 'rtl'}>
+                                    <p className="text-white/80 font-black text-lg" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", textAlign: lang === 'en' ? 'left' : 'right' }} dir={lang === 'en' ? 'ltr' : 'rtl'}>
                                         {formatOpenDays()}
                                     </p>
-                                    <p className="text-white/20 text-[0.75rem] uppercase tracking-wide font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{lang === 'ar' ? "الأيام المتاحة" : "AVAILABLE DAYS"}</p>
+                                    <p className="text-white/20 text-[0.75rem] uppercase tracking-wide font-bold" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{lang === 'ar' ? "الأيام المتاحة" : "AVAILABLE DAYS"}</p>
                                 </div>
                                 <div className="pt-2">
                                     <div className="flex items-center gap-3 group min-w-0" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -1942,12 +1947,12 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                     return (
                                                         <>
                                                             <div className="flex items-baseline gap-1">
-                                                                <span className="text-[1.3rem] font-black text-white tracking-tighter leading-none" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{start[0]}</span>
+                                                                <span className="text-[1.3rem] font-black text-white tracking-tighter leading-none" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{start[0]}</span>
                                                                 <span className="text-[9px] font-black text-[#C3D809] uppercase tracking-widest opacity-60">{start[1]}</span>
                                                             </div>
                                                             <div className="w-4 h-[1px] bg-white/10" />
                                                             <div className="flex items-baseline gap-1">
-                                                                <span className="text-[1.3rem] font-black text-white tracking-tighter leading-none" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{end[0]}</span>
+                                                                <span className="text-[1.3rem] font-black text-white tracking-tighter leading-none" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{end[0]}</span>
                                                                 <span className="text-[9px] font-black text-[#C3D809] uppercase tracking-widest opacity-60">{end[1]}</span>
                                                             </div>
                                                         </>
@@ -1966,7 +1971,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                         {/* Contact & Social */}
                         <div dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>{lang === 'ar' ? "تواصل معنا" : "Contact Us"}</span>
+                            <span className="text-[#C3D809] text-[11px] uppercase font-black tracking-wide mb-8 block" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>{lang === 'ar' ? "تواصل معنا" : "Contact Us"}</span>
                             <div className="space-y-8">
                                 <a href={`tel:${salon?.phone}`} className={`block group ${lang === 'en' ? 'text-left' : 'text-right'}`}>
                                     <p className="text-white text-lg font-black group-hover:text-[#C3D809] transition-colors" dir="ltr">{salon?.phone || "0785295125"}</p>
@@ -2014,14 +2019,14 @@ function BookingContent({ params }: { params: { slug: string } }) {
 
                     {/* Copyright */}
                     <div className={`mt-16 pt-10 border-t border-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-6 ${lang === 'ar' ? 'md:flex-row-reverse' : ''}`}>
-                        <div className={`flex items-center gap-8 ${lang === 'ar' ? 'flex-row-reverse' : ''}`} style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif", fontSize: "0.65rem" }}>
+                        <div className={`flex items-center gap-8 ${lang === 'ar' ? 'flex-row-reverse' : ''}`} style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "0.65rem" }}>
                             <a href="https://maqas.site/" target="_blank" className="text-[#C3D809] font-black tracking-[0.1em] hover:opacity-80 transition-opacity">MAQAS.SITE</a>
                             <div className="flex gap-6">
                                 <a href={`/privacy?s=${slug}`} className="text-white/20 hover:text-white transition-colors uppercase tracking-widest font-bold">{lang === 'ar' ? 'الخصوصية' : 'Privacy'}</a>
                                 <a href={`/terms?s=${slug}`} className="text-white/20 hover:text-white transition-colors uppercase tracking-widest font-bold">{lang === 'ar' ? 'الشروط' : 'Terms'}</a>
                             </div>
                         </div>
-                        <div className="text-white/20 font-bold tracking-[0.05em] uppercase text-[10px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "'Noto Sans Arabic', sans-serif"}}>
+                        <div className="text-white/20 font-bold tracking-[0.05em] uppercase text-[10px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                             © {new Date().getFullYear()} {tData(salon.name, lang)} · {lang === 'ar' ? 'جميع الحقوق محفوظة' : 'ALL RIGHTS RESERVED'}
                         </div>
                     </div>

@@ -106,7 +106,7 @@ function ContactPageInner() {
     };
 
     return (
-        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)", fontFamily: "'Noto Sans Arabic', 'Noto Sans Arabic', sans-serif" }} dir="rtl">
+        <div className="min-h-screen" style={{ background: "var(--off-white)", color: "var(--text-main)" }} dir="rtl">
 
             {/* Navbar */}
             <nav style={{ background: "var(--white)", borderBottom: "1px solid var(--border)" }} className="px-6 py-4 sticky top-0 z-50">

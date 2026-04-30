@@ -114,14 +114,12 @@ jobs:
           local-dir: ./deploy_combined/
           protocol: ftp
           port: 21
+          # Important for Hostinger/Cloudflare setups:
+          # Make sure FTP_HOST is an IP address, not maqas.site
           dangerous-clean-slate: false
           timeout: 600000
-          log-level: standard
           state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*
             **/.github/**
             **/node_modules/**
-            **/uploads/**
-            **/backups/**
-            **/.ftp-deploy-sync-state.json

@@ -404,7 +404,20 @@ export default function SuperAdminDashboard() {
             setRevenueMonthTotal(revenuesRes.data.data.month_total || 0);
             setPlansData(plansRes.data.data || []);
             if (settingsRes.data.success) {
-                setPlatformSettings(settingsRes.data.data || platformSettings);
+                const settings = settingsRes.data.data;
+                if (settings) {
+                    setPlatformSettings(prev => ({
+                        ...prev,
+                        ...settings,
+                        show_email: settings.show_email === undefined ? true : Boolean(Number(settings.show_email)),
+                        show_phone: settings.show_phone === undefined ? true : Boolean(Number(settings.show_phone)),
+                        show_whatsapp: settings.show_whatsapp === undefined ? true : Boolean(Number(settings.show_whatsapp)),
+                        show_address: settings.show_address === undefined ? true : Boolean(Number(settings.show_address)),
+                        show_instagram: settings.show_instagram === undefined ? true : Boolean(Number(settings.show_instagram)),
+                        show_facebook: settings.show_facebook === undefined ? true : Boolean(Number(settings.show_facebook)),
+                        show_tiktok: settings.show_tiktok === undefined ? true : Boolean(Number(settings.show_tiktok)),
+                    }));
+                }
             }
         } catch { console.error("Failed to load data"); }
         finally { setLoading(false); }
@@ -1314,23 +1327,33 @@ export default function SuperAdminDashboard() {
 
                         {/* Helper component for a premium toggle */}
                         {(() => {
-                            const ToggleBtn = ({ field }: { field: keyof typeof platformSettings }) => {
-                                const showKey = `show_${String(field)}` as keyof typeof platformSettings;
+                            const ToggleBtn = ({ field }: { field: string }) => {
+                                const showKey = `show_${field}` as keyof typeof platformSettings;
                                 const isVisible = platformSettings[showKey] !== false;
+                                
+                                const handleToggle = (e: React.MouseEvent) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setPlatformSettings(prev => ({
+                                        ...prev,
+                                        [showKey]: !isVisible
+                                    }));
+                                };
+
                                 return (
                                     <button
                                         type="button"
-                                        onClick={() => setPlatformSettings({ ...platformSettings, [showKey]: !isVisible })}
-                                        className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 border ${
+                                        onClick={handleToggle}
+                                        className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 border cursor-pointer z-10 ${
                                             isVisible
                                                 ? 'bg-accent-lime/10 border-accent-lime/40 text-accent-lime shadow-[0_0_10px_rgba(195,216,9,0.1)]'
                                                 : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'
                                         }`}
                                     >
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider pointer-events-none">
                                             {isVisible ? 'مرئي' : 'مخفي'}
                                         </span>
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${isVisible ? 'bg-accent-lime text-black scale-110 shadow-[0_0_15px_rgba(195,216,9,0.4)]' : 'bg-white/10 text-white'}`}>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all pointer-events-none ${isVisible ? 'bg-accent-lime text-black scale-110 shadow-[0_0_15px_rgba(195,216,9,0.4)]' : 'bg-white/10 text-white'}`}>
                                             {isVisible ? <FaEye size={12} /> : <FaEyeSlash size={12} />}
                                         </div>
                                     </button>

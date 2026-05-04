@@ -307,7 +307,7 @@ export default function AdminBookings() {
                                         {/* Customer Info */}
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C3D809] to-[#8FA807] flex items-center justify-center text-[#0A0A0B] font-bold text-lg">
-                                                {b.customer_name.charAt(0)}
+                                                {(t(b.customer_name) || '?').charAt(0)}
                                             </div>
                                             <div>
                                                 <h3 className="text-white font-bold text-base">{t(b.customer_name)}</h3>
@@ -473,7 +473,7 @@ export default function AdminBookings() {
                                                 }`}
                                         >
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${selectedEmpId === emp.id ? "bg-accent-lime/20 text-accent-lime" : "bg-white/10 text-gray-400"}`}>
-                                                {tData(emp.name, 'ar').charAt(0)}
+                                                {(tData(emp.name, 'ar') || '?').charAt(0)}
                                             </div>
                                             {tData(emp.name, 'ar')}
                                             {selectedEmpId === emp.id && (

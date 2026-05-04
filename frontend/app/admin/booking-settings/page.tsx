@@ -189,24 +189,60 @@ export default function BookingSettingsPage() {
         if (salon?.logo) setCurrentLogo(salon.logo);
     }, [salon]);
 
+    const [loadError, setLoadError] = useState<string | null>(null);
+
     const loadData = async () => {
-        try {
-            const auth = { headers: { Authorization: `Bearer ${Cookies.get("token")}` } };
-            const [servRes, settRes, empRes, faqRes, galleryRes] = await Promise.all([
-                servicesAPI.getAll(),
-                axios.get(`${API_BASE}/salon/settings.php`, auth),
-                axios.get(`${API_BASE}/employees`, auth),
-                axios.get(`${API_BASE}/salon/faq.php`, auth),
-                axios.get(`${API_BASE}/salon/gallery.php`, auth),
-            ]);
-            setServices(servRes.data.data || []);
-            const settData = settRes.data.data || null;
+        setLoadError(null);
+        const auth = { headers: { Authorization: `Bearer ${Cookies.get("token")}` } };
+
+        // Independent settled promises — one failure does not block the rest of the page.
+        const [servRes, settRes, empRes, faqRes, galleryRes] = await Promise.allSettled([
+            servicesAPI.getAll(),
+            axios.get(`${API_BASE}/salon/settings.php`, auth),
+            axios.get(`${API_BASE}/employees/index.php`, auth),
+            axios.get(`${API_BASE}/salon/faq.php`, auth),
+            axios.get(`${API_BASE}/salon/gallery.php`, auth),
+        ]);
+
+        if (servRes.status === "fulfilled") {
+            setServices(servRes.value.data.data || []);
+        } else {
+            console.error("[booking-settings] services failed:", servRes.reason);
+        }
+
+        if (settRes.status === "fulfilled") {
+            const settData = settRes.value.data.data || null;
             setSettings(settData);
             if (settData?.logo) setCurrentLogo(settData.logo);
-            setEmployees(empRes.data.data || []);
-            setFaqs(faqRes.data.data || []);
-            setGalleryItems(galleryRes.data.data?.items || []);
-        } catch (e) { console.error(e); }
+        } else {
+            console.error("[booking-settings] settings failed:", settRes.reason);
+            const status = (settRes.reason as { response?: { status?: number } })?.response?.status;
+            setLoadError(
+                status === 500
+                    ? "تعذّر تحميل إعدادات الصالون من الخادم (خطأ 500). راجع سجلات الخادم."
+                    : status === 401
+                        ? "انتهت صلاحية الجلسة. يرجى إعادة تسجيل الدخول."
+                        : "تعذّر تحميل إعدادات الصالون. تحقّق من الاتصال وحاول مرة أخرى."
+            );
+        }
+
+        if (empRes.status === "fulfilled") {
+            setEmployees(empRes.value.data.data || []);
+        } else {
+            console.error("[booking-settings] employees failed:", empRes.reason);
+        }
+
+        if (faqRes.status === "fulfilled") {
+            setFaqs(faqRes.value.data.data || []);
+        } else {
+            console.error("[booking-settings] faq failed:", faqRes.reason);
+        }
+
+        if (galleryRes.status === "fulfilled") {
+            setGalleryItems(galleryRes.value.data.data?.items || []);
+        } else {
+            console.error("[booking-settings] gallery failed:", galleryRes.reason);
+        }
     };
 
     const authH = () => ({ Authorization: `Bearer ${Cookies.get("token")}` });
@@ -577,8 +613,26 @@ export default function BookingSettingsPage() {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
     if (!settings) return (
-        <div className="min-h-[80vh] flex items-center justify-center">
-            <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+        <div className="min-h-[80vh] flex items-center justify-center px-4" dir="rtl">
+            {loadError ? (
+                <div className="max-w-md w-full text-center bg-white/5 border border-red-500/30 rounded-2xl p-8 space-y-5">
+                    <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mx-auto text-red-400">
+                        <FaTimes size={22} />
+                    </div>
+                    <div>
+                        <h3 className="text-white text-lg font-bold mb-2">تعذّر تحميل الصفحة</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{loadError}</p>
+                    </div>
+                    <button
+                        onClick={loadData}
+                        className="px-5 py-2.5 rounded-xl bg-[#C3D809] text-[#0A0A0B] font-bold text-sm hover:bg-[#B5C808] transition-colors"
+                    >
+                        إعادة المحاولة
+                    </button>
+                </div>
+            ) : (
+                <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${gold} transparent ${gold} ${gold}` }} />
+            )}
         </div>
     );
 

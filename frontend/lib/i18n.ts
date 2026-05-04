@@ -207,3 +207,41 @@ export const tList = (
         .filter(Boolean)
         .join(separator);
 };
+
+/* ──────────────────────────────────────────────────────────────────────────
+   BILINGUAL READER for objects with separate _ar / _en columns.
+   Use this for records returned by the API that include both fields:
+     { name: "قص شعر", name_en: "Haircut" }
+     { customer_name: "أحمد", customer_name_en: "Ahmed" }
+
+   USAGE:
+     tBi(service, lang)                       // reads service.name + service.name_en
+     tBi(emp, lang, "name", "name_en")        // explicit fields
+     tBi(salon, lang)                         // reads salon.name + salon.name_en
+
+   Falls back to the Arabic value if English is missing, and vice versa.
+   This is the preferred reader for the public booking page where bilingual
+   display is required.
+   ────────────────────────────────────────────────────────────────────────── */
+export const tBi = (
+    obj: Record<string, unknown> | null | undefined,
+    lang: 'ar' | 'en' = 'ar',
+    arField: string = 'name',
+    enField?: string,
+): string => {
+    if (!obj) return "";
+    const enKey = enField ?? `${arField}_en`;
+    const arVal = obj[arField];
+    const enVal = obj[enKey];
+
+    // Normalize to BiValue and pick using the existing t() helper
+    // so legacy "ar||en" values inside a single field still split correctly.
+    if (lang === 'en') {
+        const en = t(enVal as BiValue, 'en');
+        if (en) return en;
+        return t(arVal as BiValue, 'en');
+    }
+    const ar = t(arVal as BiValue, 'ar');
+    if (ar) return ar;
+    return t(enVal as BiValue, 'ar');
+};

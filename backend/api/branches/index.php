@@ -67,6 +67,7 @@ if ($method === 'GET') {
         $result[] = [
             'id'          => $bId,
             'name'        => $branch['name'],
+            'name_en'     => $branch['name_en'] ?? null,
             'slug'        => $branch['slug'],
             'status'      => $branch['status'],
             'logo'        => $branch['logo_path'] ?? null,

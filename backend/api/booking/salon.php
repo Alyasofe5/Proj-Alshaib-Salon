@@ -111,6 +111,7 @@ $aboutImage2Url = $settingsData['about_image_2'] ?? null;
 sendSuccess([
     'salon' => [
         'name' => $salon['name'],
+        'name_en' => $salon['name_en'] ?? null,
         'slug' => $salon['slug'],
         'logo' => $logoUrl,
         'phone' => $salon['owner_phone'],

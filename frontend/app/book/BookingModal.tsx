@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scissors, Calendar, Clock, UserCircle, X, Sparkles, AlertCircle, Check, ArrowLeft, ArrowRight, ChevronRight, Plus, Minus, Star } from "lucide-react";
 import { assetUrl } from "@/lib/assets";
+import { tBi } from "@/lib/i18n";
 import { Service, Employee, SalonInfo, BookingSel, dayNames, dayNamesEn, monthNames, monthNamesEn, fmt12 } from "./types";
 
 interface BookingModalProps {
@@ -89,13 +90,13 @@ export default function BookingModal({
               <img src={assetUrl(salon.logo_path || salon.logo)!} className="w-full h-full object-cover" alt="" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-[#C3D809] font-bold text-2xl">
-                {tData(salon.name, lang).charAt(0)}
+                {tBi(salon, lang).charAt(0)}
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0 flex flex-col justify-center">
             <h3 className="text-white text-[15px] font-bold mb-1.5 leading-tight">
-              {tData(salon.name, lang)}
+              {tBi(salon, lang)}
             </h3>
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className="text-white text-[13px] font-semibold">5.0</span>
@@ -121,7 +122,7 @@ export default function BookingModal({
             )}
           </div>
           <div>
-            <p className="text-white text-sm font-bold">{tData(selectedEmp.name, lang)}</p>
+            <p className="text-white text-sm font-bold">{tBi(selectedEmp, lang)}</p>
             <p className="text-white/30 text-[11px]">{tData(selectedEmp.role || (isRTL ? "حلاق" : "Barber"), lang)}</p>
           </div>
         </div>
@@ -133,7 +134,7 @@ export default function BookingModal({
           {selSrvs.map(s => (
             <div key={s.id} className="flex justify-between items-start gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-bold truncate">{tData(s.name, lang)}</p>
+                <p className="text-white text-sm font-bold truncate">{tBi(s, lang)}</p>
                 <p className="text-white/25 text-[11px]">{s.duration_minutes} {isRTL ? "دقيقة" : "mins"}</p>
               </div>
               <div className="text-right shrink-0">
@@ -265,7 +266,7 @@ export default function BookingModal({
                         >
                           <div className="flex-1 min-w-0">
                             <h4 className={`text-[15px] sm:text-[16px] font-semibold mb-1 transition-colors ${active ? "text-white" : "text-white"}`}>
-                              {tData(s.name, lang)}
+                              {tBi(s, lang)}
                             </h4>
                             <p className="text-white/30 text-[13px] mb-1">
                               {s.duration_minutes} {isRTL ? "دقيقة" : "mins"}
@@ -319,7 +320,7 @@ export default function BookingModal({
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className={`text-[15px] sm:text-[16px] font-semibold mb-0.5 ${active ? "text-white" : "text-white"}`}>{tData(emp.name, lang)}</h4>
+                            <h4 className={`text-[15px] sm:text-[16px] font-semibold mb-0.5 ${active ? "text-white" : "text-white"}`}>{tBi(emp, lang)}</h4>
                             <p className="text-white/30 text-[13px]">{tData(emp.role || "Barber", lang)}</p>
                           </div>
                           <ChevronRight size={18} className={`text-white/15 shrink-0 ${isRTL ? "rotate-180" : ""}`} />
@@ -439,7 +440,7 @@ export default function BookingModal({
                     <h2 className="text-white text-3xl sm:text-4xl font-bold mb-4">
                       {isRTL ? "تم تأكيد موعدك" : "Booking Confirmed"}
                     </h2>
-                    <p className="text-white/40 mb-10 leading-relaxed">{isRTL ? `نراك في ${tData(salon.name, lang)} قريباً!` : `See you at ${tData(salon.name, lang)}!`}</p>
+                    <p className="text-white/40 mb-10 leading-relaxed">{isRTL ? `نراك في ${tBi(salon, lang)} قريباً!` : `See you at ${tBi(salon, lang)}!`}</p>
                     <button onClick={resetAndClose} className="px-10 py-4 rounded-2xl bg-white text-black font-bold hover:bg-[#C3D809] transition-colors active:scale-95">
                       {isRTL ? "العودة" : "Done"}
                     </button>

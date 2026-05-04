@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import axios from "axios";
 import { assetUrl } from "@/lib/assets";
-import { tData } from "@/lib/i18n";
+import { tData, tBi } from "@/lib/i18n";
 import {
     Scissors, Calendar, Clock, X, ArrowRight, ArrowLeft, Star,
     Instagram, Facebook, Phone, Plus
@@ -554,6 +554,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
         ? services.map((service, index) => ({
             id: service.id,
             name: service.name,
+            name_en: service.name_en ?? null,
             en: `SERVICE-${index + 1}`,
             img: resolveMediaUrl(service.image || (service as any).image_path),
             video: resolveMediaUrl(service.video || (service as any).video_path) || null,
@@ -564,6 +565,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
         : legacyStaticServiceCards.map((card, index) => ({
             id: index + 1,
             name: card.name,
+            name_en: card.en,
             en: card.en,
             img: card.img,
             video: null,
@@ -675,7 +677,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     {resolveMediaUrl(salon.logo) ? (
                                         <img
                                             src={resolveMediaUrl(salon.logo)}
-                                            alt={tData(salon.name, lang)}
+                                            alt={tBi(salon, lang)}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -686,7 +688,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                 </div>
                             </div>
                             <span className="whitespace-nowrap" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1rem, 2.5vw, 1.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#F5F2EC" }}>
-                                {tData(salon.name, lang)}
+                                {tBi(salon, lang)}
                             </span>
                         </a>
                     </div>
@@ -810,7 +812,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
                                 <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "1.1rem", fontWeight: 900, letterSpacing: "-0.03em" }} className="text-white truncate">
-                                    {tData(salon.name, lang)}
+                                    {tBi(salon, lang)}
                                 </span>
                                 <button
                                     type="button"
@@ -1196,7 +1198,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                             onMouseEnter={() => setActiveServiceIndex(i)}
                                             onFocus={() => setActiveServiceIndex(i)}
                                             aria-expanded={isActive}
-                                            aria-label={lang === 'ar' ? `معاينة خدمة ${tData(s.name, lang)}` : `Preview ${tData(s.name, lang)}`}
+                                            aria-label={lang === 'ar' ? `معاينة خدمة ${tBi(s, lang)}` : `Preview ${tBi(s, lang)}`}
                                         >
                                             <div className="absolute -inset-px pointer-events-none">
                                                 <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-0"}`}>
@@ -1249,7 +1251,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                             isActive ? "text-white" : "text-white/70 group-hover:text-white",
                                                         ].join(" ")}
                                                             style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
-                                                            <span className={isActive ? "text-[#C3D809] transition-colors duration-500" : ""}>{tData(s.name, lang)}</span>
+                                                            <span className={isActive ? "text-[#C3D809] transition-colors duration-500" : ""}>{tBi(s, lang)}</span>
                                                         </h3>
                                                         <div className={`overflow-hidden transition-all duration-500 ${isActive ? "max-h-24 opacity-100 mt-3 sm:mt-4" : "max-h-0 opacity-0 mt-0"}`}>
                                                             <span className="block text-[0.6rem] sm:text-[0.75rem] tracking-[0.05em] text-white/40 font-bold uppercase" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
@@ -1263,7 +1265,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                                 <button
                                                     type="button"
                                                     onClick={(e) => { e.stopPropagation(); setActiveServiceIndex(i); setIsBookingOpen(true); }}
-                                                    aria-label={lang === 'ar' ? `احجز خدمة ${tData(s.name, lang)}` : `Book ${tData(s.name, lang)}`}
+                                                    aria-label={lang === 'ar' ? `احجز خدمة ${tBi(s, lang)}` : `Book ${tBi(s, lang)}`}
                                                     className="flex items-center justify-center shrink-0 outline-none"
                                                 >
                                                     <div className={`p-2 sm:p-3 rounded-full border transition-all duration-500 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-5 sm:[&>svg]:h-5 ${isActive ? "border-[#C3D809] bg-[#C3D809]/5" : "border-white/5 bg-white/[0.02]"}`}>
@@ -1317,13 +1319,13 @@ function BookingContent({ params }: { params: { slug: string } }) {
                                     >
                                         <div className="relative overflow-hidden aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/[0.03]">
                                             <img src={resolveMediaUrl(emp.avatar) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600"}
-                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={tData(emp.name, lang)} loading="lazy" />
+                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-[1.2s] grayscale group-hover:grayscale-0 group-hover:scale-110" alt={tBi(emp, lang)} loading="lazy" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-30" />
                                             <div className="absolute inset-0 border-[0.5px] border-white/0 group-hover:border-white/10 transition-all duration-700 m-3 sm:m-4 rounded-[1.25rem] sm:rounded-[1.5rem] pointer-events-none" />
                                         </div>
                                         <div className="mt-6 sm:mt-8 px-2 sm:px-4">
                                             <span style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "0.7rem", fontWeight: 900, letterSpacing: "0.1em", color: "#C3D809", textTransform: "uppercase" }}>{tData(emp.specialty || (lang === 'ar' ? 'خبير نخبة' : 'Elite Expert'), lang)}</span>
-                                            <h3 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{tData(emp.name, lang)}</h3>
+                                            <h3 style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 1.8rem)", marginTop: 6, color: "#F5F2EC" }}>{tBi(emp, lang)}</h3>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -1953,7 +1955,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                         {/* Brand Info */}
                         <div className="space-y-10" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
                             <h3 className="text-white font-black tracking-tighter whitespace-nowrap" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif", fontSize: "clamp(1.8rem, 5vw, 2.5rem)" }}>
-                                {tData(salon.name, lang)}<span className="text-[#C3D809]">.</span>
+                                {tBi(salon, lang)}<span className="text-[#C3D809]">.</span>
                             </h3>
                             <p className="text-white/30 leading-relaxed text-[clamp(12px,2vw,14px)] max-w-[280px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
                                 {tData(salon.secondary_description || salon.description || (lang === 'ar' ? "تجربة استثنائية تجمع بين الفن العريق والأسلوب المعاصر في قلب المدينة." : "An exceptional experience combining ancient art and contemporary style in the heart of the city."), lang)}
@@ -2103,7 +2105,7 @@ function BookingContent({ params }: { params: { slug: string } }) {
                             </div>
                         </div>
                         <div className="text-white/20 font-bold tracking-[0.05em] uppercase text-[10px]" style={{ fontFamily: lang === 'en' ? "'Cormorant Garamond', serif" : "var(--font-el-messiri), sans-serif"}}>
-                            © {new Date().getFullYear()} {tData(salon.name, lang)} · {lang === 'ar' ? 'جميع الحقوق محفوظة' : 'ALL RIGHTS RESERVED'}
+                            © {new Date().getFullYear()} {tBi(salon, lang)} · {lang === 'ar' ? 'جميع الحقوق محفوظة' : 'ALL RIGHTS RESERVED'}
                         </div>
                     </div>
                 </div>

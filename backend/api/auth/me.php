@@ -56,6 +56,7 @@ sendSuccess([
     'salon' => [
         'id'          => (int)$salon['id'],
         'name'        => $salon['name'],
+        'name_en'     => $salon['name_en'] ?? null,
         'slug'        => $salon['slug'],
         'logo'        => $logoPath,
         'status'      => $salon['status'],

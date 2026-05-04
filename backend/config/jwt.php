@@ -2,11 +2,28 @@
 /**
  * JWT (JSON Web Token) Configuration & Helpers
  * تنفيذ JWT بدون مكتبات خارجية (Pure PHP)
+ *
+ * The secret is read from the JWT_SECRET environment variable. If it is
+ * missing the API refuses to issue or verify tokens — this prevents
+ * accidentally running production with a default/leaked secret.
+ *
+ * Generate a strong secret with: `php -r "echo bin2hex(random_bytes(48));"`
+ * and put it in backend/.env as: JWT_SECRET=<the-hex-string>
  */
 
-define('JWT_SECRET', 'alshaib_salon_jwt_secret_key_2026_change_this_in_production');
-define('JWT_EXPIRY', 86400); // 24 ساعة
+require_once __DIR__ . '/env.php';
+
+define('JWT_SECRET',    env('JWT_SECRET', ''));
+define('JWT_EXPIRY',    (int) env('JWT_EXPIRY', 86400)); // 24h default
 define('JWT_ALGORITHM', 'HS256');
+
+if (JWT_SECRET === '' || strlen(JWT_SECRET) < 32) {
+    http_response_code(500);
+    die(json_encode([
+        'success' => false,
+        'message' => 'Auth not configured. JWT_SECRET environment variable is missing or too short (min 32 chars).'
+    ]));
+}
 
 /**
  * إنشاء JWT Token

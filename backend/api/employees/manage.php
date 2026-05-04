@@ -34,7 +34,12 @@ try {
 
 // ===== GET: موظف واحد =====
 if ($method === 'GET') {
-    $stmt = $pdo->prepare("SELECT * FROM employees WHERE id = ? AND salon_id = ?");
+    $stmt = $pdo->prepare("
+        SELECT *,
+               COALESCE(name_ar, name_en, '') AS name
+        FROM employees
+        WHERE id = ? AND salon_id = ?
+    ");
     $stmt->execute([$id, $salonId]);
     $employee = $stmt->fetch();
 

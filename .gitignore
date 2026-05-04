@@ -8,10 +8,11 @@ out/
 build/
 dist/
 
-# Environment files
+# Environment files (NEVER commit — they contain secrets)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.template
 
 # Deploy archives
 *.zip
@@ -42,3 +43,15 @@ hostinger-wrapper.bat
 
 # Deployment logs
 deploy-logs/
+
+# Backup / corrupted files
+*.bak
+*.bak-*
+*.backup
+*.orig
+
+# Diagnostic / debug scripts (must never reach production)
+backend/api/debug-*.php
+backend/api/test-*.php
+backend/api/migrate/
+backend/**/phpinfo*.php

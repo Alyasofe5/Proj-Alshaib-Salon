@@ -25,9 +25,18 @@ DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
     RewriteRule ^config/ - [F,L]
     RewriteRule ^middleware/ - [F,L]
+    RewriteRule ^api/migrate/ - [F,L]
+    RewriteRule ^api/debug- - [F,L]
+    RewriteRule ^api/test- - [F,L]
 </IfModule>
 
-<FilesMatch "\.(env|ini|log|sh|sql)$">
+# Block direct access to env files, raw config, logs, dumps, backups, and dotfiles.
+<FilesMatch "\.(env|env\..+|ini|log|sh|sql|bak|backup|orig|swp)$">
+    Require all denied
+</FilesMatch>
+
+# Defense-in-depth: block any dotfile (e.g. .env, .git, .htaccess, .DS_Store)
+<FilesMatch "^\.">
     Require all denied
 </FilesMatch>
 

@@ -47,6 +47,7 @@ sendSuccess([
     'found' => true,
     'salon' => [
         'name' => $result['salon_name'],
+        'name_en' => $result['salon_name_en'] ?? null,
         'slug' => $result['salon_slug'],
         'logo' => $logoUrl,
         'status' => $result['salon_status'],

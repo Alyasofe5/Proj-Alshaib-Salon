@@ -133,11 +133,13 @@ sendSuccess([
         'role' => $user['role'],
         'employee_id' => $user['employee_id'] ? (int)$user['employee_id'] : null,
         'employee_name' => $user['emp_name'],
+        'employee_name_en' => $user['emp_name_en'] ?? null,
         'salon_id' => (int)$user['salon_id'],
     ],
     'salon' => [
         'id' => (int)($user['s_id'] ?? 0),
         'name' => $user['s_name'] ?? '',
+        'name_en' => $user['s_name_en'] ?? null,
         'slug' => $user['s_slug'] ?? '',
         'logo' => $user['s_logo'] ?? null,
         'status' => $user['s_status'] ?? 'active',

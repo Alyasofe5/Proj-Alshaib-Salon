@@ -38,9 +38,21 @@ if ($method === 'GET') {
 
     $activeOnly = $_GET['active_only'] ?? '0';
     if ($activeOnly === '1') {
-        $stmt = $pdo->prepare("SELECT * FROM services WHERE salon_id = ? AND is_active = 1 ORDER BY name_ar");
+        $stmt = $pdo->prepare("
+            SELECT *,
+                   COALESCE(name_ar, name_en, '') AS name
+            FROM services
+            WHERE salon_id = ? AND is_active = 1
+            ORDER BY name_ar
+        ");
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM services WHERE salon_id = ? ORDER BY is_active DESC, created_at DESC");
+        $stmt = $pdo->prepare("
+            SELECT *,
+                   COALESCE(name_ar, name_en, '') AS name
+            FROM services
+            WHERE salon_id = ?
+            ORDER BY is_active DESC, created_at DESC
+        ");
     }
 
     $stmt->execute([$salonId]);

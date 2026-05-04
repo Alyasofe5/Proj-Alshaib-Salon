@@ -2,22 +2,36 @@
 /**
  * Database Configuration & Connection
  * Alshaib Salon - REST API Backend
+ *
+ * Credentials are read from environment variables (or backend/.env file).
+ * NEVER hard-code credentials here — this file is committed to git.
+ *
+ * Required environment variables:
+ *   DB_HOST, DB_NAME, DB_USER, DB_PASS
+ * Optional:
+ *   DB_CHARSET (default: utf8mb4)
+ *   APP_TIMEZONE (default: Asia/Kuwait)
+ *
+ * See backend/.env.example for the template.
  */
 
-// XAMPP local settings
-// define('DB_HOST', 'localhost');
-// define('DB_NAME', 'alshaib_salon');
-// define('DB_USER', 'root');
-// define('DB_PASS', '');
+require_once __DIR__ . '/env.php';
 
-// Hostinger settings
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'u778871816_alshaib');
-define('DB_USER', 'u778871816_admin');
-define('DB_PASS', 'Salon2026!pass');
-define('DB_CHARSET', 'utf8mb4');
+define('DB_HOST',    env('DB_HOST', 'localhost'));
+define('DB_NAME',    env('DB_NAME', ''));
+define('DB_USER',    env('DB_USER', ''));
+define('DB_PASS',    env('DB_PASS', ''));
+define('DB_CHARSET', env('DB_CHARSET', 'utf8mb4'));
 
-date_default_timezone_set('Asia/Kuwait');
+date_default_timezone_set(env('APP_TIMEZONE', 'Asia/Kuwait'));
+
+if (DB_NAME === '' || DB_USER === '') {
+    http_response_code(500);
+    die(json_encode([
+        'success' => false,
+        'message' => 'Database not configured. Missing DB_NAME or DB_USER environment variables.'
+    ]));
+}
 
 try {
     $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;

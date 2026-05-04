@@ -27,7 +27,7 @@ if ($method === 'POST') {
     if (!$empId) sendError('الموظف مطلوب');
 
     // Security: Employee belongs to salon
-    $empCheck = $pdo->prepare("SELECT id, COALESCE(name_ar, name) as name, name_en, phone FROM employees WHERE id = ? AND salon_id = ?");
+    $empCheck = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en, '') as name, name_en, phone FROM employees WHERE id = ? AND salon_id = ?");
     $empCheck->execute([$empId, $salonId]);
     $emp = $empCheck->fetch();
     if (!$emp) sendError('الموظف غير موجود', 404);
@@ -38,7 +38,7 @@ if ($method === 'POST') {
     }
 
     // 1. Get all pending/confirmed bookings to notify them
-    $stmt = $pdo->prepare("SELECT id, COALESCE(customer_name_ar, customer_name) as customer_name, customer_phone, booking_time
+    $stmt = $pdo->prepare("SELECT id, COALESCE(customer_name_ar, customer_name_en, '') as customer_name, customer_phone, booking_time
                            FROM bookings 
                            WHERE employee_id = ? AND booking_date = ? AND status IN ('pending', 'confirmed')");
     $stmt->execute([$empId, $date]);

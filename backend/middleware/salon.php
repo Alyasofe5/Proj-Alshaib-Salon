@@ -20,6 +20,7 @@ function buildSalonSelectSql(string $whereClause = 'WHERE s.id = ?'): string
 
     $select = [
         's.*',
+        "COALESCE(s.name_ar, s.name_en, '') AS name",
         ($hasPlanName ? 'sp.name' : 'NULL') . ' AS plan_name',
         ($hasPlanNameAr ? 'sp.name_ar' : 'NULL') . ' AS plan_name_ar',
         ($hasMaxEmployees ? 'sp.max_employees' : '999') . ' AS max_employees',
@@ -209,7 +210,10 @@ function getSalonBranches(int $userId): array
     $hasPlanNameAr = $hasPlanTable && dbHasColumn('subscription_plans', 'name_ar');
 
     $select = "
-        SELECT DISTINCT s.id, s.name, s.slug,
+        SELECT DISTINCT s.id,
+               COALESCE(s.name_ar, s.name_en, '') AS name,
+               s.name_ar, s.name_en,
+               s.slug,
                " . ($hasSalonStatus ? "s.status" : "'active'") . " AS status,
                s.logo_path,
                " . ($hasPlanNameAr ? "sp.name_ar" : "NULL") . " AS plan_name,
@@ -229,7 +233,10 @@ function getSalonBranches(int $userId): array
     $linkedSalons = [];
     if ($hasOwnerUserId) {
         $ownerSql = "
-            SELECT s.id, s.name, s.slug,
+            SELECT s.id,
+                   COALESCE(s.name_ar, s.name_en, '') AS name,
+                   s.name_ar, s.name_en,
+                   s.slug,
                    " . ($hasSalonStatus ? "s.status" : "'active'") . " AS status,
                    s.logo_path,
                    " . ($hasPlanNameAr ? "sp.name_ar" : "NULL") . " AS plan_name,

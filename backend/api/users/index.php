@@ -31,7 +31,7 @@ if ($method === 'GET') {
     $stmt->execute([$salonId]);
     $users = $stmt->fetchAll();
 
-    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name) as name, name_en FROM employees WHERE salon_id = ? AND is_active=1 ORDER BY name_ar");
+    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en, '') as name, name_en FROM employees WHERE salon_id = ? AND is_active=1 ORDER BY name_ar");
     $stmt->execute([$salonId]);
     $employees = $stmt->fetchAll();
 

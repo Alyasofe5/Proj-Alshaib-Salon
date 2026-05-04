@@ -232,7 +232,7 @@ if ($method === 'DELETE' && $id) {
     if ($id == 1) sendError('لا يمكن حذف الصالون الرئيسي', 403);
 
     // تحقق من وجود الصالون
-    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name) as name FROM salons WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, COALESCE(name_ar, name_en, '') as name FROM salons WHERE id = ?");
     $stmt->execute([$id]);
     $salon = $stmt->fetch();
     if (!$salon) sendError('الصالون غير موجود', 404);

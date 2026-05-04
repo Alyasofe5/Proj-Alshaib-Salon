@@ -72,7 +72,7 @@ if ($method === 'POST') {
 
     // Resolve salon_name from salon_id if provided
     if ($salon_id && !$salon_name) {
-        $s = $pdo->prepare("SELECT COALESCE(name_ar, name) as name FROM salons WHERE id = ?");
+        $s = $pdo->prepare("SELECT COALESCE(name_ar, name_en, '') as name FROM salons WHERE id = ?");
         $s->execute([$salon_id]);
         $salon_name = $s->fetchColumn() ?: '';
     }

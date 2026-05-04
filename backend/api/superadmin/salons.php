@@ -31,7 +31,9 @@ if ($method === 'GET') {
     if ($id) {
         // صالون واحد مع تفاصيل
         $stmt = $pdo->prepare("
-            SELECT s.*, sp.name_ar as plan_name, sp.price as plan_price,
+            SELECT s.*,
+                   COALESCE(s.name_ar, s.name_en, '') AS name,
+                   sp.name_ar as plan_name, sp.price as plan_price,
                    sp.max_employees, sp.max_services, sp.plan_type, sp.features_config,
                    (SELECT COUNT(*) FROM users u WHERE u.salon_id = s.id) as users_count,
                    (SELECT COUNT(*) FROM employees e WHERE e.salon_id = s.id AND e.is_active=1) as employees_count,
@@ -50,7 +52,9 @@ if ($method === 'GET') {
 
     // كل الصالونات
     $salons = $pdo->query("
-        SELECT s.*, sp.name_ar as plan_name, sp.plan_type,
+        SELECT s.*,
+               COALESCE(s.name_ar, s.name_en, '') AS name,
+               sp.name_ar as plan_name, sp.plan_type,
                (SELECT COUNT(*) FROM employees e WHERE e.salon_id = s.id AND e.is_active=1) as emp_count,
                (SELECT COUNT(*) FROM transactions t WHERE t.salon_id = s.id AND DATE_FORMAT(t.created_at,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')) as month_tx,
                (SELECT COALESCE(SUM(total_amount),0) FROM transactions t WHERE t.salon_id = s.id AND DATE_FORMAT(t.created_at,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')) as month_revenue

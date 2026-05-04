@@ -28,7 +28,10 @@ try {
 // ── GET: Return all settings ──
 if (getMethod() === 'GET') {
     $stmt = $pdo->prepare("
-        SELECT id, name, slug, logo_path, owner_name, owner_email, owner_phone, settings
+        SELECT id,
+               COALESCE(name_ar, name_en, '') AS name,
+               name_ar, name_en,
+               slug, logo_path, owner_name, owner_email, owner_phone, settings
         FROM salons WHERE id = ?
     ");
     $stmt->execute([$salonId]);

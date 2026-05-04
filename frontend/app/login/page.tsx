@@ -243,7 +243,7 @@ export default function LoginPage() {
                                 type="text"
                                 name="mq_user"
                                 placeholder="أدخل اسم المستخدم"
-                                className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none focus:outline-none focus-visible:outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)] placeholder:text-white/20 text-sm"
+                                className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none focus:outline-none focus-visible:outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)] placeholder:text-white/20 text-base"
                                 autoComplete="off"
                                 dir="rtl"
                                 required
@@ -261,7 +261,7 @@ export default function LoginPage() {
                                     type={showPassword ? "text" : "password"}
                                     name="mq_pass"
                                     placeholder="أدخل كلمة المرور"
-                                    className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none focus:outline-none focus-visible:outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)] placeholder:text-white/20 text-sm"
+                                    className="w-full px-5 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white outline-none focus:outline-none focus-visible:outline-none transition-all focus:bg-white/[0.06] focus:border-[var(--color-accent)] placeholder:text-white/20 text-base"
                                     autoComplete="new-password"
                                     dir="rtl"
                                     required

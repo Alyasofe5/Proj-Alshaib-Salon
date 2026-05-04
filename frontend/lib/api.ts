@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 // عنوان الـ API - يُضبط من NEXT_PUBLIC_API_URL في .env.local / .env.production
 // الـ fallback آمن: لو ضاع الـ env لأي سبب، الفرونت ينتقل للـ production تلقائياً
 // بدلاً من محاولة الاتصال بـ localhost (التي تفشل في الـ live).
-const API_BASE_URL =
+export const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || "https://maqas.site/api";
 
 const api = axios.create({

@@ -128,12 +128,12 @@ export default function Sidebar({ role }: SidebarProps) {
         router.push("/login");
     };
 
-    const rawName = user?.employee_name || user?.name || user?.username || "مستخدم";
-    const displayName = rawName.includes("||") ? rawName.split("||")[0].trim() : rawName;
-    const initials = displayName.charAt(0).toUpperCase();
+    const rawName = String(user?.employee_name || user?.name || user?.username || "مستخدم");
+    const displayName = (rawName.includes("||") ? rawName.split("||")[0].trim() : rawName) || "مستخدم";
+    const initials = (displayName.charAt(0) || "?").toUpperCase();
     const isEmployee = role === "employee" || user?.role === "employee";
     const navSections = isEmployee ? employeeNavSections : adminNavSections;
-    const salonName = tData(salon?.name || "Maqass", "ar");
+    const salonName = tData(salon?.name || "Maqass", "ar") || "Maqass";
     const salonLogo = salon?.logo;
     const planType = salon?.plan_type || "basic";
     const badge = planBadges[planType] || planBadges.basic;
@@ -192,7 +192,7 @@ export default function Sidebar({ role }: SidebarProps) {
                                         className="w-full h-full object-cover rounded-lg"
                                     />
                                 ) : (
-                                    salonName.charAt(0)
+                                    (salonName.charAt(0) || "?")
                                 )}
                             </div>
                             <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-[#C3D809] border-2 border-[#111112] rounded-full" />

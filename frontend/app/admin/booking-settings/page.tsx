@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { servicesAPI } from "@/lib/api";
+import api, { servicesAPI, API_BASE_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { FaCamera, FaCheck, FaArrowRight, FaExternalLinkAlt, FaPlus, FaTrash, FaPen, FaTimes, FaSave, FaImage, FaQrcode, FaDownload, FaCopy, FaCheckCircle, FaWhatsapp, FaEye, FaEyeSlash, FaCog } from "react-icons/fa";
@@ -13,7 +13,8 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { assetUrl } from "@/lib/assets";
 import UpgradeCard from "@/components/UpgradeCard";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+/** Same base as axios `api` (never empty — avoids wrong relative /salon/... URLs on live). */
+const API_BASE = API_BASE_URL;
 
 interface ServiceItem {
     id: number;
@@ -179,6 +180,7 @@ export default function BookingSettingsPage() {
     const [addingEmp, setAddingEmp] = useState(false);
     const [deleteEmpId, setDeleteEmpId] = useState<number | null>(null);
     const [deletingEmp, setDeletingEmp] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
         loadData();
@@ -189,19 +191,16 @@ export default function BookingSettingsPage() {
         if (salon?.logo) setCurrentLogo(salon.logo);
     }, [salon]);
 
-    const [loadError, setLoadError] = useState<string | null>(null);
-
     const loadData = async () => {
         setLoadError(null);
-        const auth = { headers: { Authorization: `Bearer ${Cookies.get("token")}` } };
 
-        // Independent settled promises — one failure does not block the rest of the page.
+        // Use shared `api` client (baseURL + Authorization + timeout) so a hung request cannot block forever.
         const [servRes, settRes, empRes, faqRes, galleryRes] = await Promise.allSettled([
             servicesAPI.getAll(),
-            axios.get(`${API_BASE}/salon/settings.php`, auth),
-            axios.get(`${API_BASE}/employees/index.php`, auth),
-            axios.get(`${API_BASE}/salon/faq.php`, auth),
-            axios.get(`${API_BASE}/salon/gallery.php`, auth),
+            api.get("/salon/settings.php"),
+            api.get("/employees/index.php"),
+            api.get("/salon/faq.php"),
+            api.get("/salon/gallery.php"),
         ]);
 
         if (servRes.status === "fulfilled") {
@@ -211,18 +210,29 @@ export default function BookingSettingsPage() {
         }
 
         if (settRes.status === "fulfilled") {
-            const settData = settRes.value.data.data || null;
-            setSettings(settData);
-            if (settData?.logo) setCurrentLogo(settData.logo);
+            const body = settRes.value.data as { success?: boolean; data?: unknown; message?: string };
+            if (body?.success && body.data != null) {
+                const settData = body.data as SalonSettings;
+                setSettings(settData);
+                if (settData?.logo) setCurrentLogo(settData.logo);
+            } else {
+                console.error("[booking-settings] settings invalid payload:", body);
+                setLoadError(body?.message || "استجابة غير صالحة من الخادم (إعدادات الصالون).");
+                setSettings(null);
+            }
         } else {
             console.error("[booking-settings] settings failed:", settRes.reason);
-            const status = (settRes.reason as { response?: { status?: number } })?.response?.status;
+            const err = settRes.reason as { response?: { status?: number }; code?: string; message?: string };
+            const status = err?.response?.status;
+            const isTimeout = err?.code === "ECONNABORTED" || /timeout/i.test(String(err?.message || ""));
             setLoadError(
-                status === 500
-                    ? "تعذّر تحميل إعدادات الصالون من الخادم (خطأ 500). راجع سجلات الخادم."
-                    : status === 401
-                        ? "انتهت صلاحية الجلسة. يرجى إعادة تسجيل الدخول."
-                        : "تعذّر تحميل إعدادات الصالون. تحقّق من الاتصال وحاول مرة أخرى."
+                isTimeout
+                    ? "انتهت مهلة الاتصال بالخادم. تحقق من الشبكة أو جرّب لاحقاً."
+                    : status === 500
+                        ? "تعذّر تحميل إعدادات الصالون من الخادم (خطأ 500). راجع سجلات الخادم."
+                        : status === 401
+                            ? "انتهت صلاحية الجلسة. يرجى إعادة تسجيل الدخول."
+                            : "تعذّر تحميل إعدادات الصالون. تحقّق من الاتصال وحاول مرة أخرى."
             );
         }
 
@@ -341,7 +351,7 @@ export default function BookingSettingsPage() {
         if (!newEmpName.trim()) return;
         setAddingEmp(true);
         try {
-            await axios.post(`${API_BASE}/employees`,
+            await axios.post(`${API_BASE}/employees/index.php`,
                 { name: newEmpName.trim(), phone: newEmpPhone.trim(), specialty: newEmpSpecialty.trim() },
                 { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
             );
@@ -2225,11 +2235,12 @@ function EmployeeCard({
 
     const displayNameAr = emp.name?.includes("||") ? emp.name.split("||")[0].trim() : emp.name;
     const initials = (displayNameAr || "??")
-        .split(" ")
-        .map(w => w[0])
-        .slice(0, 2)
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(w => w[0] ?? "")
         .join("")
-        .toUpperCase();
+        .slice(0, 2)
+        .toUpperCase() || "?";
 
     return (
         <motion.div

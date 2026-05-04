@@ -44,7 +44,7 @@ export default function BranchSwitcher() {
         }
     };
 
-    const currentInitial = tData(salon?.name || "S", "ar").charAt(0).toUpperCase();
+    const currentInitial = (tData(salon?.name || "S", "ar") || "?").charAt(0).toUpperCase();
 
     return (
         <div className="relative w-full" ref={dropdownRef}>
@@ -134,7 +134,7 @@ export default function BranchSwitcher() {
                             {branches.map((branch) => {
                                 const isActive = branch.id === salon?.id;
                                 const isLoading = switching === branch.id;
-                                const initial = tData(branch.name, "ar").charAt(0).toUpperCase();
+                                const initial = (tData(branch.name, "ar") || "?").charAt(0).toUpperCase();
 
                                 return (
                                     <button

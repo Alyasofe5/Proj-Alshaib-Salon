@@ -1,9 +1,11 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-// عنوان الـ API - عدّل حسب بيئتك
+// عنوان الـ API - يُضبط من NEXT_PUBLIC_API_URL في .env.local / .env.production
+// الـ fallback آمن: لو ضاع الـ env لأي سبب، الفرونت ينتقل للـ production تلقائياً
+// بدلاً من محاولة الاتصال بـ localhost (التي تفشل في الـ live).
 const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost/Proj-Alshaib-Salon/backend/api";
+    process.env.NEXT_PUBLIC_API_URL || "https://maqas.site/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,

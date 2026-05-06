@@ -112,12 +112,13 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           local-dir: ./deploy_combined/
-          protocol: ftp
+          protocol: ftps
           port: 21
-          # Important for Hostinger/Cloudflare setups:
-          # Make sure FTP_HOST is an IP address, not maqas.site
+          # Hostinger supports FTPS (FTP over TLS) not plain FTP
+          # Make sure FTP_HOST in GitHub Secrets is the IP address (not maqas.site)
           dangerous-clean-slate: false
           timeout: 600000
+          log-level: verbose
           state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*

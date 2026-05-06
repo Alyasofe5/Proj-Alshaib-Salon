@@ -2338,13 +2338,16 @@ function TimePicker12({ label, value, onChange, gold }: {
 }) {
     // Parse 24h value (HH:MM) → 12h parts
     const [h24, m] = (value || "09:00").split(":").map(Number);
-    const period = h24 >= 12 ? "م" : "ص";
-    const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+
+    // Special: 00:00 = midnight
+    const isMidnight = h24 === 0 && m === 0;
+    const period = isMidnight ? "ص" : h24 >= 12 ? "م" : "ص";
+    const h12 = isMidnight ? 12 : h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
 
     const update = (newH12: number, newM: number, newPeriod: string) => {
         let h = newH12;
         if (newPeriod === "م" && h !== 12) h += 12;
-        if (newPeriod === "ص" && h === 12) h = 0;
+        if (newPeriod === "ص" && h === 12) h = 0; // 12 ص = منتصف الليل = 00:00
         onChange(`${String(h).padStart(2, "0")}:${String(newM).padStart(2, "0")}`);
     };
 
@@ -2376,6 +2379,17 @@ function TimePicker12({ label, value, onChange, gold }: {
                     <option value="م">م</option>
                 </select>
             </div>
+            {/* Show midnight hint */}
+            {isMidnight && (
+                <p className="text-[10px] mt-1.5 font-bold" style={{ color: gold }}>
+                    ✓ منتصف الليل (00:00)
+                </p>
+            )}
+            {!isMidnight && (
+                <p className="text-[10px] mt-1.5 text-[var(--color-text-muted)]/40">
+                    للعمل حتى منتصف الليل: اختر 12 ص
+                </p>
+            )}
         </div>
     );
 }

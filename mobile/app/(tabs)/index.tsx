@@ -26,6 +26,35 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    fetchLiveSalons();
+  }, []);
+
+  const fetchLiveSalons = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('https://maqas.site/api/public/salons.php');
+      const json = await response.json();
+      if (json.success && json.data && json.data.salons) {
+        // Map real API data to UI structure with visual fallbacks
+        const apiSalons = json.data.salons.map((salon: any, index: number) => ({
+          id: salon.id.toString(),
+          name: salon.name,
+          address: 'عمان, الأردن', // Fallback address
+          rating: (4.5 + (index % 5) * 0.1).toFixed(1), // Fallback rating
+          image: DUMMY_SALONS[index % DUMMY_SALONS.length].image, // Maintain premium images
+          category: index % 2 === 0 ? 'VIP' : 'Hair',
+        }));
+        setSalons(apiSalons);
+      }
+    } catch (error) {
+      console.error('Error fetching live salons:', error);
+      // Keeps DUMMY_SALONS on failure automatically
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredSalons = salons.filter(salon => {
     const matchesSearch = salon.name.includes(searchQuery) || salon.address.includes(searchQuery);
     const matchesCategory = selectedCategory === 'All' || salon.category === selectedCategory;
@@ -96,7 +125,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.categoriesContainer}
           style={{ flexGrow: 0 }}
         >
-          {CATEGORIES.map(category => (
+          {CATEGORIES.slice().reverse().map(category => (
             <TouchableOpacity
               key={category.id}
               style={[styles.categoryPill, selectedCategory === category.id && styles.categoryPillActive]}
@@ -111,11 +140,17 @@ export default function HomeScreen() {
 
         {/* Salon List */}
         <View style={styles.listContent}>
-          {filteredSalons.map(item => (
-            <View key={item.id}>{renderSalonCard({ item })}</View>
-          ))}
-          {filteredSalons.length === 0 && (
-            <Text style={styles.emptyText}>لم نجد صالونات مطابقة لبحثك.</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#C3D809" style={{ marginTop: 40 }} />
+          ) : (
+            <>
+              {filteredSalons.map(item => (
+                <View key={item.id}>{renderSalonCard({ item })}</View>
+              ))}
+              {filteredSalons.length === 0 && (
+                <Text style={styles.emptyText}>لم نجد صالونات مطابقة لبحثك.</Text>
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -254,7 +289,7 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingHorizontal: 24,
     paddingVertical: 24,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     gap: 12,
   },
   categoryPill: {

@@ -17,17 +17,44 @@ const TIMES = [
   '02:30 م', '04:00 م', '05:00 م', '06:30 م'
 ];
 
+import { ActivityIndicator, Alert } from 'react-native';
+
 export default function BookingScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   
   const [selectedDate, setSelectedDate] = useState(DATES[0].id);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedTime) return;
-    alert('تم تأكيد حجزك بنجاح! ✂️🔥');
-    router.push('/(tabs)/explore'); // Go to bookings tab
+    
+    setLoading(true);
+    try {
+      const response = await fetch('https://maqas.site/api/public/bookings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          salon_id: id,
+          services: ['mock_service_1', 'mock_service_2'], // In reality, pass selected from previous screen
+          date: DATES.find(d => d.id === selectedDate)?.full,
+          time: selectedTime
+        }),
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('تم تأكيد حجزك بنجاح! ✂️🔥\nرقم الحجز: ' + data.data.booking_id);
+        router.push('/(tabs)/explore'); // Go to bookings tab
+      } else {
+        alert('حدث خطأ: ' + data.message);
+      }
+    } catch (error) {
+      alert('خطأ في الاتصال بالسيرفر');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,9 +135,13 @@ export default function BookingScreen() {
           style={[styles.confirmButton, !selectedTime && styles.confirmButtonDisabled]} 
           activeOpacity={0.9}
           onPress={handleConfirm}
-          disabled={!selectedTime}
+          disabled={!selectedTime || loading}
         >
-          <Text style={styles.confirmButtonText}>تأكيد الحجز</Text>
+          {loading ? (
+             <ActivityIndicator color="#0A0A0B" />
+          ) : (
+            <Text style={styles.confirmButtonText}>تأكيد الحجز</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

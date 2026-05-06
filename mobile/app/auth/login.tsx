@@ -6,13 +6,34 @@ import { useState } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
+import { ActivityIndicator } from 'react-native';
+
 export default function LoginScreen() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Navigate to tabs immediately for UI flow (Mockup)
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!phoneNumber) return;
+    setLoading(true);
+    try {
+      const response = await fetch('https://maqas.site/api/public/auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Navigate to tabs on success
+        router.replace('/(tabs)');
+      } else {
+        console.error('Login error:', data.message);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,9 +80,15 @@ export default function LoginScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.loginButton} activeOpacity={0.9} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>متابعة</Text>
-            <IconSymbol name="arrow.left" size={20} color="#0A0A0B" />
+          <TouchableOpacity style={styles.loginButton} activeOpacity={0.9} onPress={handleLogin} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#0A0A0B" />
+            ) : (
+              <>
+                <Text style={styles.loginButtonText}>متابعة</Text>
+                <IconSymbol name="arrow.left" size={20} color="#0A0A0B" />
+              </>
+            )}
           </TouchableOpacity>
 
           {/* Divider */}

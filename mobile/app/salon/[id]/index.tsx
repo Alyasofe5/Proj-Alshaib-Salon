@@ -2,13 +2,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator } from 'react-native';
 
-// Dummy data for details
+// Dummy data for details fallback
 const DUMMY_SALONS: Record<string, any> = {
-  '1': { name: 'صالون المقص الذهبي', address: 'عمان, الدوار السابع', rating: 4.8, image: 'https://images.unsplash.com/photo-1521590832167-7bfcfaa6362f?q=80&w=1470&auto=format&fit=crop', description: 'أفضل صالون حلاقة وعناية بالرجل في المنطقة، نقدم خدمات متكاملة للعريس والعناية بالبشرة.' },
-  '2': { name: 'لمسة جمال', address: 'إربد, شارع الجامعة', rating: 4.5, image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1469&auto=format&fit=crop', description: 'لمسة جمال تقدم لك أحدث القصات والصيحات في عالم العناية بالشعر واللحية.' },
-  '3': { name: 'أناقة رجل', address: 'الزرقاء, شارع السعادة', rating: 4.9, image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=1470&auto=format&fit=crop', description: 'صمم خصيصاً للرجل الأنيق. خدمات VIP وأجواء سينمائية فاخرة.' },
+  '1': { name: 'صالون المقص الذهبي', address: 'عمان, الأردن', rating: 4.5, image: 'https://images.unsplash.com/photo-1521590832167-7bfcfaa6362f?q=80&w=1470&auto=format&fit=crop', description: 'أفضل صالون حلاقة وعناية بالرجل في المنطقة، نقدم خدمات متكاملة للعريس والعناية بالبشرة.' },
+  '2': { name: 'لمسة جمال', address: 'عمان, الأردن', rating: 4.6, image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1469&auto=format&fit=crop', description: 'لمسة جمال تقدم لك أحدث القصات والصيحات في عالم العناية بالشعر واللحية.' },
 };
 
 const DUMMY_SERVICES = [
@@ -21,9 +21,32 @@ const DUMMY_SERVICES = [
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  
+  // Try to use fallback salon details, but in reality we would fetch salon details from API too
   const salon = DUMMY_SALONS[id as string] || DUMMY_SALONS['1'];
   
+  const [services, setServices] = useState<any[]>(DUMMY_SERVICES);
+  const [loadingServices, setLoadingServices] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (id) fetchServices();
+  }, [id]);
+
+  const fetchServices = async () => {
+    setLoadingServices(true);
+    try {
+      const response = await fetch(`https://maqas.site/api/public/services.php?salon_id=${id}`);
+      const json = await response.json();
+      if (json.success && json.data && json.data.services) {
+        setServices(json.data.services);
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev => 
@@ -34,7 +57,7 @@ export default function SalonDetailsScreen() {
   };
 
   const totalPrice = selectedServices.reduce((total, sId) => {
-    const service = DUMMY_SERVICES.find(s => s.id === sId);
+    const service = services.find(s => s.id === sId);
     return total + (service?.price || 0);
   }, 0);
 
@@ -77,25 +100,29 @@ export default function SalonDetailsScreen() {
           <Text style={styles.sectionTitle}>اختر الخدمات</Text>
           <Text style={styles.sectionSubtitle}>يمكنك اختيار أكثر من خدمة</Text>
           
-          {DUMMY_SERVICES.map((service) => {
-            const isSelected = selectedServices.includes(service.id);
-            return (
-              <TouchableOpacity 
-                key={service.id} 
-                style={[styles.serviceRow, isSelected && styles.serviceRowSelected]}
-                activeOpacity={0.7}
-                onPress={() => toggleService(service.id)}
-              >
-                <View style={styles.serviceInfo}>
-                  <Text style={styles.serviceName}>{service.name}</Text>
-                  <Text style={styles.servicePrice}>{service.price} د.أ</Text>
-                </View>
-                <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                  {isSelected && <IconSymbol name="checkmark" size={12} color="#0A0A0B" />}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+          {loadingServices ? (
+            <ActivityIndicator size="large" color="#C3D809" style={{ marginVertical: 20 }} />
+          ) : (
+            services.map((service) => {
+              const isSelected = selectedServices.includes(service.id);
+              return (
+                <TouchableOpacity 
+                  key={service.id} 
+                  style={[styles.serviceRow, isSelected && styles.serviceRowSelected]}
+                  activeOpacity={0.7}
+                  onPress={() => toggleService(service.id)}
+                >
+                  <View style={styles.serviceInfo}>
+                    <Text style={styles.serviceName}>{service.name}</Text>
+                    <Text style={styles.servicePrice}>{service.price} د.أ</Text>
+                  </View>
+                  <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                    {isSelected && <IconSymbol name="checkmark" size={12} color="#0A0A0B" />}
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
         </View>
       </ScrollView>
 

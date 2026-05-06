@@ -14,35 +14,43 @@ if ($method === 'GET') {
     try {
         global $pdo;
         
-        // Fetch real salons from the database
-        $stmt = $pdo->query("SELECT id, slug, name, status, created_at FROM salons WHERE status = 'active' ORDER BY id DESC");
+        // Fetch real salons - using COALESCE because the table has name_ar and name_en columns
+        $stmt = $pdo->query("
+            SELECT 
+                s.id,
+                s.slug,
+                s.status,
+                COALESCE(s.name_ar, s.name_en, 'صالون') AS name,
+                s.logo_path,
+                s.settings,
+                (SELECT COUNT(*) FROM services sv WHERE sv.salon_id = s.id AND sv.is_active = 1) AS services_count,
+                (SELECT COUNT(*) FROM employees e WHERE e.salon_id = s.id AND e.is_active = 1) AS employees_count
+            FROM salons s
+            WHERE s.status = 'active'
+            ORDER BY s.created_at DESC
+        ");
         $salons = $stmt->fetchAll();
 
-        // Map to include dummy values for columns that might not exist yet, preventing mobile app crashes
+        // Format response for mobile app
         $formattedSalons = array_map(function($salon) {
+            // Try to extract hero image from settings JSON
+            $heroImage = null;
+            if (!empty($salon['settings'])) {
+                $settings = json_decode($salon['settings'], true);
+                $heroImage = $settings['heroImage'] ?? $settings['hero_image'] ?? null;
+            }
+
             return [
-                'id' => $salon['id'],
-                'slug' => $salon['slug'],
-                'status' => $salon['status'],
-                'name' => $salon['name'],
-                'services_count' => rand(5, 15), // Fallback
-                'employees_count' => rand(2, 6)   // Fallback
+                'id'              => (int) $salon['id'],
+                'slug'            => $salon['slug'],
+                'status'          => $salon['status'],
+                'name'            => $salon['name'],
+                'logo_path'       => $salon['logo_path'] ?? null,
+                'hero_image'      => $heroImage,
+                'services_count'  => (int) $salon['services_count'],
+                'employees_count' => (int) $salon['employees_count'],
             ];
         }, $salons);
-
-        // If the database is completely empty, provide fallback so the app isn't blank
-        if (empty($formattedSalons)) {
-            $formattedSalons = [
-                [
-                    'id' => 1,
-                    'slug' => 'golden-scissors',
-                    'status' => 'active',
-                    'name' => 'صالون المقص الذهبي (افتراضي)',
-                    'services_count' => 12,
-                    'employees_count' => 4
-                ]
-            ];
-        }
 
         sendSuccess(['salons' => $formattedSalons]);
     } catch (Exception $e) {

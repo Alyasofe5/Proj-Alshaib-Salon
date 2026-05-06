@@ -34,21 +34,32 @@ export default function HomeScreen() {
     setLoading(true);
     try {
       const response = await fetch('https://maqas.site/api/public/salons.php');
+      
+      // If the server returns an error (e.g. 500), keep dummy data and don't crash
+      if (!response.ok) {
+        console.warn('API returned status:', response.status, '- Using fallback data');
+        setLoading(false);
+        return;
+      }
+
       const json = await response.json();
-      if (json.success && json.data && json.data.salons) {
-        // Map real API data to UI structure with visual fallbacks
+      if (json.success && json.data && json.data.salons && json.data.salons.length > 0) {
         const apiSalons = json.data.salons.map((salon: any, index: number) => ({
           id: salon.id.toString(),
           name: salon.name,
-          address: 'عمان, الأردن', // Fallback address
-          rating: (4.5 + (index % 5) * 0.1).toFixed(1), // Fallback rating
-          image: DUMMY_SALONS[index % DUMMY_SALONS.length].image, // Maintain premium images
+          address: 'عمان, الأردن',
+          rating: (4.5 + (index % 5) * 0.1).toFixed(1),
+          // Use real hero image if available, otherwise use a premium fallback
+          image: salon.hero_image
+            ? `https://maqas.site/${salon.hero_image}`
+            : DUMMY_SALONS[index % DUMMY_SALONS.length].image,
           category: index % 2 === 0 ? 'VIP' : 'Hair',
         }));
         setSalons(apiSalons);
       }
+      // If empty array - keep DUMMY_SALONS showing
     } catch (error) {
-      console.error('Error fetching live salons:', error);
+      console.error('Network error fetching salons:', error);
       // Keeps DUMMY_SALONS on failure automatically
     } finally {
       setLoading(false);
